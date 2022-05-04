@@ -29,7 +29,7 @@ export class ChartsComponent extends SubscriptionTracker implements OnInit, OnDe
     searchIsOpen: boolean;
 
     constructor(private httpService: HttpService,
-        private mobileNavState: MobileNavState) {
+                private mobileNavState: MobileNavState) {
         super()
         this.navIsOpen = false;
         this.loader = true;

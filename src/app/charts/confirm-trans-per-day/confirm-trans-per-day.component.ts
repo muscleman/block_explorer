@@ -19,7 +19,16 @@ export class ConfirmTransPerDayComponent extends SubscriptionTracker implements 
     ConfirmTransactPerDayChart: Chart;
     seriesData: any;
     loader: boolean;
-
+    
+    constructor(private httpService: HttpService, 
+                private mobileNavState: MobileNavState) {
+        super()
+        this.navIsOpen = false;
+        this.searchIsOpen = false;
+        this.activeChart = 'ConfirmTransactPerDay';
+        this.period = 'all';
+    }
+    
     static drawChart(activeChart, titleText, yText, chartsData): Chart {
         return new Chart({
             chart: {
@@ -209,13 +218,6 @@ export class ConfirmTransPerDayComponent extends SubscriptionTracker implements 
         this.searchIsOpen = $event;
     }
 
-    constructor(private httpService: HttpService, private mobileNavState: MobileNavState) {
-        super()
-        this.navIsOpen = false;
-        this.searchIsOpen = false;
-        this.activeChart = 'ConfirmTransactPerDay';
-        this.period = 'all';
-    }
 
     ngOnInit() {
         this.mobileNavState.change.subscribe(navIsOpen => {

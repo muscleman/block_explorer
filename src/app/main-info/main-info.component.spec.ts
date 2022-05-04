@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { MainInfoComponent } from './main-info.component';
-import {BitNumberPipe} from '.././pipes.pipe';
-import {HttpModule} from '@angular/http';
-import {RouterTestingModule} from '@angular/router/testing';
-import {HttpService} from './../http.service';
+import { BitNumberPipe, HashPowerConverterPipe, MoneyParsePipe } from '.././pipes.pipe';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpService } from './../http.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('MainInfoComponent', () => {
   let component: MainInfoComponent;
@@ -14,13 +14,15 @@ describe('MainInfoComponent', () => {
     TestBed.configureTestingModule({
       declarations: [
         MainInfoComponent,
-        BitNumberPipe
+        BitNumberPipe,
+        MoneyParsePipe,
+        HashPowerConverterPipe
       ],
       providers: [
         HttpService
       ],
       imports: [
-        HttpModule,
+        HttpClientTestingModule,
         RouterTestingModule
       ],
     })

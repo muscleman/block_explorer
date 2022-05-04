@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AliasesComponent } from './aliases.component';
-import { HttpService } from './../http.service';
+import { HttpService, MobileNavState } from './../http.service';
 import { DialogComponent } from './../dialog/dialog.component';
-import { HttpModule } from '@angular/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 
 describe('AliasesComponent', () => {
@@ -17,9 +17,10 @@ describe('AliasesComponent', () => {
       ],
       providers: [
         HttpService,
+        MobileNavState
       ],
       imports: [
-        HttpModule,
+        HttpClientTestingModule,
         RouterTestingModule
       ],
     })

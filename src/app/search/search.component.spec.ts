@@ -1,4 +1,7 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpService } from 'app/http.service';
 
 import { SearchComponent } from './search.component';
 
@@ -8,7 +11,14 @@ describe('SearchComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ SearchComponent ]
+      declarations: [ SearchComponent],
+      providers: [
+        HttpService
+      ],
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule.withRoutes([])
+      ]
     })
     .compileComponents();
   }));

@@ -12,13 +12,20 @@ import { take } from 'rxjs/operators';
 export class AvgBlockSizeComponent extends SubscriptionTracker implements OnInit {
     navIsOpen: boolean;
     searchIsOpen: boolean;
-
     activeChart: string;
     period: string;
     InputArray: any;
     AvgBlockSizeChart: Chart;
     seriesData: any;
     loader: boolean;
+
+    constructor(private httpService: HttpService, private mobileNavState: MobileNavState) {
+        super()
+        this.navIsOpen = false;
+        this.searchIsOpen = false;
+        this.activeChart = 'AvgBlockSize';
+        this.period = 'all';
+    }
 
     static drawChart(activeChart, titleText, yText, chartsData): Chart {
         return new Chart({
@@ -208,16 +215,6 @@ export class AvgBlockSizeComponent extends SubscriptionTracker implements OnInit
     onIsVisible($event): void {
         this.searchIsOpen = $event;
     }
-
-
-    constructor(private httpService: HttpService, private mobileNavState: MobileNavState) {
-        super()
-        this.navIsOpen = false;
-        this.searchIsOpen = false;
-        this.activeChart = 'AvgBlockSize';
-        this.period = 'all';
-    }
-
 
     ngOnInit() {
         this.mobileNavState.change.pipe(take(1)).subscribe(navIsOpen => {

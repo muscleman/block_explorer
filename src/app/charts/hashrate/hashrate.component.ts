@@ -19,7 +19,8 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
     seriesData: any;
     loader: boolean;
 
-    constructor(private httpService: HttpService, private mobileNavState: MobileNavState) {
+    constructor(private httpService: HttpService, 
+                private mobileNavState: MobileNavState) {
         super()
         this.navIsOpen = false;
         this.searchIsOpen = false;

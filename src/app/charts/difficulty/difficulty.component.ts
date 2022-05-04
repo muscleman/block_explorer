@@ -20,7 +20,8 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
     loader: boolean;
     seriesType: string = 'other';
 
-    constructor(private httpService: HttpService, private mobileNavState: MobileNavState) {
+    constructor(private httpService: HttpService, 
+                private mobileNavState: MobileNavState) {
         super()
         this.navIsOpen = false;
         this.searchIsOpen = false;

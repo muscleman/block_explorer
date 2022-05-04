@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { HttpService, MobileNavState } from '../http.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { take } from 'rxjs/operators';
 import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
 import { CookieService } from 'ngx-cookie-service';
@@ -46,7 +46,6 @@ export class AliasesComponent extends SubscriptionTracker implements OnInit, OnD
   constructor(
     private httpService: HttpService,
     private cookieService: CookieService,
-    private router: Router,
     private route: ActivatedRoute,
     private ngZone: NgZone,
     private mobileNavState: MobileNavState

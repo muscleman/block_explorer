@@ -1,4 +1,7 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpService, MobileNavState } from 'app/http.service';
 
 import { DifficultyComponent } from './difficulty.component';
 
@@ -8,7 +11,17 @@ describe('DifficultyComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ DifficultyComponent ]
+      declarations: [ 
+        DifficultyComponent
+      ],
+      providers: [
+        HttpService,
+        MobileNavState 
+      ],
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule
+      ]
     })
     .compileComponents();
   }));

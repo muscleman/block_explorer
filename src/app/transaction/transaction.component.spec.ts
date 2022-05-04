@@ -1,15 +1,14 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 
-import { HttpService } from './../http.service';
+import { HttpService, MobileNavState } from './../http.service';
 import { DialogComponent } from './../dialog/dialog.component';
-import { HttpModule } from '@angular/http';
 import { RouterTestingModule } from '@angular/router/testing';
 
-import { BitNumberPipe, MoneyParsePipe } from '.././pipes.pipe';
-import { MomentModule } from 'angular2-moment';
+import { BitNumberPipe, HashPowerConverterPipe, MoneyParsePipe } from '.././pipes.pipe';
 
 import { TransactionComponent } from './transaction.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('TransactionComponent', () => {
   let component: TransactionComponent;
@@ -22,14 +21,15 @@ describe('TransactionComponent', () => {
         DialogComponent,
         BitNumberPipe,
         MoneyParsePipe,
+        HashPowerConverterPipe
       ],
       providers: [
         HttpService,
+        MobileNavState
       ],
       imports: [
-        HttpModule,
-        RouterTestingModule,
-        MomentModule
+        HttpClientTestingModule,
+        RouterTestingModule
       ],
 
 

@@ -1,12 +1,11 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { BlockchainComponent } from './blockchain.component';
-import { MomentModule } from 'angular2-moment';
 import { RouterTestingModule } from '@angular/router/testing';
-import { HttpService } from './../http.service';
-import { HttpModule } from '@angular/http';
-import { CookieService } from 'angular2-cookie/core';
-import { OrderPipe, BitNumberPipe, TruncatePipe, TimeAgoPipe } from '.././pipes.pipe';
+import { HttpService, MobileNavState } from './../http.service';
+import { CookieService } from 'ngx-cookie-service';
+import { OrderPipe, BitNumberPipe, TruncatePipe, TimeAgoPipe, MoneyParsePipe, HashPowerConverterPipe } from '.././pipes.pipe';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 
 describe('BlockchainComponent', () => {
@@ -20,15 +19,17 @@ describe('BlockchainComponent', () => {
         OrderPipe,
         BitNumberPipe,
         TruncatePipe,
-        TimeAgoPipe
+        TimeAgoPipe,
+        MoneyParsePipe,
+        HashPowerConverterPipe
       ],
       providers: [
+        MobileNavState,
         HttpService,
         CookieService
       ],
       imports: [
-        HttpModule,
-        MomentModule,
+        HttpClientTestingModule,
         RouterTestingModule
       ]
     })

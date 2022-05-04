@@ -9,7 +9,7 @@ import { HttpService } from '../http.service';
 })
 export class ServerErrorComponent implements OnInit {
   public loading = false;
-  constructor(private httpService: HttpService) { }
+  constructor() { }
 
   ngOnInit() {
     this.loading = false;

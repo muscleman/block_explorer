@@ -1,4 +1,7 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpService, MobileNavState } from 'app/http.service';
 
 import { AvgTransPerBlockComponent } from './avg-trans-per-block.component';
 
@@ -8,7 +11,17 @@ describe('AvgTransPerBlockComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AvgTransPerBlockComponent ]
+      declarations: [ 
+        AvgTransPerBlockComponent
+      ],
+      providers: [
+        HttpService,
+        MobileNavState
+      ],
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule
+      ]
     })
     .compileComponents();
   }));

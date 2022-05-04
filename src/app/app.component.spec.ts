@@ -2,7 +2,7 @@ import { TestBed, waitForAsync } from '@angular/core/testing';
 
 import { HttpService } from './http.service';
 import { AppComponent } from './app.component';
-import { HttpModule } from '@angular/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterTestingModule } from '@angular/router/testing'
 
@@ -17,7 +17,7 @@ describe('AppComponent', () => {
         HttpService
       ],
       imports: [
-        HttpModule,
+        HttpClientTestingModule,
         MatProgressSpinnerModule,
         RouterTestingModule
       ]

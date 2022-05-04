@@ -1,10 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AltBlocksComponent } from './alt-blocks.component';
-import { MomentModule } from 'angular2-moment';
 import { RouterTestingModule } from '@angular/router/testing';
-import { HttpService } from './../http.service';
-import { HttpModule } from '@angular/http';
+import { HttpService, MobileNavState } from './../http.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('AltBlocksComponent', () => {
   let component: AltBlocksComponent;
@@ -17,10 +16,10 @@ describe('AltBlocksComponent', () => {
       ],
       providers: [
         HttpService,
+        MobileNavState
       ],
       imports: [
-        HttpModule,
-        MomentModule,
+        HttpClientTestingModule,
         RouterTestingModule
       ]
     })
