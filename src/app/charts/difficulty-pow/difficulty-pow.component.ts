@@ -280,24 +280,24 @@ export class DifficultyPowComponent extends SubscriptionTracker implements OnIni
 
   initialChart() {
     this.loader = true;
-    this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe(data => {
-          this.powDifficulty = data;
-          const powDifficultyArray = [];
-          for (let i = 1; i < this.powDifficulty.aggregated.length; i++) {
-            powDifficultyArray.push([this.powDifficulty.aggregated[i].at * 1000, parseInt(this.powDifficulty.aggregated[i].d, 10)]);
-          }
-          this.difficultyChart = this.drawChart(
-              false,
-              'PoW Difficulty',
-              'PoW Difficulty',
-              this.seriesData = [
-                {type: 'area', name: 'PoW difficulty', data: powDifficultyArray},
-              ]
-          );
-        }, err => console.log(err),
-        () => {
-          this.loader = false;
-        }
-    );
+    this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+            next: (data) => {
+                    this.powDifficulty = data;
+                    const powDifficultyArray = [];
+                    for (let i = 1; i < this.powDifficulty.aggregated.length; i++) {
+                      powDifficultyArray.push([this.powDifficulty.aggregated[i].at * 1000, parseInt(this.powDifficulty.aggregated[i].d, 10)]);
+                    }
+                    this.difficultyChart = this.drawChart(
+                        false,
+                        'PoW Difficulty',
+                        'PoW Difficulty',
+                        this.seriesData = [
+                          {type: 'area', name: 'PoW difficulty', data: powDifficultyArray},
+                        ]
+                    );
+            }, 
+            error: err => console.log(err),
+            complete: () => this.loader = false
+      })
   }
 }

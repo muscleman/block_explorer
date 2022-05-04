@@ -229,25 +229,26 @@ export class AvgTransPerBlockComponent extends SubscriptionTracker implements On
     }
 
     initialChart() {
-        this.loader = true;
-        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe(data => {
-                this.InputArray = data;
-                const AvgTransPerBlock = [];
-                for (let i = 1; i < this.InputArray.length; i++) {
-                    AvgTransPerBlock.push([this.InputArray[i].at * 1000, this.InputArray[i].trc]);
-                }
-                this.AvgTransPerBlockChart = AvgTransPerBlockComponent.drawChart(
-                    false,
-                    'Average Number Of Transactions Per Block',
-                    'Transaction Per Block',
-                    this.seriesData = [
-                        {type: 'area', name: 'Transaction Per Block', data: AvgTransPerBlock}
-                    ]
-                );
-            }, err => console.log(err),
-            () => {
-                this.loader = false;
-            });
+        this.loader = true
+        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+                next: (data) => {
+                        this.InputArray = data
+                        const AvgTransPerBlock = [];
+                        for (let i = 1; i < this.InputArray.length; i++) {
+                            AvgTransPerBlock.push([this.InputArray[i].at * 1000, this.InputArray[i].trc])
+                        }
+                        this.AvgTransPerBlockChart = AvgTransPerBlockComponent.drawChart(
+                            false,
+                            'Average Number Of Transactions Per Block',
+                            'Transaction Per Block',
+                            this.seriesData = [
+                                {type: 'area', name: 'Transaction Per Block', data: AvgTransPerBlock}
+                            ]
+                        )
+                }, 
+                error: (err) => console.log(err),
+                complete: () => this.loader = false
+            })
     }
 }
 

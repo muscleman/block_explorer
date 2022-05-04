@@ -281,24 +281,24 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
 
     initialChart() {
         this.loader = true;
-        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe(data => {
-                this.posDifficulty = data;
-                const posDifficultyArray = [];
-                for (let i = 1; i < this.posDifficulty.aggregated.length; i++) {
-                    posDifficultyArray.push([this.posDifficulty.aggregated[i].at * 1000, parseInt(this.posDifficulty.aggregated[i].d, 10)]);
-                }
-                this.difficultyChart = this.drawChart(
-                    false,
-                    'PoS Difficulty',
-                    'PoS Difficulty',
-                    this.seriesData = [
-                        {type: 'area', name: 'PoS difficulty', data: posDifficultyArray}
-                    ]
-                );
-            }, err => console.log(err),
-            () => {
-                this.loader = false;
-            }
-        );
+        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+                next: (data) => {
+                        this.posDifficulty = data
+                        const posDifficultyArray = []
+                        for (let i = 1; i < this.posDifficulty.aggregated.length; i++) {
+                            posDifficultyArray.push([this.posDifficulty.aggregated[i].at * 1000, parseInt(this.posDifficulty.aggregated[i].d, 10)])
+                        }
+                        this.difficultyChart = this.drawChart(
+                            false,
+                            'PoS Difficulty',
+                            'PoS Difficulty',
+                            this.seriesData = [
+                                {type: 'area', name: 'PoS difficulty', data: posDifficultyArray}
+                            ]
+                        )
+                }, 
+                error: (err) => console.log(err),
+                complete: () => this.loader = false
+            })
     }
 }

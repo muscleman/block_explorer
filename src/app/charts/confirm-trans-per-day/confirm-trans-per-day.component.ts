@@ -232,25 +232,26 @@ export class ConfirmTransPerDayComponent extends SubscriptionTracker implements 
 
     initialChart() {
         this.loader = true;
-        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe(data => {
-            this.InputArray = data;
+        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+                next: (data) => {
+                        this.InputArray = data
+                        const ConfirmTransactPerDay = [];
+                        for (let i = 1; i < this.InputArray.length; i++) {
+                            ConfirmTransactPerDay.push([this.InputArray[i].at * 1000, this.InputArray[i].sum_trc])
+                        }
+                        this.ConfirmTransactPerDayChart = ConfirmTransPerDayComponent.drawChart(
+                            false,
+                            'Confirmed Transactions Per Day',
+                            'Transactions',
+                            this.seriesData = [
+                                {type: 'area', name: 'Transactions', data: ConfirmTransactPerDay}
+                            ]
+                        )
 
-            const ConfirmTransactPerDay = [];
-            for (let i = 1; i < this.InputArray.length; i++) {
-                ConfirmTransactPerDay.push([this.InputArray[i].at * 1000, this.InputArray[i].sum_trc]);
-            }
-            this.ConfirmTransactPerDayChart = ConfirmTransPerDayComponent.drawChart(
-                false,
-                'Confirmed Transactions Per Day',
-                'Transactions',
-                this.seriesData = [
-                    {type: 'area', name: 'Transactions', data: ConfirmTransactPerDay}
-                ]
-            );
-
-        }, err => console.log(err), () => {
-            this.loader = false;
-        });
+                }, 
+                error: (err) => console.log(err), 
+                complete: () => this.loader = false
+            })
     }
 
 }

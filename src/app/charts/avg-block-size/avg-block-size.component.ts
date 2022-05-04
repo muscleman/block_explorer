@@ -3,6 +3,7 @@ import { HttpService, MobileNavState } from '../../http.service';
 import { Chart } from 'angular-highcharts';
 import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
 import { take } from 'rxjs/operators';
+import { pipe } from 'rxjs';
 
 @Component({
     selector: 'app-avg-block-size',
@@ -230,27 +231,25 @@ export class AvgBlockSizeComponent extends SubscriptionTracker implements OnInit
 
     initialChart() {
         this.loader = true;
-        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe(data => {
-                this.InputArray = data;
-
-                const AvgBlockSize = [];
-                for (let i = 1; i < this.InputArray.length; i++) {
-                    AvgBlockSize.push([this.InputArray[i].at * 1000, this.InputArray[i].bcs]);
-                }
-                this.AvgBlockSizeChart = AvgBlockSizeComponent.drawChart(
-                    false,
-                    'Average Block Size',
-                    'MB',
-                    this.seriesData = [
-                        {type: 'area', name: 'MB', data: AvgBlockSize}
-                    ]
-                );
-
-            }, err => console.log(err),
-            () => {
-                this.loader = false;
-            }
-        );
+        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+                next: (data) => {
+                        this.InputArray = data
+                        const AvgBlockSize = []
+                        for (let i = 1; i < this.InputArray.length; i++) {
+                            AvgBlockSize.push([this.InputArray[i].at * 1000, this.InputArray[i].bcs])
+                        }
+                        this.AvgBlockSizeChart = AvgBlockSizeComponent.drawChart(
+                            false,
+                            'Average Block Size',
+                            'MB',
+                            this.seriesData = [
+                                {type: 'area', name: 'MB', data: AvgBlockSize}
+                            ]
+                        )
+                }, 
+                error: (err) => console.log(err),
+                complete: () => this.loader = false
+            })
     }
 }
 

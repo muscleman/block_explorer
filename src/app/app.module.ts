@@ -7,8 +7,6 @@ import { AppRoutingModule } from './app.router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxJsonViewerModule } from 'ngx-json-viewer';
-
-
 import { ChartModule}  from 'angular-highcharts';
 import * as highstock from 'highcharts/modules/stock.src';
 
@@ -33,6 +31,9 @@ import { TruncatePipe } from './pipes.pipe';
 import { TimeAgoPipe } from './pipes.pipe';
 import { SortByAlphabetPipe } from './pipes.pipe';
 import { HashPowerConverterPipe } from './pipes.pipe';
+import { DateFormatPipe } from './pipes.pipe';
+import { UtcPipe } from './pipes.pipe';
+import { TimeAgoPipe2 } from './pipes.pipe';
 
 // Components
 import { AppComponent } from './app.component';
@@ -54,7 +55,7 @@ import { DifficultyComponent } from './charts/difficulty/difficulty.component';
 import { ConfirmTransPerDayComponent } from './charts/confirm-trans-per-day/confirm-trans-per-day.component';
 import { DifficultyPowComponent } from './charts/difficulty-pow/difficulty-pow.component';
 import { ApiComponent } from './api/api.component';
-import {  CookieService  } from 'ngx-cookie-service'
+import { CookieService } from 'ngx-cookie-service'
 
 
 @NgModule({
@@ -87,6 +88,9 @@ import {  CookieService  } from 'ngx-cookie-service'
         TimeAgoPipe,
         SortByAlphabetPipe,
         HashPowerConverterPipe,
+        DateFormatPipe,
+        UtcPipe,
+        TimeAgoPipe2,
         ApiComponent
     ],
     imports: [

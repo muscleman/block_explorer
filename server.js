@@ -321,11 +321,14 @@ app.get('/get_aliases/:offset/:count/:search', (req, res) => {
 // Charts
 app.get('/get_chart/:chart/:period', (req, res) => {
     let chart = req.params.chart;
-    let period = req.params.period; // temporarily unused
-
     if (chart !== undefined) {
+        
+        
         let period = Math.round(new Date().getTime() / 1000) - (24 * 3600); // + 86400000
         let period2 = Math.round(new Date().getTime() / 1000) - (48 * 3600); // + 86400000
+        if (!!req.params.period)
+            period = req.params.period
+
         // if (params_object.period === 'day') {
         //   // period = parseInt((period.setDate(period.getDate() - 86400000)) / 1000);
         //   period = parseInt(period - 86400000) / 1000;

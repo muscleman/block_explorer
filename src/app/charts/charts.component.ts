@@ -146,7 +146,8 @@ export class ChartsComponent extends SubscriptionTracker implements OnInit, OnDe
 
     initialChart() {
         this.loader = true;
-        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe(data => {
+        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+            next: (data) => {
                 this.InputArray = data;
                 this.ArrayConfirmTransactPerDay = data[0];
                 this.ArrayHashrate = data[1];
@@ -160,7 +161,6 @@ export class ChartsComponent extends SubscriptionTracker implements OnInit, OnDe
                 const previewDifficulty120 = [];
 
                 const previewConfirmTransactPerDay = [];
-
 
                 // AvgBlockSize, AvgTransPerBlock
                 for (let i = 0; i < this.InputArray.length; i++) {
@@ -246,10 +246,12 @@ export class ChartsComponent extends SubscriptionTracker implements OnInit, OnDe
                         {type: 'area', name: 'Transactions', data: previewConfirmTransactPerDay}
                     ]
                 );
-            }, err => console.log('error chart', err),
-            () => {
-                this.loader = false;
-            });
+            },
+            error: (err) => console.log('error chart', err),
+            complete: () => {
+                this.loader = false
+                }
+        })
     }
 
     ngOnDestroy() {
