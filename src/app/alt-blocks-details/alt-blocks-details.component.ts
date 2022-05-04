@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
-import { MobileNavState } from '../http.service';
-import JSONbig from 'json-bigint';
+import { Component, OnInit } from '@angular/core'
+import { ActivatedRoute } from '@angular/router'
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
+import { MobileNavState } from '../http.service'
 
 @Component({
   selector: 'app-alt-blocks-details-component',
@@ -28,7 +27,8 @@ export class AltBlocksDetailsComponent extends SubscriptionTracker implements On
   ngOnInit() {
     this.info = this.route.snapshot.data['MainInfo'];
     this.altBlocksDetails = this.route.snapshot.data['AltBlock'];
-    this.transactList = JSONbig.parse(this.altBlocksDetails.transactions_details);
+    console.log(this.altBlocksDetails.transactions_details, 'fucker')
+    this.transactList = JSON.parse(this.altBlocksDetails.transactions_details);
 
     this.mobileNavState.change.subscribe(navIsOpen => {
       this.navIsOpen = navIsOpen;
