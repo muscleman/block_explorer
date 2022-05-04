@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
+import { environment } from 'environments/environment';
 
 @Component({
     selector: 'app-api',
@@ -18,6 +19,7 @@ export class ApiComponent extends SubscriptionTracker implements OnInit {
     getPoolTXSbriefDetails: any;
     getTXdetails: any;
     getTxIdsForPool: any;
+    apiEndpoint: string = `${environment.backend}/api`
 
     dropdowns = {
         'info': false,
@@ -38,22 +40,26 @@ export class ApiComponent extends SubscriptionTracker implements OnInit {
         super.ngOnDestroy()
     }
 
+    createLink(bookmark: string): string {
+        return `${environment.documentionApi}/reference/${bookmark}`
+    }
+
     ngOnInit() {
         this.objectLinks = {
-            url_request_format: 'https://explorer.zano.org/api/{method}/{param1}/{param2}',
-            utl_get_info: 'https://explorer.zano.org/api/get_info/4294967295',
-            utl_get_total_coins: 'https://explorer.zano.org/api/get_total_coins',
-            url_get_blocks_details: 'https://explorer.zano.org/api/get_blocks_details/{:offset}/{:count}',
-            url_get_main_block_details: 'https://explorer.zano.org/api/get_main_block_details/{:hash}',
-            url_get_alt_blocks_details: 'https://explorer.zano.org/api/get_alt_blocks_details/{:offset}/{:count}',
-            url_get_alt_block_details: 'https://explorer.zano.org/api/get_alt_block_details/{:hash}',
+            url_request_format: `${environment.backend}/api/{method}/{param1}/{param2}`,
+            utl_get_info: `${environment.backend}/api/get_info/4294967295`,
+            utl_get_total_coins: `${environment.backend}/api/get_total_coins`,
+            url_get_blocks_details: `${environment.backend}/api/get_blocks_details/{:offset}/{:count}`,
+            url_get_main_block_details: `${environment.backend}/api/get_main_block_details/{:hash}`,
+            url_get_alt_blocks_details: `${environment.backend}/api/get_alt_blocks_details/{:offset}/{:count}`,
+            url_get_alt_block_details: `${environment.backend}/api/get_alt_block_details/{:hash}`,
 
-            url_get_all_pool_tx_list: 'https://explorer.zano.org/api/get_all_pool_tx_list',
-            url_get_pool_txs_details: 'https://explorer.zano.org/api/get_pool_txs_details',
-            url_get_pool_txs_brief_details: 'https://explorer.zano.org/api/get_pool_txs_brief_details',
-            url_request_ids_all_txs_pool: 'https://explorer.zano.org/api/get_all_pool_tx_list',
+            url_get_all_pool_tx_list: `${environment.backend}/api/get_all_pool_tx_list`,
+            url_get_pool_txs_details: `${environment.backend}/api/get_pool_txs_details`,
+            url_get_pool_txs_brief_details: `${environment.backend}/api/get_pool_txs_brief_details`,
+            url_request_ids_all_txs_pool: `${environment.backend}/api/get_all_pool_tx_list`,
 
-            url_get_tx_details: 'https://explorer.zano.org/api/get_tx_details/{:tx_hash}'
+            url_get_tx_details: `${environment.backend}/api/get_tx_details/{:tx_hash}`
         };
         this.currentinfoExample = {
             total_coins: 15285792000000000

@@ -11,10 +11,10 @@ export class HttpService {
     private Info = new Subject<any>();
     private infoObj: any;
 
-    constructor(protected httpClient: HttpClient, private router: Router) {
+    constructor(protected httpClient: HttpClient, 
+                private router: Router) {
         if (!environment.production) {
-            //this.serverApi = 'http://localhost:8008';
-            this.serverApi = 'http://10.0.0.13:8008'
+            this.serverApi = environment.backend
         }
 
         function getTimeOut() {

@@ -5,7 +5,7 @@
     <div class="info">
         <div class="row">
             <div class="title">API ENDPOINT</div>
-            <div class="value">https://explorer.zano.org/api/</div>
+            <div class="value">{{apiEndpoint}}</div>
         </div>
         <div class="row">
             <div class="title">URL Request Format</div>
@@ -19,7 +19,7 @@
     <div class="info">
         <div class="row method">
             <div class="title">Method:</div>
-            <div class="value"><a target="_blank" href="https://docs.zano.org/reference#getinfo">get_info</a></div>
+            <div class="value"><a target="_blank" [href]="createLink('#getinfo')">get_info</a></div>
         </div>
         <div class="row">
             <div class="title">Example:</div>
@@ -56,7 +56,7 @@
     <div class="info">
         <div class="row method">
             <div class="title">Method:</div>
-            <div class="value"><a target="_blank" href="https://docs.zano.org/reference#get_blocks_details">get_blocks_details</a></div>
+            <div class="value"><a target="_blank" [href]="createLink('#get_blocks_details')">get_blocks_details</a></div>
         </div>
         <div class="row">
             <div class="title">Example:</div>
@@ -74,7 +74,7 @@
     <div class="info">
         <div class="row method">
             <div class="title">Method:</div>
-            <div class="value"><a target="_blank" href="https://docs.zano.org/reference#get_main_block_details">get_main_block_details</a></div>
+            <div class="value"><a target="_blank" [href]="createLink('#get_main_block_details')">get_main_block_details</a></div>
         </div>
         <div class="row">
             <div class="title">Example:</div>
@@ -92,7 +92,7 @@
     <div class="info">
         <div class="row method">
             <div class="title">Method:</div>
-            <div class="value"><a target="_blank" href="https://docs.zano.org/reference#get_alt_blocks_details">get_alt_blocks_details</a></div>
+            <div class="value"><a target="_blank" [href]="createLink('#get_alt_blocks_details')">get_alt_blocks_details</a></div>
         </div>
         <div class="row">
             <div class="title">Example:</div>
@@ -111,7 +111,7 @@
     <div class="info">
         <div class="row method">
             <div class="title">Method:</div>
-            <div class="value"><a target="_blank" href="https://docs.zano.org/reference#get_alt_block_details">get_alt_block_details</a></div>
+            <div class="value"><a target="_blank" [href]="createLink('#get_alt_block_details')">get_alt_block_details</a></div>
         </div>
         <div class="row">
             <div class="title">Example:</div>
@@ -129,7 +129,7 @@
     <div class="info">
         <div class="row method">
             <div class="title">Method:</div>
-            <div class="value"><a target="_blank" href="https://docs.zano.org/reference#get_pool_txs_details">get_pool_txs_details</a></div>
+            <div class="value"><a target="_blank" [href]="createLink('#get_pool_txs_details')">get_pool_txs_details</a></div>
         </div>
         <div class="row">
             <div class="title">Example:</div>
@@ -147,7 +147,7 @@
     <div class="info">
         <div class="row method">
             <div class="title">Method:</div>
-            <div class="value"><a target="_blank" href="https://docs.zano.org/reference#get_pool_txs_brief_details">get_pool_txs_brief_details</a></div>
+            <div class="value"><a target="_blank" [href]="createLink('#get_pool_txs_brief_details')">get_pool_txs_brief_details</a></div>
         </div>
         <div class="row">
             <div class="title">Example:</div>
@@ -165,7 +165,7 @@
     <div class="info">
         <div class="row method">
             <div class="title">Method:</div>
-            <div class="value"><a target="_blank" href="https://docs.zano.org/reference#get_all_pool_tx_list">get_all_pool_tx_list</a></div>
+            <div class="value"><a target="_blank" [href]="createLink('#get_all_pool_tx_list')">get_all_pool_tx_list</a></div>
         </div>
         <div class="row">
             <div class="title">Example:</div>
@@ -184,7 +184,7 @@
     <div class="info">
         <div class="row method">
             <div class="title">Method:</div>
-            <div class="value"><a target="_blank" href="https://docs.zano.org/reference#get_tx_details">get_tx_details</a></div>
+            <div class="value"><a target="_blank" [href]="createLink('#get_tx_details')">get_tx_details</a></div>
         </div>
         <div class="row">
             <div class="title">Example:</div>
