@@ -86,8 +86,10 @@ export class BlockchainComponent extends SubscriptionTracker implements OnInit, 
       if ( lastHeight !== this.info.height ) {
         this.onChange();
       }
-      if (lastTransaction !== this.info.tx_pool_size) {
-        this.refreshPool();
+      if (this.info) {
+        if (lastTransaction !== this.info.tx_pool_size) {
+            this.refreshPool();
+        }
       }
     }
   }

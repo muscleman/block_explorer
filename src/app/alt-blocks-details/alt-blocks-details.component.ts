@@ -28,7 +28,6 @@ export class AltBlocksDetailsComponent extends SubscriptionTracker implements On
   ngOnInit() {
     this.info = this.route.snapshot.data['MainInfo'];
     this.altBlocksDetails = this.route.snapshot.data['AltBlock'];
-    console.log(this.altBlocksDetails.transactions_details)
     this.transactList = JSONbig.parse(this.altBlocksDetails.transactions_details);
 
     this.mobileNavState.change.subscribe(navIsOpen => {

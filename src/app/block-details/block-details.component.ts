@@ -60,8 +60,10 @@ export class BlockDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.navBlockchain.classList.add('active');
-    this.navBlockchainMobile.classList.add('active');
+    if (this.navBlockchain)
+      this.navBlockchain.classList.add('active');
+    if (this.navBlockchainMobile)
+      this.navBlockchainMobile.classList.add('active');
     this.getInfoPrepare( this.route.snapshot.data['MainInfo'] );
 
     this.subscription1 = this.httpService.subscribeInfo().subscribe((data) => {
