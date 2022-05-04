@@ -1,6 +1,7 @@
-import {Component, OnInit, AfterViewInit, OnDestroy} from '@angular/core';
-import {Router, Event, NavigationEnd} from '@angular/router';
-import {MobileNavState} from './http.service';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Router, Event, NavigationEnd } from '@angular/router';
+import { MobileNavState } from './http.service';
+import { SubscriptionTracker } from './subscription-tracker/subscription-tracker';
 
 @Component({
   selector: 'app-root',
@@ -8,14 +9,14 @@ import {MobileNavState} from './http.service';
   styleUrls: ['./app.component.scss'],
   providers: [],
 })
-export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
+export class AppComponent extends SubscriptionTracker implements OnInit, OnDestroy {
   navIsOpen: boolean;
-  constructor(
-    private router: Router,
-    private mobileNavState: MobileNavState) {
-    this.navIsOpen = true;
 
-    router.events.subscribe( (event: Event) => {
+  constructor(private router: Router,
+              private mobileNavState: MobileNavState) {
+    super()
+    this.navIsOpen = true;
+    this.router.events.subscribe( (event: Event) => {
       if (event instanceof NavigationEnd) {
         if (this.navIsOpen === true) {
           this.mobileNavState.toggleMenu();
@@ -33,12 +34,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.mobileNavState.toggleMenu();
   }
 
-  ngAfterViewInit() {
-
-  }
-
   ngOnDestroy() {
-
+    super.ngOnDestroy()
   }
 
 }

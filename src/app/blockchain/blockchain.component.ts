@@ -1,8 +1,9 @@
-import {Component, OnInit, OnDestroy, NgZone} from '@angular/core';
-import {HttpService, MobileNavState} from '../http.service';
-import {ActivatedRoute} from '@angular/router';
-import {CookieService} from 'angular2-cookie/core';
-import {Subscription} from 'rxjs/Subscription';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
+import { HttpService, MobileNavState } from '../http.service';
+import { ActivatedRoute } from '@angular/router';
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
+import { take } from 'rxjs/operators';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-blockchain',
@@ -10,7 +11,7 @@ import {Subscription} from 'rxjs/Subscription';
   styleUrls: ['./blockchain.component.scss'],
   providers: [],
 })
-export class BlockchainComponent implements OnInit, OnDestroy  {
+export class BlockchainComponent extends SubscriptionTracker implements OnInit, OnDestroy  {
   info: any;
   height: number;
   infoHeight: number;
@@ -29,9 +30,6 @@ export class BlockchainComponent implements OnInit, OnDestroy  {
   maxViewedBlockHeight: number;
   maxViewedPoolTimestamp: number;
   poolsOn: boolean;
-  subscription1: Subscription;
-  subscription2: Subscription;
-  subscription3: Subscription;
   poolLimit: number;
   setPoolLimit: number;
   setBlockValid: boolean;
@@ -50,27 +48,27 @@ export class BlockchainComponent implements OnInit, OnDestroy  {
     this.searchIsOpen = $event;
   }
 
-  constructor(
-    private httpService: HttpService,
-    private route: ActivatedRoute,
-    private _cookieService: CookieService,
-    private ngZone: NgZone,
-    private mobileNavState: MobileNavState) {
-    this.daemon_network_state = {
-      0: 'Offline',
-      1: 'Synchronizing',
-      2: 'Online',
-      3: 'Loading core',
-      4: 'System error',
-      5: 'Completing work'
-    };
-    this.maxCountBlock = 1000;
-    this.poolsOn = true;
-    this.setBlockValid = true;
-    this.setLimit = 10;
-    this.setPoolLimit = 5;
-    this.loader = false;
-    this.navIsOpen = false;
+  constructor(private httpService: HttpService,
+              private route: ActivatedRoute,
+              private cookieService: CookieService,
+              private ngZone: NgZone,
+              private mobileNavState: MobileNavState) {
+      super()
+      this.daemon_network_state = {
+        0: 'Offline',
+        1: 'Synchronizing',
+        2: 'Online',
+        3: 'Loading core',
+        4: 'System error',
+        5: 'Completing work'
+      };
+      this.maxCountBlock = 1000;
+      this.poolsOn = true;
+      this.setBlockValid = true;
+      this.setLimit = 10;
+      this.setPoolLimit = 5;
+      this.loader = false;
+      this.navIsOpen = false;
   }
 
   getInfoPrepare(data) {
@@ -88,18 +86,20 @@ export class BlockchainComponent implements OnInit, OnDestroy  {
       if ( lastHeight !== this.info.height ) {
         this.onChange();
       }
-      if (lastTransaction !== this.info.tx_pool_size) {
-        this.refreshPool();
+      if (this.info) {
+        if (lastTransaction !== this.info.tx_pool_size) {
+            this.refreshPool();
+        }
       }
     }
   }
 
   ngOnInit() {
     this.poolLimit = this.setPoolLimit;
-    if (this._cookieService.get('OnOffButtonCookie')) {
-      if (this._cookieService.get('OnOffButtonCookie') === 'true') {
+    if (this.cookieService.get('OnOffButtonCookie')) {
+      if (this.cookieService.get('OnOffButtonCookie') === 'true') {
         this.poolsOn = true;
-      } else if (this._cookieService.get('OnOffButtonCookie') === 'false') {
+      } else if (this.cookieService.get('OnOffButtonCookie') === 'false') {
         this.poolsOn =  false;
       }
     } else {
@@ -108,15 +108,15 @@ export class BlockchainComponent implements OnInit, OnDestroy  {
     if (this.poolsOn === true) {
       this.refreshPool();
     }
-    if (this._cookieService.get('setLimitCookie')) {
-      this.setLimit = parseInt(this._cookieService.get('setLimitCookie'), 10);
+    if (this.cookieService.get('setLimitCookie')) {
+      this.setLimit = parseInt(this.cookieService.get('setLimitCookie'), 10);
     }
     this.currentPage = 1;
     this.setBlock = null;
 
     this.getInfoPrepare( this.route.snapshot.data['MainInfo'] );
 
-    this.subscription1 = this.httpService.subscribeInfo().subscribe(
+    this.httpService.subscribeInfo().pipe(take(1)).subscribe(
       (data) => {
         this.getInfoPrepare( data );
       }
@@ -130,9 +130,7 @@ export class BlockchainComponent implements OnInit, OnDestroy  {
 
 
   ngOnDestroy() {
-    if (this.subscription1) { this.subscription1.unsubscribe(); }
-    if (this.subscription2) { this.subscription2.unsubscribe(); }
-    if (this.subscription3) { this.subscription3.unsubscribe(); }
+    super.ngOnDestroy()
   }
 
 
@@ -146,42 +144,41 @@ export class BlockchainComponent implements OnInit, OnDestroy  {
     this.poolsOn = !this.poolsOn;
     const exp = (new Date());
     exp.setMonth(exp.getMonth() + 3);
-    this._cookieService.put('OnOffButtonCookie', String(this.poolsOn), {'expires': exp});
+    this.cookieService.set('OnOffButtonCookie', String(this.poolsOn), {'expires': exp});
     if (this.poolsOn === true) {
       this.refreshPool();
     }
   }
 
   refreshPool() {
-    if (this.subscription2) { this.subscription2.unsubscribe(); }
-    this.subscription2 = this.httpService.getTxPoolDetails(this.poolLimit).subscribe(
-      data => {
-        this.TxPoolDetails = data;
-        if (this.TxPoolDetails.length) {
-          const self = this;
-          if (this.maxViewedPoolTimestamp) {
-            for (const item of this.TxPoolDetails) {
-              item.isNew = (+item.timestamp > +this.maxViewedPoolTimestamp);
-            }
-            this.ngZone.runOutsideAngular(() => {
-              setTimeout(() => {
-                this.ngZone.run(() => {
-                  for (const item of self.TxPoolDetails) {
-                    item.isNew = false;
-                  }
-                });
-              }, 2000);
-            });
-            if (+this.maxViewedPoolTimestamp < +this.TxPoolDetails[0].timestamp) {
-              this.maxViewedPoolTimestamp = this.TxPoolDetails[0].timestamp;
-            }
-          } else {
-            this.maxViewedPoolTimestamp = this.TxPoolDetails[0].timestamp;
-          }
-        }
-      },
-      err => console.error(err)
-    );
+    this.httpService.getTxPoolDetails(this.poolLimit).pipe(take(1)).subscribe({
+              next: (data) => {
+                      this.TxPoolDetails = data;
+                      if (this.TxPoolDetails.length) {
+                        const self = this;
+                        if (this.maxViewedPoolTimestamp) {
+                          for (const item of this.TxPoolDetails) {
+                            item.isNew = (+item.timestamp > +this.maxViewedPoolTimestamp);
+                          }
+                          this.ngZone.runOutsideAngular(() => {
+                            setTimeout(() => {
+                              this.ngZone.run(() => {
+                                for (const item of self.TxPoolDetails) {
+                                  item.isNew = false;
+                                }
+                              });
+                            }, 2000);
+                          });
+                          if (+this.maxViewedPoolTimestamp < +this.TxPoolDetails[0].timestamp) {
+                            this.maxViewedPoolTimestamp = this.TxPoolDetails[0].timestamp;
+                          }
+                        } else {
+                          this.maxViewedPoolTimestamp = this.TxPoolDetails[0].timestamp;
+                        }
+                      }
+              },
+              error: (err) => console.error(err)
+            })
   }
 
   prevPage() {
@@ -229,7 +226,7 @@ export class BlockchainComponent implements OnInit, OnDestroy  {
     this.listBlockStart = (this.height + 1) - +this.setLimit - ((this.currentPage - 1) * +this.setLimit);
     this.limit = +this.setLimit;
 
-    this._cookieService.put('setLimitCookie', this.limit);
+    this.cookieService.set('setLimitCookie', this.limit);
 
     if (this.info) {
       this.height = this.info.lastBlock;
@@ -244,51 +241,50 @@ export class BlockchainComponent implements OnInit, OnDestroy  {
       if (this.lastSendBlockDetail.start !== this.listBlockStart || this.lastSendBlockDetail.limit !== this.limit) {
         this.lastSendBlockDetail.start = this.listBlockStart;
         this.lastSendBlockDetail.limit = this.limit;
-        if (this.subscription3) { this.subscription3.unsubscribe(); }
         this.loader = true;
-        this.subscription3 = this.httpService.getBlockDetails(this.listBlockStart, this.limit).subscribe(
-          data => {
-            this.BlockDetails = data;
-            if (this.BlockDetails.length) {
-              const self = this;
-              if (this.maxViewedBlockHeight) {
-                for (const item of this.BlockDetails) {
-                  item.isNew = (item.height > this.maxViewedBlockHeight);
-                }
-                this.ngZone.runOutsideAngular(() => {
-                  setTimeout(() => {
-                    this.ngZone.run(() => {
-                      for (const item of self.BlockDetails) {
-                        item.isNew = false;
-                      }
-                    });
-                  }, 2000);
-                });
-                if (this.maxViewedBlockHeight < this.BlockDetails[this.BlockDetails.length - 1].height) {
-                  this.maxViewedBlockHeight = this.BlockDetails[this.BlockDetails.length - 1].height;
-                }
-              } else {
-                this.maxViewedBlockHeight = this.BlockDetails[this.BlockDetails.length - 1].height;
-              }
-              if (this.goToBlock && this.setBlockValid === true) {
-                for (const row of this.BlockDetails) {
-                  row.select = (row.height === +this.goToBlock);
-                }
-                this.ngZone.runOutsideAngular(() => {
-                  setTimeout(() => {
-                    this.ngZone.run(() => {
-                      for (const row of self.BlockDetails) {
-                        row.select = false;
-                      }
-                    });
-                  }, 2000);
-                });
-              }
-            }
-          },
-          err => this.BlockDetails = [],
-          () => { this.loader = false; }
-        );
+        this.httpService.getBlockDetails(this.listBlockStart, this.limit).pipe(take(1)).subscribe({
+                next: (data) => {
+                        this.BlockDetails = data;
+                        if (this.BlockDetails.length) {
+                          const self = this;
+                          if (this.maxViewedBlockHeight) {
+                            for (const item of this.BlockDetails) {
+                              item.isNew = (item.height > this.maxViewedBlockHeight);
+                            }
+                            this.ngZone.runOutsideAngular(() => {
+                              setTimeout(() => {
+                                this.ngZone.run(() => {
+                                  for (const item of self.BlockDetails) {
+                                    item.isNew = false;
+                                  }
+                                });
+                              }, 2000);
+                            });
+                            if (this.maxViewedBlockHeight < this.BlockDetails[this.BlockDetails.length - 1].height) {
+                              this.maxViewedBlockHeight = this.BlockDetails[this.BlockDetails.length - 1].height;
+                            }
+                          } else {
+                            this.maxViewedBlockHeight = this.BlockDetails[this.BlockDetails.length - 1].height;
+                          }
+                          if (this.goToBlock && this.setBlockValid === true) {
+                            for (const row of this.BlockDetails) {
+                              row.select = (row.height === +this.goToBlock);
+                            }
+                            this.ngZone.runOutsideAngular(() => {
+                              setTimeout(() => {
+                                this.ngZone.run(() => {
+                                  for (const row of self.BlockDetails) {
+                                    row.select = false;
+                                  }
+                                });
+                              }, 2000);
+                            });
+                          }
+                        }
+              },
+              error: (err) => this.BlockDetails = [],
+              complete: () => this.loader = false
+        })
       }
     }
   }

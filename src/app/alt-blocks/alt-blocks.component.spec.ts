@@ -1,27 +1,30 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AltBlocksComponent } from './alt-blocks.component';
-import { MomentModule } from 'angular2-moment';
 import { RouterTestingModule } from '@angular/router/testing';
-import { HttpService } from './../http.service';
-import { HttpModule } from '@angular/http';
+import { HttpService, MobileNavState } from './../http.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('AltBlocksComponent', () => {
   let component: AltBlocksComponent;
   let fixture: ComponentFixture<AltBlocksComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [
         AltBlocksComponent
       ],
       providers: [
         HttpService,
+        MobileNavState
       ],
       imports: [
-        HttpModule,
-        MomentModule,
+        HttpClientTestingModule,
         RouterTestingModule
+      ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
       ]
     })
     .compileComponents();

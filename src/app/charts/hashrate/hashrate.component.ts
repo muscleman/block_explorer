@@ -1,24 +1,32 @@
 import {Component, OnInit} from '@angular/core';
 import {HttpService, MobileNavState} from '../../http.service';
 import {Chart} from 'angular-highcharts';
-import {Subscription} from 'rxjs';
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
+import { take } from 'rxjs/operators';
 
 @Component({
     selector: 'app-hashrate',
     templateUrl: './hashrate.component.html',
     styleUrls: ['./hashrate.component.scss']
 })
-export class HashrateComponent implements OnInit {
+export class HashrateComponent extends SubscriptionTracker implements OnInit {
     navIsOpen: boolean;
     searchIsOpen: boolean;
-
     activeChart: string;
     period: string;
     InputArray: any;
-    chartSubscription: Subscription;
     hashRateChart: Chart;
     seriesData: any;
     loader: boolean;
+
+    constructor(private httpService: HttpService, 
+                private mobileNavState: MobileNavState) {
+        super()
+        this.navIsOpen = false;
+        this.searchIsOpen = false;
+        this.activeChart = 'hashRate';
+        this.period = 'all';
+    }
 
     static drawChart(activeChart, titleText, yText, chartsData): Chart {
         return new Chart({
@@ -58,7 +66,7 @@ export class HashrateComponent implements OnInit {
                     return '<b style="color:' + point.color + '">\u25CF</b> ' + point.series.name + ': <b>' + (point.y) + '</b><br/>';
                 },
                 shared: true,
-                crosshairs: true,
+                // crosshairs: true,
             },
             plotOptions: {
                 area: {
@@ -110,7 +118,7 @@ export class HashrateComponent implements OnInit {
             },
             navigator: {enabled: true},
             rangeSelector: {
-                height: 60,
+                // height: 60,
                 enabled: true,
                 allButtonsEnabled: true,
                 buttons: [{
@@ -195,7 +203,7 @@ export class HashrateComponent implements OnInit {
                             width: 575
                         },
                         rangeSelector: {
-                            height: 100,
+                            // height: 100,
                             inputPosition: {
                                 align: 'left',
                             }
@@ -206,17 +214,8 @@ export class HashrateComponent implements OnInit {
         });
     }
 
-
     onIsVisible($event): void {
         this.searchIsOpen = $event;
-    }
-
-    constructor(private httpService: HttpService, private mobileNavState: MobileNavState) {
-        this.navIsOpen = false;
-        this.searchIsOpen = false;
-
-        this.activeChart = 'hashRate';
-        this.period = 'all';
     }
 
     ngOnInit() {
@@ -226,35 +225,37 @@ export class HashrateComponent implements OnInit {
         this.initialChart();
     }
 
+    ngOnDestroy(): void {
+        super.ngOnDestroy()
+    }
+
     initialChart() {
         this.loader = true;
-        if (this.chartSubscription) {
-            this.chartSubscription.unsubscribe();
-        }
-        this.chartSubscription = this.httpService.getChart(this.activeChart, this.period).subscribe(data => {
-            this.InputArray = data;
-
-            const difficultyArray = [];
-            const hashRate100 = [];
-            const hashRate400 = [];
-            for (let i = 1; i < this.InputArray.length; i++) {
-                hashRate100.push([this.InputArray[i].at * 1000, parseInt(this.InputArray[i].h100, 10)]);
-                hashRate400.push([this.InputArray[i].at * 1000,  parseInt(this.InputArray[i].h400, 10)]);
-                difficultyArray.push([this.InputArray[i].at * 1000, parseInt(this.InputArray[i].d120, 10)]);
-            }
-            this.hashRateChart = HashrateComponent.drawChart(
-                false,
-                'Hash Rate',
-                'Hash Rate H/s',
-                this.seriesData = [
-                    {type: 'area', name: 'Hash Rate 100', data: hashRate100, color: '#28B463'},
-                    {type: 'area', name: 'Hash Rate 400', data: hashRate400, color: '#3498DB'},
-                    {type: 'area', name: 'Difficulty', data: difficultyArray, color: '#d2fe46'}
-                ]
-            );
-        }, err => console.log(err), () => {
-            this.loader = false
-        });
+        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+                next: (data) => {
+                        this.InputArray = data;
+                        const difficultyArray = [];
+                        const hashRate100 = [];
+                        const hashRate400 = [];
+                        for (let i = 1; i < this.InputArray.length; i++) {
+                            hashRate100.push([this.InputArray[i].at * 1000, parseInt(this.InputArray[i].h100, 10)]);
+                            hashRate400.push([this.InputArray[i].at * 1000,  parseInt(this.InputArray[i].h400, 10)]);
+                            difficultyArray.push([this.InputArray[i].at * 1000, parseInt(this.InputArray[i].d120, 10)]);
+                        }
+                        this.hashRateChart = HashrateComponent.drawChart(
+                            false,
+                            'Hash Rate',
+                            'Hash Rate H/s',
+                            this.seriesData = [
+                                {type: 'area', name: 'Hash Rate 100', data: hashRate100, color: '#28B463'},
+                                {type: 'area', name: 'Hash Rate 400', data: hashRate400, color: '#3498DB'},
+                                {type: 'area', name: 'Difficulty', data: difficultyArray, color: '#d2fe46'}
+                            ]
+                        );
+                }, 
+                error: (err) => console.log(err), 
+                complete: () => this.loader = false
+            })
     }
 }
 

@@ -1,11 +1,12 @@
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
 
 @Component({
     selector: 'app-api',
     templateUrl: './api.component.html',
     styleUrls: ['./api.component.scss']
 })
-export class ApiComponent implements OnInit {
+export class ApiComponent extends SubscriptionTracker implements OnInit {
     objectLinks: any;
     infoExample: any;
     currentinfoExample: any;
@@ -30,6 +31,11 @@ export class ApiComponent implements OnInit {
     };
 
     constructor() {
+        super()
+    }
+
+    ngOnDestroy(): void {
+        super.ngOnDestroy()
     }
 
     ngOnInit() {

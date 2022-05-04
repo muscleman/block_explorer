@@ -1,24 +1,32 @@
-import {Component, OnInit} from '@angular/core';
-import {HttpService, MobileNavState} from '../../http.service';
-import {Subscription} from 'rxjs';
-import {Chart} from 'angular-highcharts';
+import { Component, OnInit } from '@angular/core';
+import { HttpService, MobileNavState } from '../../http.service';
+import { Chart } from 'angular-highcharts';
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
+import { take } from 'rxjs/operators';
+import { pipe } from 'rxjs';
 
 @Component({
     selector: 'app-avg-block-size',
     templateUrl: './avg-block-size.component.html',
     styleUrls: ['./avg-block-size.component.scss']
 })
-export class AvgBlockSizeComponent implements OnInit {
+export class AvgBlockSizeComponent extends SubscriptionTracker implements OnInit {
     navIsOpen: boolean;
     searchIsOpen: boolean;
-
     activeChart: string;
     period: string;
     InputArray: any;
-    chartSubscription: Subscription;
     AvgBlockSizeChart: Chart;
     seriesData: any;
     loader: boolean;
+
+    constructor(private httpService: HttpService, private mobileNavState: MobileNavState) {
+        super()
+        this.navIsOpen = false;
+        this.searchIsOpen = false;
+        this.activeChart = 'AvgBlockSize';
+        this.period = 'all';
+    }
 
     static drawChart(activeChart, titleText, yText, chartsData): Chart {
         return new Chart({
@@ -109,7 +117,7 @@ export class AvgBlockSizeComponent implements OnInit {
             },
             navigator: {enabled: true},
             rangeSelector: {
-                height: 60,
+                // height: 60,
                 enabled: true,
                 allButtonsEnabled: true,
                 buttons: [{
@@ -194,7 +202,7 @@ export class AvgBlockSizeComponent implements OnInit {
                             width: 575
                         },
                         rangeSelector: {
-                            height: 100,
+                            // height: 100,
                             inputPosition: {
                                 align: 'left',
                             }
@@ -209,49 +217,39 @@ export class AvgBlockSizeComponent implements OnInit {
         this.searchIsOpen = $event;
     }
 
-
-    constructor(private httpService: HttpService, private mobileNavState: MobileNavState) {
-        this.navIsOpen = false;
-        this.searchIsOpen = false;
-        this.activeChart = 'AvgBlockSize';
-        this.period = 'all';
-    }
-
-
     ngOnInit() {
-        this.mobileNavState.change.subscribe(navIsOpen => {
+        this.mobileNavState.change.pipe(take(1)).subscribe(navIsOpen => {
             this.navIsOpen = navIsOpen;
         });
         this.initialChart();
     }
 
+    ngOnDestroy(): void {
+        super.ngOnDestroy()
+    }
+
 
     initialChart() {
         this.loader = true;
-        if (this.chartSubscription) {
-            this.chartSubscription.unsubscribe();
-        }
-        this.chartSubscription = this.httpService.getChart(this.activeChart, this.period).subscribe(data => {
-                this.InputArray = data;
-
-                const AvgBlockSize = [];
-                for (let i = 1; i < this.InputArray.length; i++) {
-                    AvgBlockSize.push([this.InputArray[i].at * 1000, this.InputArray[i].bcs]);
-                }
-                this.AvgBlockSizeChart = AvgBlockSizeComponent.drawChart(
-                    false,
-                    'Average Block Size',
-                    'MB',
-                    this.seriesData = [
-                        {type: 'area', name: 'MB', data: AvgBlockSize}
-                    ]
-                );
-
-            }, err => console.log(err),
-            () => {
-                this.loader = false;
-            }
-        );
+        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+                next: (data) => {
+                        this.InputArray = data
+                        const AvgBlockSize = []
+                        for (let i = 1; i < this.InputArray.length; i++) {
+                            AvgBlockSize.push([this.InputArray[i].at * 1000, this.InputArray[i].bcs])
+                        }
+                        this.AvgBlockSizeChart = AvgBlockSizeComponent.drawChart(
+                            false,
+                            'Average Block Size',
+                            'MB',
+                            this.seriesData = [
+                                {type: 'area', name: 'MB', data: AvgBlockSize}
+                            ]
+                        )
+                }, 
+                error: (err) => console.log(err),
+                complete: () => this.loader = false
+            })
     }
 }
 

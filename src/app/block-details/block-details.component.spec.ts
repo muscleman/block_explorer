@@ -1,31 +1,35 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { BlockDetailsComponent } from './block-details.component';
-import { BitNumberPipe, MoneyParsePipe } from '.././pipes.pipe';
-import { MomentModule } from 'angular2-moment';
-import { HttpModule } from '@angular/http';
-import { HttpService } from './../http.service';
+import { BitNumberPipe, HashPowerConverterPipe, MoneyParsePipe } from '.././pipes.pipe';
+import { HttpService, MobileNavState } from './../http.service';
 import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing'
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('BlockDetailsComponent', () => {
   let component: BlockDetailsComponent;
   let fixture: ComponentFixture<BlockDetailsComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [
         BlockDetailsComponent,
         BitNumberPipe,
         MoneyParsePipe,
+        HashPowerConverterPipe
       ],
       providers: [
         HttpService,
+        MobileNavState
       ],
       imports: [
-        HttpModule,
-        RouterTestingModule,
-        MomentModule
+        HttpClientTestingModule,
+        RouterTestingModule
       ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
+      ]
     })
     .compileComponents();
   }));

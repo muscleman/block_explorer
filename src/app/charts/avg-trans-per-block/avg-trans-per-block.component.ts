@@ -1,21 +1,21 @@
-import {Component, OnInit} from '@angular/core';
-import {HttpService, MobileNavState} from '../../http.service';
-import {Chart} from 'angular-highcharts';
-import {Subscription} from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { HttpService, MobileNavState } from '../../http.service';
+import { Chart } from 'angular-highcharts';
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
+import { take } from 'rxjs/operators';
 
 @Component({
     selector: 'app-avg-trans-per-block',
     templateUrl: './avg-trans-per-block.component.html',
     styleUrls: ['./avg-trans-per-block.component.scss']
 })
-export class AvgTransPerBlockComponent implements OnInit {
+export class AvgTransPerBlockComponent extends SubscriptionTracker implements OnInit {
     navIsOpen: boolean;
     searchIsOpen: boolean;
 
     activeChart: string;
     period: string;
     InputArray: any;
-    chartSubscription: Subscription;
     AvgTransPerBlockChart: Chart;
     seriesData: any;
     loader: boolean;
@@ -109,7 +109,7 @@ export class AvgTransPerBlockComponent implements OnInit {
             },
             navigator: {enabled: true},
             rangeSelector: {
-                height: 60,
+                // height: 60,
                 enabled: true,
                 allButtonsEnabled: true,
                 buttons: [{
@@ -194,7 +194,7 @@ export class AvgTransPerBlockComponent implements OnInit {
                             width: 575
                         },
                         rangeSelector: {
-                            height: 100,
+                            // height: 100,
                             inputPosition: {
                                 align: 'left',
                             }
@@ -210,6 +210,7 @@ export class AvgTransPerBlockComponent implements OnInit {
     }
 
     constructor(private httpService: HttpService, private mobileNavState: MobileNavState) {
+        super()
         this.navIsOpen = false;
         this.searchIsOpen = false;
         this.activeChart = 'AvgTransPerBlock';
@@ -223,29 +224,31 @@ export class AvgTransPerBlockComponent implements OnInit {
         this.initialChart();
     }
 
+    ngOnDestroy(): void {
+        super.ngOnDestroy()
+    }
+
     initialChart() {
-        this.loader = true;
-        if (this.chartSubscription) {
-            this.chartSubscription.unsubscribe();
-        }
-        this.chartSubscription = this.httpService.getChart(this.activeChart, this.period).subscribe(data => {
-                this.InputArray = data;
-                const AvgTransPerBlock = [];
-                for (let i = 1; i < this.InputArray.length; i++) {
-                    AvgTransPerBlock.push([this.InputArray[i].at * 1000, this.InputArray[i].trc]);
-                }
-                this.AvgTransPerBlockChart = AvgTransPerBlockComponent.drawChart(
-                    false,
-                    'Average Number Of Transactions Per Block',
-                    'Transaction Per Block',
-                    this.seriesData = [
-                        {type: 'area', name: 'Transaction Per Block', data: AvgTransPerBlock}
-                    ]
-                );
-            }, err => console.log(err),
-            () => {
-                this.loader = false;
-            });
+        this.loader = true
+        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+                next: (data) => {
+                        this.InputArray = data
+                        const AvgTransPerBlock = [];
+                        for (let i = 1; i < this.InputArray.length; i++) {
+                            AvgTransPerBlock.push([this.InputArray[i].at * 1000, this.InputArray[i].trc])
+                        }
+                        this.AvgTransPerBlockChart = AvgTransPerBlockComponent.drawChart(
+                            false,
+                            'Average Number Of Transactions Per Block',
+                            'Transaction Per Block',
+                            this.seriesData = [
+                                {type: 'area', name: 'Transaction Per Block', data: AvgTransPerBlock}
+                            ]
+                        )
+                }, 
+                error: (err) => console.log(err),
+                complete: () => this.loader = false
+            })
     }
 }
 

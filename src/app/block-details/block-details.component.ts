@@ -1,7 +1,8 @@
-import {Component, OnInit, OnDestroy} from '@angular/core';
-import {HttpService, MobileNavState} from '../http.service';
-import {ActivatedRoute} from '@angular/router';
-import {Subscription} from 'rxjs/Subscription';
+import {Component, OnInit, OnDestroy} from '@angular/core'
+import {HttpService, MobileNavState} from '../http.service'
+import {ActivatedRoute} from '@angular/router'
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-block-details-component',
@@ -9,7 +10,7 @@ import {Subscription} from 'rxjs/Subscription';
   styleUrls: ['./block-details.component.scss'],
   providers: [],
 })
-export class BlockDetailsComponent implements OnInit, OnDestroy {
+export class BlockDetailsComponent extends SubscriptionTracker implements OnInit, OnDestroy {
   Block: any = {};
   info: any;
   height: number;
@@ -17,9 +18,6 @@ export class BlockDetailsComponent implements OnInit, OnDestroy {
   powDifficulty: number;
   totalCoins: number;
   NetworkHashrate: number;
-  subscription1: Subscription;
-  subscription2: Subscription;
-  subscription3: Subscription;
   prevBlockId: string;
   nextBlockId: string;
   ThisBlockFeeMedian: any;
@@ -36,11 +34,10 @@ export class BlockDetailsComponent implements OnInit, OnDestroy {
   onIsVisible($event): void {
     this.searchIsOpen = $event;
   }
-  constructor(
-    private route: ActivatedRoute,
-    private httpService: HttpService,
-    private mobileNavState: MobileNavState
-  ) {
+  constructor(private route: ActivatedRoute,
+              private httpService: HttpService,
+              private mobileNavState: MobileNavState) {
+    super()
     this.BlockNotFound = false;
     this.navBlockchain = document.getElementById('blockchain-li');
     this.navBlockchainMobile = document.getElementById('blockchain-mobile-li');
@@ -60,29 +57,31 @@ export class BlockDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.navBlockchain.classList.add('active');
-    this.navBlockchainMobile.classList.add('active');
+    if (this.navBlockchain)
+      this.navBlockchain.classList.add('active');
+    if (this.navBlockchainMobile)
+      this.navBlockchainMobile.classList.add('active');
     this.getInfoPrepare( this.route.snapshot.data['MainInfo'] );
 
-    this.subscription1 = this.httpService.subscribeInfo().subscribe((data) => {
+    this.httpService.subscribeInfo().pipe(take(1)).subscribe((data) => {
       this.getInfoPrepare( data );
-    });
+    })
 
-    this.subscription2 = this.route.params.subscribe(params => {
-      this.subscription3 = this.httpService.getMainBlockDetails(params.id).subscribe(
-        data => {
-          this.Block = data;
-          this.prevBlockId = this.Block.prev_id;
-          this.minerTextInfo = this.Block.miner_text_info;
-          if (this.prevBlockId === '0000000000000000000000000000000000000000000000000000000000000000') {
-            this.prevBlockId = undefined;
-          }
-          this.nextBlockId = this.Block.next_id;
-          this.ThisBlockFeeMedian = this.Block.this_block_fee_median;
-          this.EffectiveFeeMedian = this.Block.effective_fee_median;
-        },
-        () => { this.BlockNotFound = true }
-      );
+    this.route.params.subscribe(params => {
+      this.httpService.getMainBlockDetails(params.id).pipe(take(1)).subscribe({
+                next: (data) => {
+                  this.Block = data;
+                  this.prevBlockId = this.Block.prev_id;
+                  this.minerTextInfo = this.Block.miner_text_info;
+                  if (this.prevBlockId === '0000000000000000000000000000000000000000000000000000000000000000') {
+                    this.prevBlockId = undefined;
+                  }
+                  this.nextBlockId = this.Block.next_id;
+                  this.ThisBlockFeeMedian = this.Block.this_block_fee_median;
+                  this.EffectiveFeeMedian = this.Block.effective_fee_median;
+                },
+                complete: () => { this.BlockNotFound = true }
+              })
     });
     this.mobileNavState.change.subscribe(navIsOpen => {
       this.navIsOpen = navIsOpen;
@@ -90,9 +89,7 @@ export class BlockDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.subscription1) { this.subscription1.unsubscribe(); }
-    if (this.subscription2) { this.subscription2.unsubscribe(); }
-    if (this.subscription3) { this.subscription3.unsubscribe(); }
+    super.ngOnDestroy()
     this.navBlockchain.classList.remove('active');
     this.navBlockchainMobile.classList.remove('active');
   }

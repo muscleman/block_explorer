@@ -1,4 +1,8 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpService, MobileNavState } from 'app/http.service';
 
 import { DifficultyPowComponent } from './difficulty-pow.component';
 
@@ -6,9 +10,22 @@ describe('DifficultyPowComponent', () => {
   let component: DifficultyPowComponent;
   let fixture: ComponentFixture<DifficultyPowComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ DifficultyPowComponent ]
+      declarations: [ 
+        DifficultyPowComponent
+      ],
+      providers: [
+        HttpService,
+        MobileNavState
+      ],
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule
+      ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
+      ]
     })
     .compileComponents();
   }));

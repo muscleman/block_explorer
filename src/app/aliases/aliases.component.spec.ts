@@ -1,15 +1,16 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AliasesComponent } from './aliases.component';
-import { HttpService } from './../http.service';
+import { HttpService, MobileNavState } from './../http.service';
 import { DialogComponent } from './../dialog/dialog.component';
-import { HttpModule } from '@angular/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('AliasesComponent', () => {
   let component: AliasesComponent;
   let fixture: ComponentFixture<AliasesComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [
         AliasesComponent,
@@ -17,11 +18,15 @@ describe('AliasesComponent', () => {
       ],
       providers: [
         HttpService,
+        MobileNavState
       ],
       imports: [
-        HttpModule,
+        HttpClientTestingModule,
         RouterTestingModule
       ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
+      ]
     })
       .compileComponents();
   }));

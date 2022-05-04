@@ -1,7 +1,8 @@
-import {Component, ViewEncapsulation, OnInit, Output, EventEmitter, OnDestroy} from '@angular/core';
-import {HttpService} from '../http.service';
-import {Subscription} from 'rxjs/Subscription';
-import {ActivatedRoute} from '@angular/router';
+import { Component, ViewEncapsulation, OnInit, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { HttpService } from '../http.service';
+import { ActivatedRoute } from '@angular/router';
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-main-info',
@@ -10,7 +11,7 @@ import {ActivatedRoute} from '@angular/router';
   encapsulation: ViewEncapsulation.None,
   providers: [],
 })
-export class MainInfoComponent implements OnInit, OnDestroy {
+export class MainInfoComponent extends SubscriptionTracker implements OnInit, OnDestroy {
   info: any;
   @Output() letGetInfo = new EventEmitter();
   height: number;
@@ -19,8 +20,10 @@ export class MainInfoComponent implements OnInit, OnDestroy {
   totalCoins: number;
   NetworkHashrate: number;
   txCount: number;
-  subscription1: Subscription;
-  constructor(private httpService: HttpService, private route: ActivatedRoute) {}
+
+  constructor(private httpService: HttpService, private route: ActivatedRoute) {
+    super()
+  }
 
   getInfoPrepare(data) {
     this.info = data;
@@ -37,7 +40,7 @@ export class MainInfoComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.getInfoPrepare( this.route.snapshot.data['MainInfo'] );
-    this.subscription1 = this.httpService.subscribeInfo().subscribe(
+    this.httpService.subscribeInfo().pipe(take(1)).subscribe(
       data => {
         this.getInfoPrepare( data );
       },
@@ -52,7 +55,7 @@ export class MainInfoComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.subscription1) { this.subscription1.unsubscribe(); }
+    super.ngOnDestroy()
   }
 }
 

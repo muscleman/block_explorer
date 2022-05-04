@@ -1,9 +1,9 @@
-import {Component, OnInit, OnDestroy, NgZone} from '@angular/core';
-import {HttpService, MobileNavState} from '../http.service';
-import {ActivatedRoute, Router} from '@angular/router';
-import 'rxjs/add/operator/map'
-import {Subscription} from 'rxjs/Subscription';
-import {CookieService} from 'angular2-cookie/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
+import { HttpService, MobileNavState } from '../http.service';
+import { ActivatedRoute } from '@angular/router';
+import { take } from 'rxjs/operators';
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-aliases',
@@ -11,7 +11,7 @@ import {CookieService} from 'angular2-cookie/core';
   styleUrls: ['./aliases.component.scss'],
   providers: [],
 })
-export class AliasesComponent implements OnInit, OnDestroy {
+export class AliasesComponent extends SubscriptionTracker implements OnInit, OnDestroy {
   Aliases: any;
   showDialog = false;
   currentAlias: any;
@@ -19,8 +19,6 @@ export class AliasesComponent implements OnInit, OnDestroy {
   maxCount: number;
   currentPage: number;
   offset: number;
-  getAliasesSubscription: Subscription;
-  paramSubscription: Subscription;
   limitList: any;
   visiblePagination: boolean;
   trackingKey: boolean;
@@ -47,12 +45,12 @@ export class AliasesComponent implements OnInit, OnDestroy {
 
   constructor(
     private httpService: HttpService,
-    private _cookieService: CookieService,
-    private router: Router,
+    private cookieService: CookieService,
     private route: ActivatedRoute,
     private ngZone: NgZone,
     private mobileNavState: MobileNavState
   ) {
+    super()
     this.maxCount = 1000;
     this.visiblePagination = false;
     this.copiedClipboard = false;
@@ -67,11 +65,11 @@ export class AliasesComponent implements OnInit, OnDestroy {
     this.count = 20;
     this.offset = 0;
     this.search = '';
-    this.paramSubscription = this.route.params.subscribe(params => {
+    this.route.params.pipe(take(1)).subscribe(params => {
       this.search = params.id;
     })
-    if (this._cookieService.get('setCountAliasesCookie')) {
-      this.count = parseInt(this._cookieService.get('setCountAliasesCookie'), 10);
+    if (this.cookieService.get('setCountAliasesCookie')) {
+      this.count = parseInt(this.cookieService.get('setCountAliasesCookie'), 10);
     }
     this.onChange();
   }
@@ -84,26 +82,25 @@ export class AliasesComponent implements OnInit, OnDestroy {
       this.count = 1;
     }
     this.limitList = +this.count;
-    this._cookieService.put('setCountAliasesCookie', this.limitList);
+    this.cookieService.set('setCountAliasesCookie', this.limitList);
     this.offset = (this.currentPage - 1) * this.count;
     if (this.lastSendAliases.offset !== this.offset || this.lastSendAliases.count !== this.count || this.lastSendAliases.search !== this.search) {
       this.lastSendAliases.offset = this.offset;
       this.lastSendAliases.count = this.count;
       this.lastSendAliases.search = this.search;
       this.loader = true;
-      if (this.getAliasesSubscription) {
-        this.getAliasesSubscription.unsubscribe();
-      }
-      this.getAliasesSubscription = this.httpService.getAliases(this.offset, this.count, this.search).subscribe(
-        data => {
-          this.Aliases = data;
-        }, err => {
-          console.log('getAliases', err);
-        }, () => {
-          this.loader = false;
-          this.visiblePagination = true;
-        }
-      );
+      this.httpService.getAliases(this.offset, this.count, this.search).pipe(take(1)).subscribe({
+                next: (data) => {
+                  this.Aliases = data;
+                }, 
+                error: (err) => {
+                  console.log('getAliases', err);
+                }, 
+                complete: () => {
+                  this.loader = false;
+                  this.visiblePagination = true;
+                }
+              })
     }
     this.mobileNavState.change.subscribe(navIsOpen => {
       this.navIsOpen = navIsOpen;
@@ -159,9 +156,7 @@ export class AliasesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.getAliasesSubscription) {
-      this.getAliasesSubscription.unsubscribe();
-    }
+    super.ngOnDestroy()
   }
 
 }

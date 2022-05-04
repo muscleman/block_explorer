@@ -1,14 +1,14 @@
-import { TestBed, async } from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 
 import { HttpService } from './http.service';
 import { AppComponent } from './app.component';
-import { HttpModule } from '@angular/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterTestingModule } from '@angular/router/testing'
 
 
 describe('AppComponent', () => {
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [
         AppComponent
@@ -17,14 +17,14 @@ describe('AppComponent', () => {
         HttpService
       ],
       imports: [
-        HttpModule,
+        HttpClientTestingModule,
         MatProgressSpinnerModule,
         RouterTestingModule
       ]
     }).compileComponents();
   }));
 
-  it('should create the app', async(() => {
+  it('should create the app', waitForAsync(() => {
     // const fixture = TestBed.createComponent(AppComponent);
     // const app = fixture.debugElement.componentInstance;
     // expect(app).toBeTruthy();

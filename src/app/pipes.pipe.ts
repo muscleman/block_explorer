@@ -1,4 +1,4 @@
-import {Pipe, PipeTransform} from '@angular/core';
+import {ChangeDetectorRef, NgZone, OnDestroy, Pipe, PipeTransform} from '@angular/core';
 import * as moment from 'moment';
 import BigNumber from 'bignumber.js';
 
@@ -244,5 +244,129 @@ export class HashPowerConverterPipe implements PipeTransform {
     } else if (value === 0) {
       return value + ' ' + ((args === 'speed') ? 'H/sec' : 'H');
     }
+  }
+}
+
+@Pipe({ name: 'amDateFormat' })
+export class DateFormatPipe implements PipeTransform {
+  transform(value: moment.MomentInput, ...args: any[]): string {
+    if (!value) {
+      return '';
+    }
+    return moment(value).format(args[0]);
+  }
+}
+
+@Pipe({ name: 'amUtc' })
+export class UtcPipe implements PipeTransform {
+  transform(value: moment.MomentInput): moment.Moment {
+    return moment(value).utc();
+  }
+}
+
+@Pipe({ name: 'amTimeAgo', pure: false })
+export class TimeAgoPipe2 implements PipeTransform, OnDestroy {
+  private currentTimer: number | null;
+
+  private lastTime: Number;
+  private lastValue: moment.MomentInput;
+  private lastOmitSuffix: boolean;
+  private lastLocale?: string;
+  private lastText: string;
+  private formatFn: (m: moment.Moment) => string;
+
+  constructor(private cdRef: ChangeDetectorRef, private ngZone: NgZone) {}
+
+  format(m: moment.Moment) {
+    return m.from(moment(), this.lastOmitSuffix);
+  }
+
+  transform(
+    value: moment.MomentInput,
+    omitSuffix?: boolean,
+    formatFn?: (m: moment.Moment) => string,
+  ): string {
+    if (this.hasChanged(value, omitSuffix)) {
+      this.lastTime = this.getTime(value);
+      this.lastValue = value;
+      this.lastOmitSuffix = omitSuffix;
+      this.lastLocale = this.getLocale(value);
+      this.formatFn = formatFn || this.format.bind(this);
+      this.removeTimer();
+      this.createTimer();
+      this.lastText = this.formatFn(moment(value));
+    } else {
+      this.createTimer();
+    }
+
+    return this.lastText;
+  }
+
+  ngOnDestroy(): void {
+    this.removeTimer();
+  }
+
+  private createTimer() {
+    if (this.currentTimer) {
+      return;
+    }
+
+    const momentInstance = moment(this.lastValue);
+    const timeToUpdate = this.getSecondsUntilUpdate(momentInstance) * 1000;
+
+    this.currentTimer = this.ngZone.runOutsideAngular(() => {
+      if (typeof window !== 'undefined') {
+        return window.setTimeout(() => {
+          this.lastText = this.formatFn(moment(this.lastValue));
+
+          this.currentTimer = null;
+          this.ngZone.run(() => this.cdRef.markForCheck());
+        }, timeToUpdate);
+      } else {
+        return null;
+      }
+    });
+  }
+
+  private removeTimer() {
+    if (this.currentTimer) {
+      window.clearTimeout(this.currentTimer);
+      this.currentTimer = null;
+    }
+  }
+
+  private getSecondsUntilUpdate(momentInstance: moment.Moment) {
+    const howOld = Math.abs(moment().diff(momentInstance, 'minute'));
+    if (howOld < 1) {
+      return 1;
+    } else if (howOld < 60) {
+      return 30;
+    } else if (howOld < 180) {
+      return 300;
+    } else {
+      return 3600;
+    }
+  }
+
+  private hasChanged(value: moment.MomentInput, omitSuffix?: boolean): boolean {
+    return (
+      this.getTime(value) !== this.lastTime ||
+      this.getLocale(value) !== this.lastLocale ||
+      omitSuffix !== this.lastOmitSuffix
+    );
+  }
+
+  private getTime(value: moment.MomentInput): number {
+    if (moment.isDate(value)) {
+      return value.getTime();
+    } else if (moment.isMoment(value)) {
+      return value.valueOf();
+    } else {
+      return moment(value).valueOf();
+    }
+  }
+
+  private getLocale(value: moment.MomentInput): string | null {
+    return moment.isMoment(value) ? value.locale() : moment.locale();
   }
 }

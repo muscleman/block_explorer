@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import {HttpService} from '../http.service';
+import { HttpService } from '../http.service';
 
 @Component({
   selector: 'app-server-error',
@@ -9,7 +9,7 @@ import {HttpService} from '../http.service';
 })
 export class ServerErrorComponent implements OnInit {
   public loading = false;
-  constructor(private httpService: HttpService) { }
+  constructor() { }
 
   ngOnInit() {
     this.loading = false;

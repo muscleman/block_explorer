@@ -1,25 +1,33 @@
-import {Component, OnInit} from '@angular/core';
-import {HttpService, MobileNavState} from '../../http.service';
-import {Chart} from 'angular-highcharts';
-import {Subscription} from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { HttpService, MobileNavState } from '../../http.service';
+import { Chart } from 'angular-highcharts';
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
+import { take } from 'rxjs/operators';
 
 @Component({
     selector: 'app-difficulty',
     templateUrl: './difficulty.component.html',
     styleUrls: ['./difficulty.component.scss']
 })
-export class DifficultyComponent implements OnInit {
+export class DifficultyComponent extends SubscriptionTracker implements OnInit {
     navIsOpen: boolean;
     searchIsOpen: boolean;
-
     activeChart: string;
     period: string;
     posDifficulty: any;
-    chartSubscription: Subscription;
     difficultyChart: Chart;
     seriesData: any;
     loader: boolean;
     seriesType: string = 'other';
+
+    constructor(private httpService: HttpService, 
+                private mobileNavState: MobileNavState) {
+        super()
+        this.navIsOpen = false;
+        this.searchIsOpen = false;
+        this.activeChart = 'pos-difficulty';
+        this.period = 'all';
+    }
 
     // PoS Difficulty
     drawChart(activeChart, titleText, yText, chartsData): Chart {
@@ -61,7 +69,7 @@ export class DifficultyComponent implements OnInit {
                     const point = this;
                     return '<b style="color:' + point.color + '">\u25CF</b> ' + point.series.name + ': <b>' + (point.y) + '</b><br/>';
                 },
-                crosshairs: true,
+                // crosshairs: true,
                 shared: true,
             },
             plotOptions: {
@@ -228,7 +236,7 @@ export class DifficultyComponent implements OnInit {
                             width: 575
                         },
                         rangeSelector: {
-                            height: 100,
+                            // height: 100,
                             inputPosition: {
                                 align: 'left',
                             }
@@ -260,13 +268,6 @@ export class DifficultyComponent implements OnInit {
         this.searchIsOpen = $event;
     }
 
-    constructor(private httpService: HttpService, private mobileNavState: MobileNavState) {
-        this.navIsOpen = false;
-        this.searchIsOpen = false;
-        this.activeChart = 'pos-difficulty';
-        this.period = 'all';
-    }
-
     ngOnInit() {
         this.mobileNavState.change.subscribe(navIsOpen => {
             this.navIsOpen = navIsOpen;
@@ -274,30 +275,30 @@ export class DifficultyComponent implements OnInit {
         this.initialChart();
     }
 
+    ngOnDestroy(): void {
+        super.ngOnDestroy()
+    }
 
     initialChart() {
         this.loader = true;
-        if (this.chartSubscription) {
-            this.chartSubscription.unsubscribe();
-        }
-        this.chartSubscription = this.httpService.getChart(this.activeChart, this.period).subscribe(data => {
-                this.posDifficulty = data;
-                const posDifficultyArray = [];
-                for (let i = 1; i < this.posDifficulty.aggregated.length; i++) {
-                    posDifficultyArray.push([this.posDifficulty.aggregated[i].at * 1000, parseInt(this.posDifficulty.aggregated[i].d, 10)]);
-                }
-                this.difficultyChart = this.drawChart(
-                    false,
-                    'PoS Difficulty',
-                    'PoS Difficulty',
-                    this.seriesData = [
-                        {type: 'area', name: 'PoS difficulty', data: posDifficultyArray}
-                    ]
-                );
-            }, err => console.log(err),
-            () => {
-                this.loader = false;
-            }
-        );
+        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+                next: (data) => {
+                        this.posDifficulty = data
+                        const posDifficultyArray = []
+                        for (let i = 1; i < this.posDifficulty.aggregated.length; i++) {
+                            posDifficultyArray.push([this.posDifficulty.aggregated[i].at * 1000, parseInt(this.posDifficulty.aggregated[i].d, 10)])
+                        }
+                        this.difficultyChart = this.drawChart(
+                            false,
+                            'PoS Difficulty',
+                            'PoS Difficulty',
+                            this.seriesData = [
+                                {type: 'area', name: 'PoS difficulty', data: posDifficultyArray}
+                            ]
+                        )
+                }, 
+                error: (err) => console.log(err),
+                complete: () => this.loader = false
+            })
     }
 }

@@ -1,29 +1,30 @@
-import {ModuleWithProviders} from '@angular/core';
+import { NgModule } from '@angular/core'
+// import {ModuleWithProviders} from '@angular/core';
 import {Routes, RouterModule} from '@angular/router';
 
 // Components
-import {BlockchainComponent} from './blockchain/blockchain.component';
-import {BlockDetailsComponent} from './block-details/block-details.component';
-import {AltBlocksComponent} from './alt-blocks/alt-blocks.component';
-import {AltBlocksDetailsComponent} from './alt-blocks-details/alt-blocks-details.component';
-import {AliasesComponent} from './aliases/aliases.component';
-
-import {ChartsComponent} from './charts/charts.component';
-import {AvgBlockSizeComponent} from './charts/avg-block-size/avg-block-size.component';
-import {AvgTransPerBlockComponent} from './charts/avg-trans-per-block/avg-trans-per-block.component';
-import {HashrateComponent} from './charts/hashrate/hashrate.component';
-import {DifficultyComponent} from './charts/difficulty/difficulty.component';
-import {DifficultyPowComponent} from './charts/difficulty-pow/difficulty-pow.component';
-import {ConfirmTransPerDayComponent} from './charts/confirm-trans-per-day/confirm-trans-per-day.component';
-
-import {TransactionComponent} from './transaction/transaction.component';
-import {ApiComponent} from './api/api.component';
-import {ServerErrorComponent} from './server-error/server-error.component'
+import { BlockchainComponent } from './blockchain/blockchain.component';
+import { BlockDetailsComponent } from './block-details/block-details.component';
+import { AltBlocksComponent } from './alt-blocks/alt-blocks.component';
+import { AltBlocksDetailsComponent } from './alt-blocks-details/alt-blocks-details.component';
+import { AliasesComponent } from './aliases/aliases.component';
+ 
+import  { ChartsComponent } from './charts/charts.component';
+import { AvgBlockSizeComponent } from './charts/avg-block-size/avg-block-size.component';
+import { AvgTransPerBlockComponent } from './charts/avg-trans-per-block/avg-trans-per-block.component';
+import { HashrateComponent } from './charts/hashrate/hashrate.component';
+import { DifficultyComponent } from './charts/difficulty/difficulty.component';
+import { DifficultyPowComponent } from './charts/difficulty-pow/difficulty-pow.component';
+import { ConfirmTransPerDayComponent } from './charts/confirm-trans-per-day/confirm-trans-per-day.component';
+ 
+import  { TransactionComponent } from './transaction/transaction.component';
+import { ApiComponent } from './api/api.component';
+import { ServerErrorComponent } from './server-error/server-error.component'
 
 // Resolve
 import {ServiceResolver, ResolveAltBlock} from './http.service';
 
-export const router: Routes = [
+export const routes: Routes = [
   {
     path: '',
     component: BlockchainComponent,
@@ -117,4 +118,11 @@ export const router: Routes = [
   {path: '**', redirectTo: '', component: BlockchainComponent}
 ];
 
-export const routes: ModuleWithProviders = RouterModule.forRoot(router);
+@NgModule({
+  imports: [
+    RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' })
+  ],
+  exports: [RouterModule],
+  providers: []
+})
+export class AppRoutingModule {}

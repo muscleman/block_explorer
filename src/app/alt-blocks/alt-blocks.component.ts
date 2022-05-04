@@ -1,9 +1,9 @@
-import {Component, OnInit, OnDestroy} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import 'rxjs/add/operator/map'
-import {HttpService, MobileNavState} from '../http.service';
-import {Subscription} from 'rxjs/Subscription';
-import {CookieService} from 'angular2-cookie/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { HttpService, MobileNavState } from '../http.service';
+import { CookieService } from 'ngx-cookie-service';
+import { take } from 'rxjs/operators';
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
 
 @Component({
   selector: 'app-alt-blocks',
@@ -12,9 +12,8 @@ import {CookieService} from 'angular2-cookie/core';
   providers: [],
 })
 
-export class AltBlocksComponent implements OnInit, OnDestroy {
+export class AltBlocksComponent extends SubscriptionTracker implements OnInit, OnDestroy {
   altBlocks: any;
-  getAltBlocksSubscription: Subscription;
   count: number;
   maxCount: number;
   currentPage: number;
@@ -32,9 +31,10 @@ export class AltBlocksComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private httpService: HttpService,
-    private _cookieService: CookieService,
+    private cookieService: CookieService,
     private mobileNavState: MobileNavState
   ) {
+    super()
     this.maxCount = 1000;
     this.visiblePagination = false;
     this.navIsOpen = false;
@@ -44,8 +44,8 @@ export class AltBlocksComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
     this.count = 20;
     this.offset = 0;
-    if (this._cookieService.get('setCountAltBlocksCookie')) {
-      this.count = parseInt(this._cookieService.get('setCountAltBlocksCookie'), 10);
+    if (this.cookieService.get('setCountAltBlocksCookie')) {
+      this.count = parseInt(this.cookieService.get('setCountAltBlocksCookie'), 10);
     }
     this.onChange();
 
@@ -63,22 +63,23 @@ export class AltBlocksComponent implements OnInit, OnDestroy {
       this.count = 1;
     }
     this.limitList = +this.count;
-    this._cookieService.put('setCountAltBlocksCookie', this.limitList);
+    this.cookieService.set('setCountAltBlocksCookie', this.limitList);
     this.offset = (this.currentPage - 1) * this.count;
-    this.getAltBlocksSubscription = this.httpService.getAltBlocks(this.offset, this.count).subscribe(
-      data => {
-        this.altBlocks = data;
-        for (let i = 0; i < this.altBlocks.length; i++) {
-          this.altBlocks[i].transactions_details = JSON.parse(this.altBlocks[i].transactions_details);
-        }
-      }, err => {
-        console.log('getAltBlocks', err);
-      },
-      () => {
-        this.loader = false;
-        this.visiblePagination = true;
-      }
-    );
+    this.httpService.getAltBlocks(this.offset, this.count).pipe(take(1)).subscribe({
+              next: (data) => {
+                this.altBlocks = data;
+                for (let i = 0; i < this.altBlocks.length; i++) {
+                  this.altBlocks[i].transactions_details = JSON.parse(this.altBlocks[i].transactions_details);
+                }
+              }, 
+              error: (err) => {
+                console.log('getAltBlocks', err);
+              },
+              complete: () => {
+                this.loader = false;
+                this.visiblePagination = true;
+              }
+    })
   }
 
   nextPage() {
@@ -96,7 +97,7 @@ export class AltBlocksComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.getAltBlocksSubscription) { this.getAltBlocksSubscription.unsubscribe(); }
+    super.ngOnDestroy()
   }
 
 }

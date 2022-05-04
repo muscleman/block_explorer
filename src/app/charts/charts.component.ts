@@ -1,14 +1,15 @@
-import {Component, OnInit, OnDestroy} from '@angular/core';
-import {Chart} from 'angular-highcharts';
-import {HttpService, MobileNavState} from '../http.service';
-import {Subscription} from 'rxjs/Subscription';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Chart } from 'angular-highcharts';
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
+import { take } from 'rxjs/operators';
+import { HttpService, MobileNavState } from '../http.service';
 
 @Component({
     selector: 'app-charts',
     templateUrl: './charts.component.html',
     styleUrls: ['./charts.component.scss']
 })
-export class ChartsComponent implements OnInit, OnDestroy {
+export class ChartsComponent extends SubscriptionTracker implements OnInit, OnDestroy {
     navIsOpen: boolean;
     activeChart: string;
     period: string;
@@ -19,8 +20,6 @@ export class ChartsComponent implements OnInit, OnDestroy {
     previewDifficultyPoSChart: Chart;
     previewDifficultyPoWChart: Chart;
     previewConfirmTransactPerDayChart: Chart;
-
-    chartSubscription: Subscription;
     loader: boolean;
     InputArray: any;
     ArrayConfirmTransactPerDay: any;
@@ -29,6 +28,15 @@ export class ChartsComponent implements OnInit, OnDestroy {
     seriesData: any;
     searchIsOpen: boolean;
 
+    constructor(private httpService: HttpService,
+                private mobileNavState: MobileNavState) {
+        super()
+        this.navIsOpen = false;
+        this.loader = true;
+        this.searchIsOpen = false;
+        this.period = 'all';
+        this.activeChart = 'all';
+    }
 
     static drawChart(activeChart, titleText, yText, chartsData): Chart {
         return new Chart({
@@ -109,7 +117,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
                     },
                 },
             },
-            navigator: false,
+            // navigator: false,
             rangeSelector: {
                 enabled: yText !== 'Transactions',
                 // enabled: false,
@@ -129,16 +137,6 @@ export class ChartsComponent implements OnInit, OnDestroy {
         this.searchIsOpen = $event;
     }
 
-    constructor(
-        private httpService: HttpService,
-        private mobileNavState: MobileNavState) {
-        this.navIsOpen = false;
-        this.loader = true;
-        this.searchIsOpen = false;
-        this.period = 'all';
-        this.activeChart = 'all';
-    }
-
     ngOnInit() {
         this.mobileNavState.change.subscribe(navIsOpen => {
             this.navIsOpen = navIsOpen;
@@ -148,11 +146,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
 
     initialChart() {
         this.loader = true;
-        if (this.chartSubscription) {
-            this.chartSubscription.unsubscribe();
-        }
-
-        this.chartSubscription = this.httpService.getChart(this.activeChart, this.period).subscribe(data => {
+        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+            next: (data) => {
                 this.InputArray = data;
                 this.ArrayConfirmTransactPerDay = data[0];
                 this.ArrayHashrate = data[1];
@@ -166,7 +161,6 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 const previewDifficulty120 = [];
 
                 const previewConfirmTransactPerDay = [];
-
 
                 // AvgBlockSize, AvgTransPerBlock
                 for (let i = 0; i < this.InputArray.length; i++) {
@@ -252,16 +246,16 @@ export class ChartsComponent implements OnInit, OnDestroy {
                         {type: 'area', name: 'Transactions', data: previewConfirmTransactPerDay}
                     ]
                 );
-            }, err => console.log('error chart', err),
-            () => {
-                this.loader = false;
-            });
+            },
+            error: (err) => console.log('error chart', err),
+            complete: () => {
+                this.loader = false
+                }
+        })
     }
 
     ngOnDestroy() {
-        if (this.chartSubscription) {
-            this.chartSubscription.unsubscribe();
-        }
+        super.ngOnDestroy()
     }
 
 }

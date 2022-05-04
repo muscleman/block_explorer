@@ -1,25 +1,34 @@
-import {Component, OnInit} from '@angular/core';
-import {HttpService, MobileNavState} from '../../http.service';
-import {Chart} from 'angular-highcharts';
-import {Subscription} from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { HttpService, MobileNavState } from '../../http.service';
+import { Chart } from 'angular-highcharts';
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
+import { take } from 'rxjs/operators';
 
 @Component({
     selector: 'app-confirm-trans-per-day',
     templateUrl: './confirm-trans-per-day.component.html',
     styleUrls: ['./confirm-trans-per-day.component.scss']
 })
-export class ConfirmTransPerDayComponent implements OnInit {
+export class ConfirmTransPerDayComponent extends SubscriptionTracker implements OnInit {
     navIsOpen: boolean;
     searchIsOpen: boolean;
 
     activeChart: string;
     period: string;
     InputArray: any;
-    chartSubscription: Subscription;
     ConfirmTransactPerDayChart: Chart;
     seriesData: any;
     loader: boolean;
-
+    
+    constructor(private httpService: HttpService, 
+                private mobileNavState: MobileNavState) {
+        super()
+        this.navIsOpen = false;
+        this.searchIsOpen = false;
+        this.activeChart = 'ConfirmTransactPerDay';
+        this.period = 'all';
+    }
+    
     static drawChart(activeChart, titleText, yText, chartsData): Chart {
         return new Chart({
             chart: {
@@ -109,7 +118,7 @@ export class ConfirmTransPerDayComponent implements OnInit {
             },
             navigator: {enabled: true},
             rangeSelector: {
-                height: 60,
+                // height: 60,
                 enabled: true,
                 allButtonsEnabled: true,
                 buttons: [{
@@ -194,7 +203,7 @@ export class ConfirmTransPerDayComponent implements OnInit {
                             width: 575
                         },
                         rangeSelector: {
-                            height: 100,
+                            // height: 100,
                             inputPosition: {
                                 align: 'left',
                             }
@@ -209,12 +218,6 @@ export class ConfirmTransPerDayComponent implements OnInit {
         this.searchIsOpen = $event;
     }
 
-    constructor(private httpService: HttpService, private mobileNavState: MobileNavState) {
-        this.navIsOpen = false;
-        this.searchIsOpen = false;
-        this.activeChart = 'ConfirmTransactPerDay';
-        this.period = 'all';
-    }
 
     ngOnInit() {
         this.mobileNavState.change.subscribe(navIsOpen => {
@@ -223,30 +226,32 @@ export class ConfirmTransPerDayComponent implements OnInit {
         this.initialChart();
     }
 
+    ngOnDestroy(): void {
+        super.ngOnDestroy()
+    }
+
     initialChart() {
         this.loader = true;
-        if (this.chartSubscription) {
-            this.chartSubscription.unsubscribe();
-        }
-        this.chartSubscription = this.httpService.getChart(this.activeChart, this.period).subscribe(data => {
-            this.InputArray = data;
+        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+                next: (data) => {
+                        this.InputArray = data
+                        const ConfirmTransactPerDay = [];
+                        for (let i = 1; i < this.InputArray.length; i++) {
+                            ConfirmTransactPerDay.push([this.InputArray[i].at * 1000, this.InputArray[i].sum_trc])
+                        }
+                        this.ConfirmTransactPerDayChart = ConfirmTransPerDayComponent.drawChart(
+                            false,
+                            'Confirmed Transactions Per Day',
+                            'Transactions',
+                            this.seriesData = [
+                                {type: 'area', name: 'Transactions', data: ConfirmTransactPerDay}
+                            ]
+                        )
 
-            const ConfirmTransactPerDay = [];
-            for (let i = 1; i < this.InputArray.length; i++) {
-                ConfirmTransactPerDay.push([this.InputArray[i].at * 1000, this.InputArray[i].sum_trc]);
-            }
-            this.ConfirmTransactPerDayChart = ConfirmTransPerDayComponent.drawChart(
-                false,
-                'Confirmed Transactions Per Day',
-                'Transactions',
-                this.seriesData = [
-                    {type: 'area', name: 'Transactions', data: ConfirmTransactPerDay}
-                ]
-            );
-
-        }, err => console.log(err), () => {
-            this.loader = false;
-        });
+                }, 
+                error: (err) => console.log(err), 
+                complete: () => this.loader = false
+            })
     }
 
 }

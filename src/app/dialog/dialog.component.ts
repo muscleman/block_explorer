@@ -1,6 +1,15 @@
-import {HostListener, Component, OnInit, Input, Output, EventEmitter, AfterViewInit,
-  OnDestroy, Renderer2, OnChanges, ElementRef} from '@angular/core';
-import {trigger, style, animate, transition} from '@angular/animations';
+import { HostListener, 
+         Component, 
+         OnInit, 
+         Input, 
+         Output, 
+         EventEmitter, 
+         AfterViewInit,
+         OnDestroy, 
+         Renderer2, 
+         OnChanges, 
+         ElementRef } from '@angular/core';
+import { trigger, style, animate, transition } from '@angular/animations';
 
 @Component({
   selector: 'app-dialog',
