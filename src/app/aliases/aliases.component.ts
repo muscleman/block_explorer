@@ -89,16 +89,18 @@ export class AliasesComponent extends SubscriptionTracker implements OnInit, OnD
       this.lastSendAliases.count = this.count;
       this.lastSendAliases.search = this.search;
       this.loader = true;
-      this.httpService.getAliases(this.offset, this.count, this.search).pipe(take(1)).subscribe(
-        data => {
-          this.Aliases = data;
-        }, err => {
-          console.log('getAliases', err);
-        }, () => {
-          this.loader = false;
-          this.visiblePagination = true;
-        }
-      );
+      this.httpService.getAliases(this.offset, this.count, this.search).pipe(take(1)).subscribe({
+                next: (data) => {
+                  this.Aliases = data;
+                }, 
+                error: (err) => {
+                  console.log('getAliases', err);
+                }, 
+                complete: () => {
+                  this.loader = false;
+                  this.visiblePagination = true;
+                }
+              })
     }
     this.mobileNavState.change.subscribe(navIsOpen => {
       this.navIsOpen = navIsOpen;

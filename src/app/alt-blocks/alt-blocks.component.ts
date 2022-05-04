@@ -65,20 +65,21 @@ export class AltBlocksComponent extends SubscriptionTracker implements OnInit, O
     this.limitList = +this.count;
     this.cookieService.set('setCountAltBlocksCookie', this.limitList);
     this.offset = (this.currentPage - 1) * this.count;
-    this.httpService.getAltBlocks(this.offset, this.count).pipe(take(1)).subscribe(
-      data => {
-        this.altBlocks = data;
-        for (let i = 0; i < this.altBlocks.length; i++) {
-          this.altBlocks[i].transactions_details = JSON.parse(this.altBlocks[i].transactions_details);
-        }
-      }, err => {
-        console.log('getAltBlocks', err);
-      },
-      () => {
-        this.loader = false;
-        this.visiblePagination = true;
-      }
-    );
+    this.httpService.getAltBlocks(this.offset, this.count).pipe(take(1)).subscribe({
+              next: (data) => {
+                this.altBlocks = data;
+                for (let i = 0; i < this.altBlocks.length; i++) {
+                  this.altBlocks[i].transactions_details = JSON.parse(this.altBlocks[i].transactions_details);
+                }
+              }, 
+              error: (err) => {
+                console.log('getAltBlocks', err);
+              },
+              complete: () => {
+                this.loader = false;
+                this.visiblePagination = true;
+              }
+    })
   }
 
   nextPage() {

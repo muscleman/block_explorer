@@ -31,69 +31,70 @@ export class SearchComponent extends SubscriptionTracker implements OnInit, OnDe
 
 
   searchFunc() {
-    this.isVisibleInput = !this.isVisibleInput;
-    this.isVisible.emit(this.isVisibleInput);
-    this.setSearch = this.setSearch.replace(/\s/g, '');
+    this.isVisibleInput = !this.isVisibleInput
+    this.isVisible.emit(this.isVisibleInput)
+    this.setSearch = this.setSearch.replace(/\s/g, '')
     if (this.setSearch) {
-      this.httpService.searchById(this.setSearch).pipe(take(1)).subscribe(
-        data => {
-          this.searchId = data;
+      this.httpService.searchById(this.setSearch).pipe(take(1)).subscribe({
+        next: (data) => {
+          this.searchId = data
 
           if ((this.setSearch >= 1) && (this.setSearch <= 9999999)) {
-            this.httpService.getBlockDetails(this.setSearch, 1).pipe(take(1)).subscribe(
-              result => {
-                this.resultBlockSearch = result;
-              },
-              err => console.error(err),
-              () => {
-                if (this.resultBlockSearch.length) {
-                  this.router.navigate(['/block', this.resultBlockSearch[0].id], { relativeTo: this.route})
-                } else if (!this.resultBlockSearch.length) {
-                  this.searchNotFound = true;
-                  this.ngZone.runOutsideAngular(() => {
-                    setTimeout(() => {
-                      this.ngZone.run(() => {
-                        this.searchNotFound = false;
-                      });
-                    }, 2000);
-                  });
-                }
-              }
-            );
+            this.httpService.getBlockDetails(this.setSearch, 1).pipe(take(1)).subscribe({
+                    next: (result) => {
+                      this.resultBlockSearch = result
+                    },
+                    error: (err) => console.error(err),
+                    complete: () => {
+                      if (this.resultBlockSearch.length) {
+                        this.router.navigate(['/block', this.resultBlockSearch[0].id], { relativeTo: this.route})
+                      } else if (!this.resultBlockSearch.length) {
+                        this.searchNotFound = true
+                        this.ngZone.runOutsideAngular(() => {
+                          setTimeout(() => {
+                            this.ngZone.run(() => {
+                              this.searchNotFound = false
+                            });
+                          }, 2000)
+                        });
+                      }
+                    }
+            })
           } else {
             if (this.searchId.result) {
               if (this.searchId.result === 'tx') {
-                this.router.navigate(['/transaction', this.setSearch], {relativeTo: this.route});
+                this.router.navigate(['/transaction', this.setSearch], {relativeTo: this.route})
               } else if (this.searchId.result === 'block') {
-                this.router.navigate(['/block', this.setSearch], {relativeTo: this.route});
+                this.router.navigate(['/block', this.setSearch], {relativeTo: this.route})
               } else if (this.searchId.result === 'alt_block') {
-                this.router.navigate(['/alt-blocks', this.setSearch], {relativeTo: this.route});
+                this.router.navigate(['/alt-blocks', this.setSearch], {relativeTo: this.route})
               } else if (this.searchId.result === 'alias') {
-                  this.router.navigate(['/aliases', this.setSearch], {relativeTo: this.route});
+                  this.router.navigate(['/aliases', this.setSearch], {relativeTo: this.route})
               } else {
-                this.searchNotFound = true;
+                this.searchNotFound = true
                 this.ngZone.runOutsideAngular(() => {
                   setTimeout(() => {
                     this.ngZone.run(() => {
-                      this.searchNotFound = false;
+                      this.searchNotFound = false
                     });
-                  }, 2000);
+                  }, 2000)
                 });
               }
             } else {
-              this.searchNotFound = true;
+              this.searchNotFound = true
               this.ngZone.runOutsideAngular(() => {
                 setTimeout(() => {
                   this.ngZone.run(() => {
-                    this.searchNotFound = false;
+                    this.searchNotFound = false
                   });
-                }, 2000);
+                }, 2000)
               });
             }
           }
         },
-        err => console.error(err)
-      );
+        error: (err) => console.error(err),
+        complete: () => {}
+      })
     }
   }
 
