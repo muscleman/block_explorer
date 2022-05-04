@@ -3,6 +3,7 @@ import { HttpService, MobileNavState } from '../http.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
 import { take } from 'rxjs/operators';
+import JSONbig from 'json-bigint'
 
 @Component({
   selector: 'app-transaction',
@@ -90,10 +91,10 @@ export class TransactionComponent extends SubscriptionTracker implements OnInit,
                                           this.blockHash = this.Transaction.block_hash;
                                           this.blockTimestamp = this.Transaction.block_timestamp;
 
-                                          this.ExtraItem = JSON.parse(this.Transaction.extra);
+                                          this.ExtraItem = JSONbig.parse(this.Transaction.extra);
 
                                           // Inputs
-                                          this.Inputs = JSON.parse(this.Transaction.ins);
+                                          this.Inputs = JSONbig.parse(this.Transaction.ins);
 
                                           for (let inConn of this.Inputs) {
                                             let amount = inConn.amount.toString();
@@ -108,9 +109,9 @@ export class TransactionComponent extends SubscriptionTracker implements OnInit,
                                           }
 
                                           // Outputs
-                                          this.Outputs = JSON.parse(this.Transaction.outs);
+                                          this.Outputs = JSONbig.parse(this.Transaction.outs);
                                           if (this.Transaction.attachments) {
-                                            this.attachments = JSON.parse(this.Transaction.attachments);
+                                            this.attachments = JSONbig.parse(this.Transaction.attachments);
                                           }
                                         } else if (this.keeperBlock === -1) {
                                           // transaction unconfirmed

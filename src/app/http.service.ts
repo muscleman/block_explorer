@@ -4,7 +4,6 @@ import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@a
 import { Observable, Subject } from 'rxjs';
 import { environment } from '../environments/environment';
 import { map } from 'rxjs/operators';
-import { BaseBlock } from './models/avg-block-size';
 
 @Injectable()
 export class HttpService {
@@ -14,7 +13,8 @@ export class HttpService {
 
     constructor(protected httpClient: HttpClient, private router: Router) {
         if (!environment.production) {
-            this.serverApi = 'http://localhost:8008';
+            //this.serverApi = 'http://localhost:8008';
+            this.serverApi = 'http://10.0.0.13:8008'
         }
 
         function getTimeOut() {
