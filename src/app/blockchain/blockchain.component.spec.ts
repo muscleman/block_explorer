@@ -6,6 +6,7 @@ import { HttpService, MobileNavState } from './../http.service';
 import { CookieService } from 'ngx-cookie-service';
 import { OrderPipe, BitNumberPipe, TruncatePipe, TimeAgoPipe, MoneyParsePipe, HashPowerConverterPipe } from '.././pipes.pipe';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 
 describe('BlockchainComponent', () => {
@@ -31,6 +32,9 @@ describe('BlockchainComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule
+      ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
       ]
     })
     .compileComponents();

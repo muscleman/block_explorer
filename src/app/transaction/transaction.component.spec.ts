@@ -9,6 +9,7 @@ import { BitNumberPipe, HashPowerConverterPipe, MoneyParsePipe } from '.././pipe
 
 import { TransactionComponent } from './transaction.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('TransactionComponent', () => {
   let component: TransactionComponent;
@@ -31,8 +32,9 @@ describe('TransactionComponent', () => {
         HttpClientTestingModule,
         RouterTestingModule
       ],
-
-
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
+      ]
     })
     .compileComponents();
   }));

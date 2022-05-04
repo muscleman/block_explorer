@@ -4,6 +4,7 @@ import { AltBlocksComponent } from './alt-blocks.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpService, MobileNavState } from './../http.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('AltBlocksComponent', () => {
   let component: AltBlocksComponent;
@@ -21,6 +22,9 @@ describe('AltBlocksComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule
+      ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
       ]
     })
     .compileComponents();

@@ -4,6 +4,7 @@ import { HttpService, MobileNavState } from './../http.service';
 import { DialogComponent } from './../dialog/dialog.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('AliasesComponent', () => {
   let component: AliasesComponent;
@@ -23,6 +24,9 @@ describe('AliasesComponent', () => {
         HttpClientTestingModule,
         RouterTestingModule
       ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
+      ]
     })
       .compileComponents();
   }));

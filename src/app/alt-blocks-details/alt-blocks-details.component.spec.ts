@@ -7,6 +7,7 @@ import { BitNumberPipe, HashPowerConverterPipe, MoneyParsePipe } from '.././pipe
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpService, MobileNavState } from './../http.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('AltBlocksDetailsComponent', () => {
   let component: AltBlocksDetailsComponent;
@@ -28,6 +29,9 @@ describe('AltBlocksDetailsComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule
+      ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
       ]
     })
     .compileComponents();

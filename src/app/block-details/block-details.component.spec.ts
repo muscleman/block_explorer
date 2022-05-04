@@ -5,6 +5,7 @@ import { BitNumberPipe, HashPowerConverterPipe, MoneyParsePipe } from '.././pipe
 import { HttpService, MobileNavState } from './../http.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing'
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('BlockDetailsComponent', () => {
   let component: BlockDetailsComponent;
@@ -26,6 +27,9 @@ describe('BlockDetailsComponent', () => {
         HttpClientTestingModule,
         RouterTestingModule
       ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
+      ]
     })
     .compileComponents();
   }));
