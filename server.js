@@ -1011,19 +1011,17 @@ async function syncTransactions() {
             var localTr = localBl.transactions_details.splice(0, 1)[0]
             try {
                 let response = await get_tx_details(localTr.id)
-                let data = response.data
-                var extra = data.result.tx_info.extra
-
-                for (var item in extra) {
-                    if (extra[item].type === 'alias_info') {
-                        var arr = extra[item].short_view.split('-->')
+                //let data = response.data
+                // var extra = data.result.tx_info.extra
+                let tx_info = response.data.result.tx_info
+                for (var item of tx_info.extra) {
+                    if (item.type === 'alias_info') {
+                        var arr = item.short_view.split('-->')
                         var aliasName = arr[0]
                         var aliasAddress = arr[1]
-                        var aliasComment = parseComment(
-                            extra[item].datails_view
-                        )
+                        var aliasComment = parseComment(item.datails_view)
                         var aliasTrackingKey = parseTrackingKey(
-                            extra[item].datails_view
+                            item.datails_view
                         )
                         var aliasBlock = localBl.height
                         var aliasTransaction = localTr.id
@@ -1043,30 +1041,34 @@ async function syncTransactions() {
                     }
                 }
 
-                var ins = data.result.tx_info.ins
-                for (var item in ins) {
-                    if (ins[item].global_indexes) {
+                //var ins = data.result.tx_info.ins
+                for (var item of tx_info.ins) {
+                    if (item.global_indexes) {
                         localBl.tr_out.push({
-                            amount: ins[item].amount,
-                            i: ins[item].global_indexes[0]
+                            amount: item.amount,
+                            i: item.global_indexes[0]
                         })
                     }
                 }
+                console.log('here')
 
                 db.run('begin transaction')
                 let sql = `REPLACE INTO transactions VALUES (
-                        '${data.result.tx_info.keeper_block}',
-                        '${data.result.tx_info.id}',
-                        '${data.result.tx_info.amount.toString()}',
-                        ${data.result.tx_info.blob_size},
-                        '${JSON.stringify(data.result.tx_info.extra)}',
-                        '${data.result.tx_info.fee.toString()}',
-                        '${JSON.stringify(data.result.tx_info.ins)}',
-                        '${JSON.stringify(data.result.tx_info.outs)}',
-                        '${data.result.tx_info.pub_key}',
-                        ${data.result.tx_info.timestamp},
-                        '${JSON.stringify(data.result.tx_info.attachments)}'
+                        '${tx_info.keeper_block}',
+                        '${tx_info.id}',
+                        '${tx_info.amount.toString()}',
+                        ${tx_info.blob_size},
+                        '${JSON.stringify(tx_info.extra)}',
+                        '${tx_info.fee.toString()}',
+                        '${JSON.stringify(tx_info.ins)}',
+                        '${JSON.stringify(tx_info.outs)}',
+                        '${tx_info.pub_key}',
+                        ${tx_info.timestamp},
+                        '${JSON.stringify(
+                            !!tx_info.attachments ? tx_info.attachments : {}
+                        )}'
                 );`
+                console.log(sql)
                 await query(sql, 'run')
                 db.run('commit')
                 await delay(serverTimeout)
