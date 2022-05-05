@@ -1431,8 +1431,12 @@ function syncBlocks() {
 const query = (command, method = 'all') => {
     return new Promise((resolve, reject) => {
         db[method](command, (error, result) => {
-            if (error) reject(error)
-            else resolve(result)
+            if (error) {
+				reject(error)
+			}
+            else {
+				resolve(result)
+			}
         })
     })
 }
@@ -1440,8 +1444,9 @@ const query = (command, method = 'all') => {
 async function syncAltBlocks() {
     statusSyncAltBlocks = true
     try {
-        await query('DELETE FROm alt_block', 'run')
-        const data = await get_alt_blocks_details()
+        await query('DELETE FROM alt_blocks', 'run')
+        let response = await get_alt_blocks_details(0, countAltBlocksServer)
+		let data = response.data
         db.serialize(async function () {
             var stmt = db.prepare(
                 'INSERT INTO alt_blocks VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
