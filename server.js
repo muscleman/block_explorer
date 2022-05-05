@@ -800,7 +800,6 @@ async function syncPool() {
                             let data = response.data
                             if (data.result && data.result.txs) {
                                 db.serialize(function () {
-                                    log('begin transaction, syncPool')
                                     db.run('begin transaction')
                                     var stmt = db.prepare(
                                         'INSERT INTO pool VALUES (?,?,?,?)'
@@ -815,7 +814,6 @@ async function syncPool() {
                                     }
                                     stmt.finalize()
                                     db.run('commit')
-                                    log('commit, syncPool')
                                     statusSyncPool = false
                                 })
                             } else {
@@ -968,7 +966,6 @@ async function syncTransactions() {
                         '${localBl.miner_text_info}',
                         '${localBl.pow_seed}');`
                 await query(sql, 'run')
-                log('commit, syncTransactions')
                 db.run('commit')
                 lastBlock = block_array.splice(0, 1)[0]
                 log(
@@ -991,8 +988,6 @@ async function syncTransactions() {
                         localOut.i
                     )
                     let data2 = response.data
-
-                    log('begin transaction else side, syncTransactions')
                     db.run('begin transaction')
                     let sql = `REPLACE INTO out_info VALUES ('${localOut.amount.toString()}', 
                                 ${localOut.i}, 
@@ -1000,7 +995,6 @@ async function syncTransactions() {
                                 ${localBl.height});`
                     await query(sql, 'run')
                     localBl.tr_out.splice(0, 1)
-                    log('commit else side, syncTransactions')
                     db.run('commit')
                     log('tr_out left = ' + localBl.tr_out.length)
                     await delay(serverTimeout)
@@ -1059,6 +1053,7 @@ async function syncTransactions() {
                     }
                 }
 
+                db.run('begin transaction')
                 let sql = `REPLACE INTO transactions VALUES (
                         '${data.result.tx_info.keeper_block}',
                         '${data.result.tx_info.id}',
@@ -1073,6 +1068,7 @@ async function syncTransactions() {
                         '${JSON.stringify(data.result.tx_info.attachments)}'
                 );`
                 await query(sql, 'run')
+                db.run('commit')
                 await delay(serverTimeout)
                 log(
                     'BLOCKS: db =' +
@@ -1084,8 +1080,7 @@ async function syncTransactions() {
                 )
                 await syncTransactions()
             } catch (error) {
-                log('syncTransactions() get_tx_details ERROR')
-                log(data)
+                log('syncTransactions() get_tx_details ERROR', error)
                 now_blocks_sync = false
             }
         }
@@ -1145,8 +1140,7 @@ async function syncBlocks() {
             await syncBlocks()
         }
     } catch (error) {
-        log('syncBlocks() get_blocks_details ERROR')
-        log(error)
+        log('syncBlocks() get_blocks_details ERROR', error)
         now_blocks_sync = false
     }
 }
@@ -1203,7 +1197,7 @@ async function syncAltBlocks() {
             if (rows) countAltBlocksDB = rows.height
             statusSyncAltBlocks = false
         } catch (error) {
-            log(error)
+            log('syncAltBlocks() ERROR', error)
         }
     } catch (error) {
         statusSyncAltBlocks = false
