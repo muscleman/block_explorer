@@ -63,8 +63,31 @@ function get_info(callback) {
         })
 }
 
-function get_blocks_details(start, count, callback) {
-    axios({
+// function get_blocks_details(start, count, callback) {
+//     axios({
+//         method: 'get',
+//         url: api,
+//         data: {
+//             method: 'get_blocks_details',
+//             params: {
+//                 height_start: parseInt(start ? start : 0),
+//                 count: parseInt(count ? count : 10),
+//                 ignore_transactions: false
+//             }
+//         },
+//         transformResponse: [(data) => JSONbig.parse(data)]
+//     })
+//         .then(function (response) {
+//             callback(200, response.data)
+//         })
+//         .catch(function (error) {
+//             log('get_blocks_details failed', error)
+//             callback(400, error)
+//         })
+// }
+
+function get_blocks_details(start, count) {
+    return axios({
         method: 'get',
         url: api,
         data: {
@@ -77,13 +100,6 @@ function get_blocks_details(start, count, callback) {
         },
         transformResponse: [(data) => JSONbig.parse(data)]
     })
-        .then(function (response) {
-            callback(200, response.data)
-        })
-        .catch(function (error) {
-            log('get_blocks_details failed', error)
-            callback(400, error)
-        })
 }
 
 // function get_alt_blocks_details(offset, count, callback) {
@@ -109,7 +125,7 @@ function get_blocks_details(start, count, callback) {
 // }
 
 const get_alt_blocks_details = (offset, count) => {
-    let options = {
+    return axios({
         method: 'get',
         url: api,
         data: {
@@ -120,8 +136,7 @@ const get_alt_blocks_details = (offset, count) => {
             }
         },
         transformResponse: [(data) => JSONbig.parse(data)]
-    }
-    return axios(options)
+    })
 }
 
 function get_all_pool_tx_list(callback) {
@@ -1432,11 +1447,10 @@ const query = (command, method = 'all') => {
     return new Promise((resolve, reject) => {
         db[method](command, (error, result) => {
             if (error) {
-				reject(error)
-			}
-            else {
-				resolve(result)
-			}
+                reject(error)
+            } else {
+                resolve(result)
+            }
         })
     })
 }
@@ -1446,7 +1460,7 @@ async function syncAltBlocks() {
     try {
         await query('DELETE FROM alt_blocks', 'run')
         let response = await get_alt_blocks_details(0, countAltBlocksServer)
-		let data = response.data
+        let data = response.data
         db.serialize(async function () {
             var stmt = db.prepare(
                 'INSERT INTO alt_blocks VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
