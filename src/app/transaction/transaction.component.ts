@@ -150,8 +150,10 @@ export class TransactionComponent
                                     relativeTo: this.route
                                 })
                             }
+                            this.transactionNotFount = false
                         },
-                        complete: () => (this.transactionNotFount = true)
+                        error: (err) => (this.transactionNotFount = true),
+                        complete: () => {}
                     })
                 )
             }),
