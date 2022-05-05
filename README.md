@@ -1,28 +1,49 @@
 # Blockexplorer
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.1.2.
+## Frontend
 
-## Development server
+Edit source/environments.ts and source/environments.prod.ts
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+```
+export const environment = {
+  production: false,
+  backend: 'http://10.0.0.13:8008',
+  documentionApi: 'https://docs.zano.org'
+};
+```
 
-## Code scaffolding
+1. `backend` FQDN of your backend with the `front_port`
+2. `documentationApi` Address used to build documentation explanations
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|module`.
+#### Run Frontend development Server
 
-## Build
+```
+ng serve -o
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
+## Backend Server
 
-## Running unit tests
+Edit `config.json`
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+```
+{
+    "api":"http://10.0.0.13:12111",
+    "front_port":"8008"}
+```
 
-## Running end-to-end tests
+1. `"api"` The address of your zano node
+2. `"front_port"` Port of backend API
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-Before running the tests make sure you are serving the app via `ng serve`.
+#### Run Backend Server
 
-## Further help
+```
+node server.js
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+## Build Frontend For Production
+
+Following command will produce a `dist` folder that you can copy to your a web server
+
+```
+ng build --configuration production
+```
