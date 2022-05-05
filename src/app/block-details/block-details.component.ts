@@ -96,8 +96,9 @@ export class BlockDetailsComponent
                             this.Block.this_block_fee_median
                         this.EffectiveFeeMedian =
                             this.Block.effective_fee_median
+                        this.BlockNotFound = false
                     },
-                    complete: () => {
+                    error: (err) => {
                         this.BlockNotFound = true
                     }
                 })
