@@ -1264,92 +1264,180 @@ function syncTransactions(success) {
     }
 }
 
-function syncBlocks() {
-    var count = blockInfo.height - lastBlock.height + 1
-    if (count > 100) {
-        count = 100
-    }
-    if (count < 0) {
-        count = 1
-    }
-    get_blocks_details(lastBlock.height + 1, count, function (code2, body2) {
-        if (code2 === 200) {
-            var localBlocks =
-                body2.result && body2.result.blocks ? body2.result.blocks : []
-            if (localBlocks.length && lastBlock.id === localBlocks[0].prev_id) {
-                block_array = localBlocks
-                syncTransactions(function () {
-                    if (lastBlock.height >= blockInfo.height - 1) {
-                        now_blocks_sync = false
-                    } else {
-                        setTimeout(function () {
-                            syncBlocks()
+// function syncBlocks() {
+//     var count = blockInfo.height - lastBlock.height + 1
+//     if (count > 100) {
+//         count = 100
+//     }
+//     if (count < 0) {
+//         count = 1
+//     }
+//     get_blocks_details(lastBlock.height + 1, count, function (code2, body2) {
+//         if (code2 === 200) {
+//             var localBlocks =
+//                 body2.result && body2.result.blocks ? body2.result.blocks : []
+//             if (localBlocks.length && lastBlock.id === localBlocks[0].prev_id) {
+//                 block_array = localBlocks
+//                 syncTransactions(function () {
+//                     if (lastBlock.height >= blockInfo.height - 1) {
+//                         now_blocks_sync = false
+//                     } else {
+//                         setTimeout(function () {
+//                             syncBlocks()
+//                         }, serverTimeout)
+//                     }
+//                 })
+//             } else {
+//                 db.serialize(function () {
+//                     var deleteCount = 100
+//                     log(
+//                         'height > ' +
+//                             (parseInt(lastBlock.height) - deleteCount) +
+//                             ' deleted'
+//                     )
+//                     db.run(
+//                         'DELETE FROM blocks WHERE height > ' +
+//                             (parseInt(lastBlock.height) - deleteCount) +
+//                             ';'
+//                     )
+//                     db.run(
+//                         'DELETE FROM charts WHERE height > ' +
+//                             (parseInt(lastBlock.height) - deleteCount) +
+//                             ';'
+//                     )
+//                     db.run(
+//                         'DELETE FROM transactions WHERE keeper_block > ' +
+//                             (parseInt(lastBlock.height) - deleteCount) +
+//                             ';'
+//                     )
+//                     db.run(
+//                         'UPDATE aliases SET enabled=1 WHERE transact IN (SELECT transact FROM aliases WHERE alias IN (select alias from aliases where block > ' +
+//                             (parseInt(lastBlock.height) - deleteCount) +
+//                             ' ) AND enabled == 0 GROUP BY alias);'
+//                     )
+//                     db.run(
+//                         'DELETE FROM aliases WHERE block > ' +
+//                             (parseInt(lastBlock.height) - deleteCount) +
+//                             ';'
+//                     )
+//                     db.run(
+//                         'DELETE FROM out_info WHERE block > ' +
+//                             (parseInt(lastBlock.height) - deleteCount) +
+//                             ';'
+//                     )
+//                     db.get(
+//                         'SELECT * FROM blocks WHERE  height=(SELECT MAX(height) FROM blocks)',
+//                         [],
+//                         function (err, row) {
+//                             if (row) {
+//                                 lastBlock = row
+//                             } else {
+//                                 lastBlock = {
+//                                     height: -1,
+//                                     id: '0000000000000000000000000000000000000000000000000000000000000000'
+//                                 }
+//                             }
+//                             setTimeout(function () {
+//                                 syncBlocks()
+//                             }, serverTimeout)
+//                         }
+//                     )
+//                 })
+//             }
+//         } else {
+//             log('syncBlocks() get_blocks_details ERROR')
+//             log(body2)
+//             now_blocks_sync = false
+//         }
+//     })
+// }
+
+async function syncBlocks() {
+    try {
+        var count = blockInfo.height - lastBlock.height + 1
+        if (count > 100) {
+            count = 100
+        }
+        if (count < 0) {
+            count = 1
+        }
+        let response = await get_blocks_details(lastBlock.height + 1, count)
+        let body2 = response.data
+        var localBlocks =
+            body2.result && body2.result.blocks ? body2.result.blocks : []
+        if (localBlocks.length && lastBlock.id === localBlocks[0].prev_id) {
+            block_array = localBlocks
+            syncTransactions(function () {
+                if (lastBlock.height >= blockInfo.height - 1) {
+                    now_blocks_sync = false
+                } else {
+                    setTimeout(async function () {
+                        await syncBlocks()
+                    }, serverTimeout)
+                }
+            })
+        } else {
+            db.serialize(function () {
+                var deleteCount = 100
+                log(
+                    'height > ' +
+                        (parseInt(lastBlock.height) - deleteCount) +
+                        ' deleted'
+                )
+                db.run(
+                    'DELETE FROM blocks WHERE height > ' +
+                        (parseInt(lastBlock.height) - deleteCount) +
+                        ';'
+                )
+                db.run(
+                    'DELETE FROM charts WHERE height > ' +
+                        (parseInt(lastBlock.height) - deleteCount) +
+                        ';'
+                )
+                db.run(
+                    'DELETE FROM transactions WHERE keeper_block > ' +
+                        (parseInt(lastBlock.height) - deleteCount) +
+                        ';'
+                )
+                db.run(
+                    'UPDATE aliases SET enabled=1 WHERE transact IN (SELECT transact FROM aliases WHERE alias IN (select alias from aliases where block > ' +
+                        (parseInt(lastBlock.height) - deleteCount) +
+                        ' ) AND enabled == 0 GROUP BY alias);'
+                )
+                db.run(
+                    'DELETE FROM aliases WHERE block > ' +
+                        (parseInt(lastBlock.height) - deleteCount) +
+                        ';'
+                )
+                db.run(
+                    'DELETE FROM out_info WHERE block > ' +
+                        (parseInt(lastBlock.height) - deleteCount) +
+                        ';'
+                )
+                db.get(
+                    'SELECT * FROM blocks WHERE  height=(SELECT MAX(height) FROM blocks)',
+                    [],
+                    function (err, row) {
+                        if (row) {
+                            lastBlock = row
+                        } else {
+                            lastBlock = {
+                                height: -1,
+                                id: '0000000000000000000000000000000000000000000000000000000000000000'
+                            }
+                        }
+                        setTimeout(async function () {
+                            await syncBlocks()
                         }, serverTimeout)
                     }
-                })
-            } else {
-                db.serialize(function () {
-                    var deleteCount = 100
-                    log(
-                        'height > ' +
-                            (parseInt(lastBlock.height) - deleteCount) +
-                            ' deleted'
-                    )
-                    db.run(
-                        'DELETE FROM blocks WHERE height > ' +
-                            (parseInt(lastBlock.height) - deleteCount) +
-                            ';'
-                    )
-                    db.run(
-                        'DELETE FROM charts WHERE height > ' +
-                            (parseInt(lastBlock.height) - deleteCount) +
-                            ';'
-                    )
-                    db.run(
-                        'DELETE FROM transactions WHERE keeper_block > ' +
-                            (parseInt(lastBlock.height) - deleteCount) +
-                            ';'
-                    )
-                    db.run(
-                        'UPDATE aliases SET enabled=1 WHERE transact IN (SELECT transact FROM aliases WHERE alias IN (select alias from aliases where block > ' +
-                            (parseInt(lastBlock.height) - deleteCount) +
-                            ' ) AND enabled == 0 GROUP BY alias);'
-                    )
-                    db.run(
-                        'DELETE FROM aliases WHERE block > ' +
-                            (parseInt(lastBlock.height) - deleteCount) +
-                            ';'
-                    )
-                    db.run(
-                        'DELETE FROM out_info WHERE block > ' +
-                            (parseInt(lastBlock.height) - deleteCount) +
-                            ';'
-                    )
-                    db.get(
-                        'SELECT * FROM blocks WHERE  height=(SELECT MAX(height) FROM blocks)',
-                        [],
-                        function (err, row) {
-                            if (row) {
-                                lastBlock = row
-                            } else {
-                                lastBlock = {
-                                    height: -1,
-                                    id: '0000000000000000000000000000000000000000000000000000000000000000'
-                                }
-                            }
-                            setTimeout(function () {
-                                syncBlocks()
-                            }, serverTimeout)
-                        }
-                    )
-                })
-            }
-        } else {
-            log('syncBlocks() get_blocks_details ERROR')
-            log(body2)
-            now_blocks_sync = false
+                )
+            })
         }
-    })
+    } catch (error) {
+        log('syncBlocks() get_blocks_details ERROR')
+        log(error)
+        now_blocks_sync = false
+    }
 }
 
 // function syncAltBlocks() {
@@ -1592,7 +1680,7 @@ function getInfoTimer() {
                             countAliasesServer
                     )
                     now_blocks_sync = true
-                    syncBlocks()
+                    await syncBlocks()
                 }
 
                 setTimeout(function () {
