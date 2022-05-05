@@ -1,34 +1,39 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpService, MobileNavState } from '../../http.service';
-import { Chart } from 'angular-highcharts';
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
-import { take } from 'rxjs/operators';
+import { Component, OnInit } from '@angular/core'
+import { HttpService, MobileNavState } from '../../http.service'
+import { Chart } from 'angular-highcharts'
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
+import { take } from 'rxjs/operators'
 
 @Component({
     selector: 'app-confirm-trans-per-day',
     templateUrl: './confirm-trans-per-day.component.html',
     styleUrls: ['./confirm-trans-per-day.component.scss']
 })
-export class ConfirmTransPerDayComponent extends SubscriptionTracker implements OnInit {
-    navIsOpen: boolean;
-    searchIsOpen: boolean;
+export class ConfirmTransPerDayComponent
+    extends SubscriptionTracker
+    implements OnInit
+{
+    navIsOpen: boolean
+    searchIsOpen: boolean
 
-    activeChart: string;
-    period: string;
-    InputArray: any;
-    ConfirmTransactPerDayChart: Chart;
-    seriesData: any;
-    loader: boolean;
-    
-    constructor(private httpService: HttpService, 
-                private mobileNavState: MobileNavState) {
+    activeChart: string
+    period: string
+    InputArray: any
+    ConfirmTransactPerDayChart: Chart
+    seriesData: any
+    loader: boolean
+
+    constructor(
+        private httpService: HttpService,
+        private mobileNavState: MobileNavState
+    ) {
         super()
-        this.navIsOpen = false;
-        this.searchIsOpen = false;
-        this.activeChart = 'ConfirmTransactPerDay';
-        this.period = 'all';
+        this.navIsOpen = false
+        this.searchIsOpen = false
+        this.activeChart = 'ConfirmTransactPerDay'
+        this.period = 'all'
     }
-    
+
     static drawChart(activeChart, titleText, yText, chartsData): Chart {
         return new Chart({
             chart: {
@@ -36,22 +41,22 @@ export class ConfirmTransPerDayComponent extends SubscriptionTracker implements 
                 backgroundColor: '#2b3768',
                 height: 700,
                 width: null,
-                zoomType: 'x',
+                zoomType: 'x'
             },
             title: {
                 text: titleText,
                 style: {
                     color: '#fff',
-                    fontSize: '18px',
+                    fontSize: '18px'
                 }
             },
-            credits: {enabled: false},
-            exporting: {enabled: false},
+            credits: { enabled: false },
+            exporting: { enabled: false },
             legend: {
                 enabled: true,
                 itemStyle: {
                     color: '#9eaacc',
-                    fontFamily: 'Helvetica',
+                    fontFamily: 'Helvetica'
                 },
                 itemHoverStyle: {
                     color: '#9eaacc'
@@ -64,8 +69,16 @@ export class ConfirmTransPerDayComponent extends SubscriptionTracker implements 
                 xDateFormat: '%Y/%m/%d %H:%M',
 
                 pointFormatter: function () {
-                    const point = this;
-                    return '<b style="color:' + point.color + '">\u25CF</b> ' + point.series.name + ': <b>' + (point.y) + '</b><br/>';
+                    const point = this
+                    return (
+                        '<b style="color:' +
+                        point.color +
+                        '">\u25CF</b> ' +
+                        point.series.name +
+                        ': <b>' +
+                        point.y +
+                        '</b><br/>'
+                    )
                 }
             },
             plotOptions: {
@@ -99,7 +112,7 @@ export class ConfirmTransPerDayComponent extends SubscriptionTracker implements 
                         fontSize: '11px'
                     },
                     format: '{value:%d.%b}'
-                },
+                }
             },
             yAxis: {
                 floor: 0,
@@ -113,45 +126,52 @@ export class ConfirmTransPerDayComponent extends SubscriptionTracker implements 
                     style: {
                         color: '#9eaacc',
                         fontSize: '11px'
-                    },
-                },
+                    }
+                }
             },
-            navigator: {enabled: true},
+            navigator: { enabled: true },
             rangeSelector: {
                 // height: 60,
                 enabled: true,
                 allButtonsEnabled: true,
-                buttons: [{
-                    type: 'day',
-                    count: 1,
-                    text: 'day'
-                }, {
-                    type: 'week',
-                    count: 1,
-                    text: 'week'
-                }, {
-                    type: 'month',
-                    count: 1,
-                    text: 'month'
-                }, {
-                    type: 'month',
-                    count: 3,
-                    text: 'quarter'
-                }, {
-                    type: 'year',
-                    count: 1,
-                    text: 'year'
-                }, {
-                    type: 'all',
-                    text: 'all'
-                }],
+                buttons: [
+                    {
+                        type: 'day',
+                        count: 1,
+                        text: 'day'
+                    },
+                    {
+                        type: 'week',
+                        count: 1,
+                        text: 'week'
+                    },
+                    {
+                        type: 'month',
+                        count: 1,
+                        text: 'month'
+                    },
+                    {
+                        type: 'month',
+                        count: 3,
+                        text: 'quarter'
+                    },
+                    {
+                        type: 'year',
+                        count: 1,
+                        text: 'year'
+                    },
+                    {
+                        type: 'all',
+                        text: 'all'
+                    }
+                ],
                 selected: 1,
                 labelStyle: {
-                    color: '#9eaacc',
+                    color: '#9eaacc'
                 },
                 inputStyle: {
                     color: '#9eaacc',
-                    backgroundColor: '#2b3768',
+                    backgroundColor: '#2b3768'
                 },
                 inputBoxBorderColor: '#9eaacc',
                 inputBoxWidth: 120,
@@ -164,11 +184,11 @@ export class ConfirmTransPerDayComponent extends SubscriptionTracker implements 
                         fontSize: '14px',
                         fontFamily: 'Helvetica',
                         fontWeight: '300',
-                        opacity: 1,
+                        opacity: 1
                     },
                     states: {
                         hover: {
-                            fill: '#32439f',
+                            fill: '#32439f'
                         },
                         select: {
                             fill: '#32439f',
@@ -177,7 +197,7 @@ export class ConfirmTransPerDayComponent extends SubscriptionTracker implements 
                             style: {
                                 color: '#fff',
                                 opacity: 1,
-                                fontWeight: 400,
+                                fontWeight: 400
                             }
                         },
                         disabled: {
@@ -186,44 +206,45 @@ export class ConfirmTransPerDayComponent extends SubscriptionTracker implements 
                                 color: '#fff',
                                 opacity: 0.5,
                                 fontWeight: 400,
-                                cursor: 'default',
+                                cursor: 'default'
                             }
                         }
                     }
-                },
+                }
             },
             series: chartsData,
             responsive: {
-                rules: [{
-                    condition: {
-                        maxWidth: 575,
-                    },
-                    chartOptions: {
-                        chart: {
-                            width: 575
+                rules: [
+                    {
+                        condition: {
+                            maxWidth: 575
                         },
-                        rangeSelector: {
-                            // height: 100,
-                            inputPosition: {
-                                align: 'left',
+                        chartOptions: {
+                            chart: {
+                                width: 575
+                            },
+                            rangeSelector: {
+                                // height: 100,
+                                inputPosition: {
+                                    align: 'left'
+                                }
                             }
                         }
                     }
-                }]
+                ]
             }
-        });
+        })
     }
 
     onIsVisible($event): void {
-        this.searchIsOpen = $event;
+        this.searchIsOpen = $event
     }
 
-
     ngOnInit() {
-        this.mobileNavState.change.subscribe(navIsOpen => {
-            this.navIsOpen = navIsOpen;
-        });
-        this.initialChart();
+        this.mobileNavState.change.subscribe((navIsOpen) => {
+            this.navIsOpen = navIsOpen
+        })
+        this.initialChart()
     }
 
     ngOnDestroy(): void {
@@ -231,27 +252,36 @@ export class ConfirmTransPerDayComponent extends SubscriptionTracker implements 
     }
 
     initialChart() {
-        this.loader = true;
-        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+        this.loader = true
+        this.httpService
+            .getChart(this.activeChart, this.period)
+            .pipe(take(1))
+            .subscribe({
                 next: (data) => {
-                        this.InputArray = data
-                        const ConfirmTransactPerDay = [];
-                        for (let i = 1; i < this.InputArray.length; i++) {
-                            ConfirmTransactPerDay.push([this.InputArray[i].at * 1000, this.InputArray[i].sum_trc])
-                        }
-                        this.ConfirmTransactPerDayChart = ConfirmTransPerDayComponent.drawChart(
+                    this.InputArray = data
+                    const ConfirmTransactPerDay = []
+                    for (let i = 1; i < this.InputArray.length; i++) {
+                        ConfirmTransactPerDay.push([
+                            this.InputArray[i].at * 1000,
+                            this.InputArray[i].sum_trc
+                        ])
+                    }
+                    this.ConfirmTransactPerDayChart =
+                        ConfirmTransPerDayComponent.drawChart(
                             false,
                             'Confirmed Transactions Per Day',
                             'Transactions',
-                            this.seriesData = [
-                                {type: 'area', name: 'Transactions', data: ConfirmTransactPerDay}
-                            ]
+                            (this.seriesData = [
+                                {
+                                    type: 'area',
+                                    name: 'Transactions',
+                                    data: ConfirmTransactPerDay
+                                }
+                            ])
                         )
-
-                }, 
-                error: (err) => console.log(err), 
-                complete: () => this.loader = false
+                },
+                error: (err) => console.log(err),
+                complete: () => (this.loader = false)
             })
     }
-
 }

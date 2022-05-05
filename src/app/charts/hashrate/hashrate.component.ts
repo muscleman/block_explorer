@@ -1,8 +1,8 @@
-import {Component, OnInit} from '@angular/core';
-import {HttpService, MobileNavState} from '../../http.service';
-import {Chart} from 'angular-highcharts';
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker';
-import { take } from 'rxjs/operators';
+import { Component, OnInit } from '@angular/core'
+import { HttpService, MobileNavState } from '../../http.service'
+import { Chart } from 'angular-highcharts'
+import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
+import { take } from 'rxjs/operators'
 
 @Component({
     selector: 'app-hashrate',
@@ -10,22 +10,24 @@ import { take } from 'rxjs/operators';
     styleUrls: ['./hashrate.component.scss']
 })
 export class HashrateComponent extends SubscriptionTracker implements OnInit {
-    navIsOpen: boolean;
-    searchIsOpen: boolean;
-    activeChart: string;
-    period: string;
-    InputArray: any;
-    hashRateChart: Chart;
-    seriesData: any;
-    loader: boolean;
+    navIsOpen: boolean
+    searchIsOpen: boolean
+    activeChart: string
+    period: string
+    InputArray: any
+    hashRateChart: Chart
+    seriesData: any
+    loader: boolean
 
-    constructor(private httpService: HttpService, 
-                private mobileNavState: MobileNavState) {
+    constructor(
+        private httpService: HttpService,
+        private mobileNavState: MobileNavState
+    ) {
         super()
-        this.navIsOpen = false;
-        this.searchIsOpen = false;
-        this.activeChart = 'hashRate';
-        this.period = 'all';
+        this.navIsOpen = false
+        this.searchIsOpen = false
+        this.activeChart = 'hashRate'
+        this.period = 'all'
     }
 
     static drawChart(activeChart, titleText, yText, chartsData): Chart {
@@ -35,22 +37,22 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
                 backgroundColor: '#2b3768',
                 height: 700,
                 width: null,
-                zoomType: 'x',
+                zoomType: 'x'
             },
             title: {
                 text: titleText,
                 style: {
                     color: '#fff',
-                    fontSize: '18px',
+                    fontSize: '18px'
                 }
             },
-            credits: {enabled: false},
-            exporting: {enabled: false},
+            credits: { enabled: false },
+            exporting: { enabled: false },
             legend: {
                 enabled: true,
                 itemStyle: {
                     color: '#9eaacc',
-                    fontFamily: 'Helvetica',
+                    fontFamily: 'Helvetica'
                 },
                 itemHoverStyle: {
                     color: '#9eaacc'
@@ -62,10 +64,18 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
                 xDateFormat: '%Y/%m/%d %H:%M',
 
                 pointFormatter: function () {
-                    const point = this;
-                    return '<b style="color:' + point.color + '">\u25CF</b> ' + point.series.name + ': <b>' + (point.y) + '</b><br/>';
+                    const point = this
+                    return (
+                        '<b style="color:' +
+                        point.color +
+                        '">\u25CF</b> ' +
+                        point.series.name +
+                        ': <b>' +
+                        point.y +
+                        '</b><br/>'
+                    )
                 },
-                shared: true,
+                shared: true
                 // crosshairs: true,
             },
             plotOptions: {
@@ -99,7 +109,7 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
                         fontSize: '11px'
                     },
                     format: '{value:%d.%b}'
-                },
+                }
             },
             yAxis: {
                 floor: 0,
@@ -113,45 +123,52 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
                     style: {
                         color: '#9eaacc',
                         fontSize: '11px'
-                    },
-                },
+                    }
+                }
             },
-            navigator: {enabled: true},
+            navigator: { enabled: true },
             rangeSelector: {
                 // height: 60,
                 enabled: true,
                 allButtonsEnabled: true,
-                buttons: [{
-                    type: 'day',
-                    count: 1,
-                    text: 'day'
-                }, {
-                    type: 'week',
-                    count: 1,
-                    text: 'week'
-                }, {
-                    type: 'month',
-                    count: 1,
-                    text: 'month'
-                }, {
-                    type: 'month',
-                    count: 3,
-                    text: 'quarter'
-                }, {
-                    type: 'year',
-                    count: 1,
-                    text: 'year'
-                }, {
-                    type: 'all',
-                    text: 'all'
-                }],
+                buttons: [
+                    {
+                        type: 'day',
+                        count: 1,
+                        text: 'day'
+                    },
+                    {
+                        type: 'week',
+                        count: 1,
+                        text: 'week'
+                    },
+                    {
+                        type: 'month',
+                        count: 1,
+                        text: 'month'
+                    },
+                    {
+                        type: 'month',
+                        count: 3,
+                        text: 'quarter'
+                    },
+                    {
+                        type: 'year',
+                        count: 1,
+                        text: 'year'
+                    },
+                    {
+                        type: 'all',
+                        text: 'all'
+                    }
+                ],
                 selected: 1,
                 labelStyle: {
-                    color: '#9eaacc',
+                    color: '#9eaacc'
                 },
                 inputStyle: {
                     color: '#9eaacc',
-                    backgroundColor: '#2b3768',
+                    backgroundColor: '#2b3768'
                 },
                 inputBoxBorderColor: '#9eaacc',
                 inputBoxWidth: 120,
@@ -164,11 +181,11 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
                         fontSize: '14px',
                         fontFamily: 'Helvetica',
                         fontWeight: '300',
-                        opacity: 1,
+                        opacity: 1
                     },
                     states: {
                         hover: {
-                            fill: '#32439f',
+                            fill: '#32439f'
                         },
                         select: {
                             fill: '#32439f',
@@ -177,7 +194,7 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
                             style: {
                                 color: '#fff',
                                 opacity: 1,
-                                fontWeight: 400,
+                                fontWeight: 400
                             }
                         },
                         disabled: {
@@ -186,43 +203,45 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
                                 color: '#fff',
                                 opacity: 0.5,
                                 fontWeight: 400,
-                                cursor: 'default',
+                                cursor: 'default'
                             }
                         }
                     }
-                },
+                }
             },
             series: chartsData,
             responsive: {
-                rules: [{
-                    condition: {
-                        maxWidth: 575,
-                    },
-                    chartOptions: {
-                        chart: {
-                            width: 575
+                rules: [
+                    {
+                        condition: {
+                            maxWidth: 575
                         },
-                        rangeSelector: {
-                            // height: 100,
-                            inputPosition: {
-                                align: 'left',
+                        chartOptions: {
+                            chart: {
+                                width: 575
+                            },
+                            rangeSelector: {
+                                // height: 100,
+                                inputPosition: {
+                                    align: 'left'
+                                }
                             }
                         }
                     }
-                }]
+                ]
             }
-        });
+        })
     }
 
     onIsVisible($event): void {
-        this.searchIsOpen = $event;
+        this.searchIsOpen = $event
     }
 
     ngOnInit() {
-        this.mobileNavState.change.subscribe(navIsOpen => {
-            this.navIsOpen = navIsOpen;
-        });
-        this.initialChart();
+        this.mobileNavState.change.subscribe((navIsOpen) => {
+            this.navIsOpen = navIsOpen
+        })
+        this.initialChart()
     }
 
     ngOnDestroy(): void {
@@ -230,34 +249,58 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
     }
 
     initialChart() {
-        this.loader = true;
-        this.httpService.getChart(this.activeChart, this.period).pipe(take(1)).subscribe({
+        this.loader = true
+        this.httpService
+            .getChart(this.activeChart, this.period)
+            .pipe(take(1))
+            .subscribe({
                 next: (data) => {
-                        this.InputArray = data;
-                        const difficultyArray = [];
-                        const hashRate100 = [];
-                        const hashRate400 = [];
-                        for (let i = 1; i < this.InputArray.length; i++) {
-                            hashRate100.push([this.InputArray[i].at * 1000, parseInt(this.InputArray[i].h100, 10)]);
-                            hashRate400.push([this.InputArray[i].at * 1000,  parseInt(this.InputArray[i].h400, 10)]);
-                            difficultyArray.push([this.InputArray[i].at * 1000, parseInt(this.InputArray[i].d120, 10)]);
-                        }
-                        this.hashRateChart = HashrateComponent.drawChart(
-                            false,
-                            'Hash Rate',
-                            'Hash Rate H/s',
-                            this.seriesData = [
-                                {type: 'area', name: 'Hash Rate 100', data: hashRate100, color: '#28B463'},
-                                {type: 'area', name: 'Hash Rate 400', data: hashRate400, color: '#3498DB'},
-                                {type: 'area', name: 'Difficulty', data: difficultyArray, color: '#d2fe46'}
-                            ]
-                        );
-                }, 
-                error: (err) => console.log(err), 
-                complete: () => this.loader = false
+                    this.InputArray = data
+                    const difficultyArray = []
+                    const hashRate100 = []
+                    const hashRate400 = []
+                    for (let i = 1; i < this.InputArray.length; i++) {
+                        hashRate100.push([
+                            this.InputArray[i].at * 1000,
+                            parseInt(this.InputArray[i].h100, 10)
+                        ])
+                        hashRate400.push([
+                            this.InputArray[i].at * 1000,
+                            parseInt(this.InputArray[i].h400, 10)
+                        ])
+                        difficultyArray.push([
+                            this.InputArray[i].at * 1000,
+                            parseInt(this.InputArray[i].d120, 10)
+                        ])
+                    }
+                    this.hashRateChart = HashrateComponent.drawChart(
+                        false,
+                        'Hash Rate',
+                        'Hash Rate H/s',
+                        (this.seriesData = [
+                            {
+                                type: 'area',
+                                name: 'Hash Rate 100',
+                                data: hashRate100,
+                                color: '#28B463'
+                            },
+                            {
+                                type: 'area',
+                                name: 'Hash Rate 400',
+                                data: hashRate400,
+                                color: '#3498DB'
+                            },
+                            {
+                                type: 'area',
+                                name: 'Difficulty',
+                                data: difficultyArray,
+                                color: '#d2fe46'
+                            }
+                        ])
+                    )
+                },
+                error: (err) => console.log(err),
+                complete: () => (this.loader = false)
             })
     }
 }
-
-
-
