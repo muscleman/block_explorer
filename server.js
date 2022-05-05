@@ -44,8 +44,8 @@ function log(msg) {
     )
 }
 
-function get_info(callback) {
-    axios({
+const get_info = () => {
+    return axios({
         method: 'get',
         url: api,
         data: {
@@ -54,13 +54,6 @@ function get_info(callback) {
         },
         transformResponse: [(data) => JSONbig.parse(data)]
     })
-        .then(function (response) {
-            callback(200, response.data)
-        })
-        .catch(function (error) {
-            log('get_info failed', error)
-            callback(400, error)
-        })
 }
 
 // function get_blocks_details(start, count, callback) {
@@ -86,7 +79,7 @@ function get_info(callback) {
 //         })
 // }
 
-function get_blocks_details(start, count) {
+const get_blocks_details = (start, count) => {
     return axios({
         method: 'get',
         url: api,
@@ -139,8 +132,26 @@ const get_alt_blocks_details = (offset, count) => {
     })
 }
 
-function get_all_pool_tx_list(callback) {
-    axios({
+// function get_all_pool_tx_list(callback) {
+//     axios({
+//         method: 'get',
+//         url: api,
+//         data: {
+//             method: 'get_all_pool_tx_list'
+//         },
+//         transformResponse: [(data) => JSONbig.parse(data)]
+//     })
+//         .then(function (response) {
+//             callback(200, response.data)
+//         })
+//         .catch(function (error) {
+//             log('get_all_pool_tx_list failed', error)
+//             callback(400, error)
+//         })
+// }
+
+const get_all_pool_tx_list = () => {
+    return axios({
         method: 'get',
         url: api,
         data: {
@@ -148,17 +159,29 @@ function get_all_pool_tx_list(callback) {
         },
         transformResponse: [(data) => JSONbig.parse(data)]
     })
-        .then(function (response) {
-            callback(200, response.data)
-        })
-        .catch(function (error) {
-            log('get_all_pool_tx_list failed', error)
-            callback(400, error)
-        })
 }
 
-function get_pool_txs_details(ids, callback) {
-    axios({
+// function get_pool_txs_details(ids, callback) {
+//     axios({
+//         method: 'get',
+//         url: api,
+//         data: {
+//             method: 'get_pool_txs_details',
+//             params: { ids: ids }
+//         },
+//         transformResponse: [(data) => JSONbig.parse(data)]
+//     })
+//         .then(function (response) {
+//             callback(200, response.data)
+//         })
+//         .catch(function (error) {
+//             log('get_pool_txs_details failed', error)
+//             callback(400, error)
+//         })
+// }
+
+const get_pool_txs_details = (ids) => {
+    return axios({
         method: 'get',
         url: api,
         data: {
@@ -167,17 +190,29 @@ function get_pool_txs_details(ids, callback) {
         },
         transformResponse: [(data) => JSONbig.parse(data)]
     })
-        .then(function (response) {
-            callback(200, response.data)
-        })
-        .catch(function (error) {
-            log('get_pool_txs_details failed', error)
-            callback(400, error)
-        })
 }
 
-function get_tx_details(tx_hash, callback) {
-    axios({
+// function get_tx_details(tx_hash, callback) {
+//     axios({
+//         method: 'get',
+//         url: api,
+//         data: {
+//             method: 'get_tx_details',
+//             params: { tx_hash: tx_hash }
+//         },
+//         transformResponse: [(data) => JSONbig.parse(data)]
+//     })
+//         .then(function (response) {
+//             callback(200, response.data)
+//         })
+//         .catch(function (error) {
+//             log('get_tx_details failed', error)
+//             callback(400, error)
+//         })
+// }
+
+const get_tx_details = (tx_hash) => {
+    return axios({
         method: 'get',
         url: api,
         data: {
@@ -186,16 +221,28 @@ function get_tx_details(tx_hash, callback) {
         },
         transformResponse: [(data) => JSONbig.parse(data)]
     })
-        .then(function (response) {
-            callback(200, response.data)
-        })
-        .catch(function (error) {
-            log('get_tx_details failed', error)
-            callback(400, error)
-        })
 }
 
-function get_out_info(amount, i, callback) {
+// function get_out_info(amount, i, callback) {
+//     axios({
+//         method: 'get',
+//         url: api,
+//         data: {
+//             method: 'get_out_info',
+//             params: { amount: parseInt(amount), i: parseInt(i) }
+//         },
+//         transformResponse: [(data) => JSONbig.parse(data)]
+//     })
+//         .then(function (response) {
+//             callback(200, response.data)
+//         })
+//         .catch(function (error) {
+//             log('get_out_info failed', error)
+//             callback(400, error)
+//         })
+// }
+
+const get_out_info = (amount, i) => {
     axios({
         method: 'get',
         url: api,
@@ -205,13 +252,6 @@ function get_out_info(amount, i, callback) {
         },
         transformResponse: [(data) => JSONbig.parse(data)]
     })
-        .then(function (response) {
-            callback(200, response.data)
-        })
-        .catch(function (error) {
-            log('get_out_info failed', error)
-            callback(400, error)
-        })
 }
 
 app.get('/get_info', (req, res) => {
@@ -329,23 +369,21 @@ app.get('/get_tx_details/:tx_hash', (req, res) => {
             db.all(
                 'SELECT transactions.*, blocks.id as block_hash, blocks.timestamp as block_timestamp FROM transactions LEFT JOIN blocks ON transactions.keeper_block = blocks.height WHERE transactions.id == ? ;',
                 [tx_hash],
-                function (err, row) {
+                async function (err, row) {
                     if (row.length) {
                         res.send(JSON.stringify(row[0]))
                     } else {
-                        get_tx_details(tx_hash, function (code, data) {
-                            if (code === 200) {
-                                if (data.result !== undefined) {
-                                    res.send(
-                                        JSON.stringify(data.result.tx_info)
-                                    )
-                                } else {
-                                    res.send("Error. Need 'tx_hash' param")
-                                }
+                        try {
+                            let response = await get_tx_details(tx_hash)
+                            let data = response.data
+                            if (data.result !== undefined) {
+                                res.send(JSON.stringify(data.result.tx_info))
                             } else {
                                 res.send("Error. Need 'tx_hash' param")
                             }
-                        })
+                        } catch (error) {
+                            res.send("Error. Need 'tx_hash' param")
+                        }
                     }
                 }
             )
@@ -353,24 +391,43 @@ app.get('/get_tx_details/:tx_hash', (req, res) => {
     }
 })
 
-app.get('/get_out_info/:amount/:i', (req, res) => {
+// app.get('/get_out_info/:amount/:i', (req, res) => {
+//     let amount = req.params.amount
+//     let i = req.params.i
+
+//     if (amount !== undefined && i !== undefined) {
+//         db.get(
+//             'SELECT * FROM out_info WHERE amount = ? AND i = ?',
+//             [amount, i],
+//             function (err, row) {
+//                 if (row === undefined) {
+//                     get_out_info(amount, i, function (code, data) {
+//                         res.send(JSON.stringify({ tx_id: data.result.tx_id }))
+//                     })
+//                 } else {
+//                     res.send(JSON.stringify(row))
+//                 }
+//             }
+//         )
+//     }
+// })
+
+app.get('/get_out_info/:amount/:i', async (req, res) => {
     let amount = req.params.amount
     let i = req.params.i
 
     if (amount !== undefined && i !== undefined) {
-        db.get(
-            'SELECT * FROM out_info WHERE amount = ? AND i = ?',
-            [amount, i],
-            function (err, row) {
-                if (row === undefined) {
-                    get_out_info(amount, i, function (code, data) {
-                        res.send(JSON.stringify({ tx_id: data.result.tx_id }))
-                    })
-                } else {
-                    res.send(JSON.stringify(row))
-                }
-            }
+        let row = await query(
+            `SELECT * FROM out_info WHERE amount = ${amount} AND i = ${i}`,
+            'get'
         )
+        if (row === undefined) {
+            let response = await get_out_info(amount, i)
+            let data = response.data
+            res.send(JSON.stringify({ tx_id: data.result.tx_id }))
+        } else {
+            res.send(JSON.stringify(row))
+        }
     }
 })
 
@@ -581,100 +638,63 @@ app.get('/get_chart/:chart/:period', (req, res) => {
 })
 
 // Search
-app.get('/search_by_id/:id', (req, res) => {
+app.get('/search_by_id/:id', async (req, res) => {
     let id = req.params.id.toLowerCase()
-    console.log(id)
     if (id) {
-        db.get(
-            'SELECT * FROM blocks WHERE id == ? ;',
-            [id],
-            function (err, row) {
+        let row = await query(`SELECT * FROM blocks WHERE id == ${id} ;`, 'get')
+        if (row === undefined) {
+            let row = await query(
+                `SELECT * FROM alt_blocks WHERE hash == ${id} ;`,
+                'get'
+            )
+            if (row === undefined) {
+                let row = await query(
+                    `SELECT * FROM transactions WHERE id == ${id} ;`,
+                    'get'
+                )
                 if (row === undefined) {
-                    db.get(
-                        'SELECT * FROM alt_blocks WHERE hash == ? ;',
-                        [id],
-                        function (err, row) {
-                            if (row === undefined) {
-                                db.get(
-                                    'SELECT * FROM transactions WHERE id == ? ;',
-                                    [id],
-                                    function (err, row) {
-                                        if (row === undefined) {
-                                            get_tx_details(
-                                                id,
-                                                function (code, data) {
-                                                    if (code === 200) {
-                                                        if (data.result) {
-                                                            res.send(
-                                                                JSON.stringify({
-                                                                    result: 'tx'
-                                                                })
-                                                            )
-                                                        } else {
-                                                            db.all(
-                                                                "SELECT * FROM aliases WHERE enabled == 1 AND (alias LIKE '%" +
-                                                                    id +
-                                                                    "%' OR address LIKE '%" +
-                                                                    id +
-                                                                    "%' OR comment LIKE '%" +
-                                                                    id +
-                                                                    "%') ORDER BY block DESC limit ? offset ?",
-                                                                [1, 0],
-                                                                function (
-                                                                    err,
-                                                                    rows
-                                                                ) {
-                                                                    if (
-                                                                        rows.length >
-                                                                        0
-                                                                    ) {
-                                                                        res.send(
-                                                                            JSON.stringify(
-                                                                                {
-                                                                                    result: 'alias'
-                                                                                }
-                                                                            )
-                                                                        )
-                                                                    } else {
-                                                                        res.send(
-                                                                            JSON.stringify(
-                                                                                {
-                                                                                    result: 'NOT FOUND'
-                                                                                }
-                                                                            )
-                                                                        )
-                                                                    }
-                                                                }
-                                                            )
-                                                        }
-                                                    } else {
-                                                        res.send(
-                                                            JSON.stringify({
-                                                                result: 'NOT FOUND'
-                                                            })
-                                                        )
-                                                    }
-                                                }
-                                            )
-                                        } else {
-                                            res.send(
-                                                JSON.stringify({ result: 'tx' })
-                                            )
-                                        }
+                    try {
+                        let response = await get_tx_details(id)
+                        let data = response.data
+                        if (data.result) {
+                            res.send(JSON.stringify({ result: 'tx' }))
+                        } else {
+                            db.all(
+                                "SELECT * FROM aliases WHERE enabled == 1 AND (alias LIKE '%" +
+                                    id +
+                                    "%' OR address LIKE '%" +
+                                    id +
+                                    "%' OR comment LIKE '%" +
+                                    id +
+                                    "%') ORDER BY block DESC limit ? offset ?",
+                                [1, 0],
+                                function (err, rows) {
+                                    if (rows.length > 0) {
+                                        res.send(
+                                            JSON.stringify({ result: 'alias' })
+                                        )
+                                    } else {
+                                        res.send(
+                                            JSON.stringify({
+                                                result: 'NOT FOUND'
+                                            })
+                                        )
                                     }
-                                )
-                            } else {
-                                res.send(
-                                    JSON.stringify({ result: 'alt_block' })
-                                )
-                            }
+                                }
+                            )
                         }
-                    )
+                    } catch (error) {
+                        res.send(JSON.stringify({ result: 'NOT FOUND' }))
+                    }
                 } else {
-                    res.send(JSON.stringify({ result: 'block' }))
+                    res.send(JSON.stringify({ result: 'tx' }))
                 }
+            } else {
+                res.send(JSON.stringify({ result: 'alt_block' }))
             }
-        )
+        } else {
+            res.send(JSON.stringify({ result: 'block' }))
+        }
     }
 })
 
@@ -875,93 +895,88 @@ var pools_array = []
 
 var serverTimeout = 30
 
-function syncPool() {
-    statusSyncPool = true
-    countTrPoolServer = blockInfo.tx_pool_size
-    if (countTrPoolServer === 0) {
-        db.run('DELETE FROM pool')
-        statusSyncPool = false
-    } else {
-        get_all_pool_tx_list(function (code, data) {
-            if (code === 200) {
-                if (data.result.ids) {
-                    pools_array = data.result.ids ? data.result.ids : []
-                    db.serialize(function () {
-                        db.run(
-                            "DELETE FROM pool WHERE id NOT IN ( '" +
-                                pools_array.join("','") +
-                                "' )",
-                            function (err) {
-                                if (err) {
-                                    log('pool delete', err)
-                                }
-                            }
-                        )
-                    })
-
-                    db.all('SELECT id FROM pool', function (err, rows) {
-                        if (err) log('select id from pool', err)
-                        var new_ids = []
-                        for (var j = 0; j < pools_array.length; j++) {
-                            var find = false
-                            for (var i = 0; i < rows.length; i++) {
-                                if (pools_array[j] === rows[i].id) {
-                                    find = true
-                                    break
-                                } else {
-                                    log('pools_array[j] !== rows[i].id')
-                                }
-                            }
-                            if (!find) {
-                                new_ids.push(pools_array[j])
+async function syncPool() {
+    try {
+        statusSyncPool = true
+        countTrPoolServer = blockInfo.tx_pool_size
+        if (countTrPoolServer === 0) {
+            await query('DELETE FROM pool', 'run')
+            statusSyncPool = false
+        } else {
+            let response = await get_all_pool_tx_list()
+            const data = response.data
+            if (data.result.ids) {
+                pools_array = data.result.ids ? data.result.ids : []
+                try {
+                    await query(
+                        `DELETE FROM pool WHERE id NOT IN ( '${pools_array.join(
+                            "','"
+                        )}' )`,
+                        'run'
+                    )
+                } catch (error) {
+                    log('pool delete', error)
+                }
+                try {
+                    let rows = await query('SELECT id FROM pool', 'all')
+                    if (err) log('select id from pool', err)
+                    var new_ids = []
+                    for (var j = 0; j < pools_array.length; j++) {
+                        var find = false
+                        for (var i = 0; i < rows.length; i++) {
+                            if (pools_array[j] === rows[i].id) {
+                                find = true
+                                break
+                            } else {
+                                log('pools_array[j] !== rows[i].id')
                             }
                         }
+                        if (!find) {
+                            new_ids.push(pools_array[j])
+                        }
+                    }
 
-                        if (new_ids.length) {
-                            get_pool_txs_details(
-                                new_ids,
-                                function (code, data) {
-                                    if (code === 200) {
-                                        if (data.result && data.result.txs) {
-                                            db.serialize(function () {
-                                                db.run('begin transaction')
-                                                var stmt = db.prepare(
-                                                    'INSERT INTO pool VALUES (?,?,?,?)'
-                                                )
-                                                for (var x in data.result.txs) {
-                                                    stmt.run(
-                                                        data.result.txs[x]
-                                                            .blob_size,
-                                                        data.result.txs[x].fee,
-                                                        data.result.txs[x].id,
-                                                        data.result.txs[x]
-                                                            .timestamp
-                                                    )
-                                                }
-                                                stmt.finalize()
-                                                db.run('commit')
-                                                statusSyncPool = false
-                                            })
-                                        } else {
-                                            statusSyncPool = false
-                                        }
-                                    } else {
-                                        statusSyncPool = false
+                    if (new_ids.length) {
+                        try {
+                            let response = await get_pool_txs_details(new_ids)
+                            let data = response.data
+                            if (data.result && data.result.txs) {
+                                db.serialize(function () {
+                                    db.run('begin transaction')
+                                    var stmt = db.prepare(
+                                        'INSERT INTO pool VALUES (?,?,?,?)'
+                                    )
+                                    for (var x in data.result.txs) {
+                                        stmt.run(
+                                            data.result.txs[x].blob_size,
+                                            data.result.txs[x].fee,
+                                            data.result.txs[x].id,
+                                            data.result.txs[x].timestamp
+                                        )
                                     }
-                                }
-                            )
-                        } else {
+                                    stmt.finalize()
+                                    db.run('commit')
+                                    statusSyncPool = false
+                                })
+                            } else {
+                                statusSyncPool = false
+                            }
+                        } catch (error) {
                             statusSyncPool = false
                         }
-                    })
-                } else {
-                    statusSyncPool = false
+                    } else {
+                        statusSyncPool = false
+                    }
+                } catch (error) {
+                    log(error)
                 }
             } else {
-                db.run('DELETE FROM pool')
                 statusSyncPool = false
             }
-        })
+        }
+    } catch (error) {
+        query('DELETE FROm pool', 'run')
+        statusSyncPool = false
     }
 }
 
@@ -1000,7 +1015,7 @@ function parseTrackingKey(trackingKey) {
     }
 }
 
-function syncTransactions(success) {
+async function syncTransactions(success) {
     if (block_array.length === 0) {
         success()
     } else {
@@ -1127,139 +1142,138 @@ function syncTransactions(success) {
                         ' transaction left = ' +
                         localBl.tr_count
                 )
-                setTimeout(function () {
-                    syncTransactions(success)
+                setTimeout(async function () {
+                    await syncTransactions(success)
                 }, serverTimeout)
             } else {
                 var localOut = localBl.tr_out[0]
                 let localOutAmount = new BigNumber(localOut.amount).toNumber()
 
-                get_out_info(
-                    localOutAmount,
-                    localOut.i,
-                    function (code, data2) {
-                        if (code === 200) {
-                            db.serialize(function () {
-                                db.run('begin transaction')
-                                var stmt = db.prepare(
-                                    'REPLACE INTO out_info VALUES (?,?,?,?)'
-                                )
-                                stmt.run(
-                                    localOut.amount.toString(),
-                                    localOut.i,
-                                    data2.result.tx_id,
-                                    localBl.height
-                                )
-                                stmt.finalize()
-                                localBl.tr_out.splice(0, 1)
-                                db.run('commit')
-                            })
-                            log('tr_out left = ' + localBl.tr_out.length)
-                            setTimeout(function () {
-                                syncTransactions(success)
-                            }, serverTimeout)
-                        } else {
-                            log('syncTransactions() get_out_info ERROR')
-                            log(data2)
-                            now_blocks_sync = false
-                        }
-                    }
-                )
+                try {
+                    let response = await get_out_info(
+                        localOutAmount,
+                        localOut.i
+                    )
+                    let data2 = response.data
+                    db.serialize(function () {
+                        db.run('begin transaction')
+                        var stmt = db.prepare(
+                            'REPLACE INTO out_info VALUES (?,?,?,?)'
+                        )
+                        stmt.run(
+                            localOut.amount.toString(),
+                            localOut.i,
+                            data2.result.tx_id,
+                            localBl.height
+                        )
+                        stmt.finalize()
+                        localBl.tr_out.splice(0, 1)
+                        db.run('commit')
+                    })
+                    log('tr_out left = ' + localBl.tr_out.length)
+                    setTimeout(async function () {
+                        await syncTransactions(success)
+                    }, serverTimeout)
+                } catch (error) {
+                    log('syncTransactions() get_out_info ERROR')
+                    log(data2)
+                    now_blocks_sync = false
+                }
             }
         } else {
             if (localBl.tr_count === undefined)
                 localBl.tr_count = localBl.transactions_details.length
             if (localBl.tr_out === undefined) localBl.tr_out = []
             var localTr = localBl.transactions_details.splice(0, 1)[0]
-            get_tx_details(localTr.id, function (code, data) {
-                if (code === 200 && data.result.tx_info) {
-                    var extra = data.result.tx_info.extra
-                    var attachments = data.result.tx_info.attachments
+            try {
+                let response = await get_tx_details(localTr.id) //, function (code, data) {
+                let data = response.data
+                var extra = data.result.tx_info.extra
+                var attachments = data.result.tx_info.attachments
 
-                    for (var item in extra) {
-                        if (extra[item].type === 'alias_info') {
-                            db.serialize(function () {
-                                var arr = extra[item].short_view.split('-->')
-                                var aliasName = arr[0]
-                                var aliasAddress = arr[1]
-                                var aliasComment = parseComment(
-                                    extra[item].datails_view
-                                )
-                                var aliasTrackingKey = parseTrackingKey(
-                                    extra[item].datails_view
-                                )
-                                var aliasBlock = localBl.height
-                                var aliasTransaction = localTr.id
-                                db.run(
-                                    "UPDATE aliases SET enabled=0 WHERE alias == '" +
-                                        aliasName +
-                                        "';"
-                                )
-                                var stmt = db.prepare(
-                                    'REPLACE INTO aliases VALUES (?,?,?,?,?,?,?)'
-                                )
-                                stmt.run(
-                                    aliasName,
-                                    aliasAddress,
-                                    aliasComment,
-                                    aliasTrackingKey,
-                                    aliasBlock,
-                                    aliasTransaction,
-                                    1
-                                )
-                                stmt.finalize()
-                            })
-                        }
+                for (var item in extra) {
+                    if (extra[item].type === 'alias_info') {
+                        db.serialize(function () {
+                            var arr = extra[item].short_view.split('-->')
+                            var aliasName = arr[0]
+                            var aliasAddress = arr[1]
+                            var aliasComment = parseComment(
+                                extra[item].datails_view
+                            )
+                            var aliasTrackingKey = parseTrackingKey(
+                                extra[item].datails_view
+                            )
+                            var aliasBlock = localBl.height
+                            var aliasTransaction = localTr.id
+                            db.run(
+                                "UPDATE aliases SET enabled=0 WHERE alias == '" +
+                                    aliasName +
+                                    "';"
+                            )
+                            var stmt = db.prepare(
+                                'REPLACE INTO aliases VALUES (?,?,?,?,?,?,?)'
+                            )
+                            stmt.run(
+                                aliasName,
+                                aliasAddress,
+                                aliasComment,
+                                aliasTrackingKey,
+                                aliasBlock,
+                                aliasTransaction,
+                                1
+                            )
+                            stmt.finalize()
+                        })
                     }
-
-                    var ins = data.result.tx_info.ins
-                    for (var item in ins) {
-                        if (ins[item].global_indexes) {
-                            localBl.tr_out.push({
-                                amount: ins[item].amount,
-                                i: ins[item].global_indexes[0]
-                            })
-                        }
-                    }
-
-                    db.serialize(function () {
-                        db.run('begin transaction')
-                        var stmt = db.prepare(
-                            'REPLACE INTO transactions VALUES (?,?,?,?,?,?,?,?,?,?,?)'
-                        )
-                        stmt.run(
-                            data.result.tx_info.keeper_block,
-                            data.result.tx_info.id,
-                            data.result.tx_info.amount.toString(),
-                            data.result.tx_info.blob_size,
-                            JSON.stringify(data.result.tx_info.extra),
-                            data.result.tx_info.fee.toString(),
-                            JSON.stringify(data.result.tx_info.ins),
-                            JSON.stringify(data.result.tx_info.outs),
-                            data.result.tx_info.pub_key,
-                            data.result.tx_info.timestamp,
-                            JSON.stringify(data.result.tx_info.attachments)
-                        )
-                        stmt.finalize()
-                        db.run('commit')
-                    })
-                    setTimeout(function () {
-                        log(
-                            'BLOCKS: db =' +
-                                localBl.height +
-                                '/ server =' +
-                                blockInfo.height +
-                                ' transaction left = ' +
-                                localBl.transactions_details.length
-                        )
-                        syncTransactions(success)
-                    }, serverTimeout)
-                } else {
-                    log('syncTransactions() get_tx_details ERROR')
-                    log(data)
-                    now_blocks_sync = false
                 }
-            })
+
+                var ins = data.result.tx_info.ins
+                for (var item in ins) {
+                    if (ins[item].global_indexes) {
+                        localBl.tr_out.push({
+                            amount: ins[item].amount,
+                            i: ins[item].global_indexes[0]
+                        })
+                    }
+                }
+
+                db.serialize(function () {
+                    db.run('begin transaction')
+                    var stmt = db.prepare(
+                        'REPLACE INTO transactions VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+                    )
+                    stmt.run(
+                        data.result.tx_info.keeper_block,
+                        data.result.tx_info.id,
+                        data.result.tx_info.amount.toString(),
+                        data.result.tx_info.blob_size,
+                        JSON.stringify(data.result.tx_info.extra),
+                        data.result.tx_info.fee.toString(),
+                        JSON.stringify(data.result.tx_info.ins),
+                        JSON.stringify(data.result.tx_info.outs),
+                        data.result.tx_info.pub_key,
+                        data.result.tx_info.timestamp,
+                        JSON.stringify(data.result.tx_info.attachments)
+                    )
+                    stmt.finalize()
+                    db.run('commit')
+                })
+                setTimeout(async function () {
+                    log(
+                        'BLOCKS: db =' +
+                            localBl.height +
+                            '/ server =' +
+                            blockInfo.height +
+                            ' transaction left = ' +
+                            localBl.transactions_details.length
+                    )
+                    await syncTransactions(success)
+                }, serverTimeout)
+            } catch (error) {
+                log('syncTransactions() get_tx_details ERROR')
+                log(data)
+                now_blocks_sync = false
+            }
         }
     }
 }
