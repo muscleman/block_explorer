@@ -1011,8 +1011,6 @@ async function syncTransactions() {
             var localTr = localBl.transactions_details.splice(0, 1)[0]
             try {
                 let response = await get_tx_details(localTr.id)
-                //let data = response.data
-                // var extra = data.result.tx_info.extra
                 let tx_info = response.data.result.tx_info
                 for (var item of tx_info.extra) {
                     if (item.type === 'alias_info') {
@@ -1041,7 +1039,6 @@ async function syncTransactions() {
                     }
                 }
 
-                //var ins = data.result.tx_info.ins
                 for (var item of tx_info.ins) {
                     if (item.global_indexes) {
                         localBl.tr_out.push({
@@ -1050,7 +1047,6 @@ async function syncTransactions() {
                         })
                     }
                 }
-                console.log('here')
 
                 db.run('begin transaction')
                 let sql = `REPLACE INTO transactions VALUES (
@@ -1068,7 +1064,6 @@ async function syncTransactions() {
                             !!tx_info.attachments ? tx_info.attachments : {}
                         )}'
                 );`
-                console.log(sql)
                 await query(sql, 'run')
                 db.run('commit')
                 await delay(serverTimeout)
