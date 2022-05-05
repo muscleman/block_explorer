@@ -800,6 +800,7 @@ async function syncPool() {
                             let data = response.data
                             if (data.result && data.result.txs) {
                                 db.serialize(function () {
+                                    log('begin transaction, syncPool')
                                     db.run('begin transaction')
                                     var stmt = db.prepare(
                                         'INSERT INTO pool VALUES (?,?,?,?)'
@@ -814,6 +815,7 @@ async function syncPool() {
                                     }
                                     stmt.finalize()
                                     db.run('commit')
+                                    log('commit, syncPool')
                                     statusSyncPool = false
                                 })
                             } else {
@@ -881,6 +883,7 @@ async function syncTransactions(success) {
         if (localBl.transactions_details.length === 0) {
             if (localBl.tr_out.length === 0) {
                 db.serialize(async function () {
+                    log('begin transaction, syncTransactions')
                     db.run('begin transaction')
 
                     var hashrate100 = 0
@@ -985,6 +988,7 @@ async function syncTransactions(success) {
                     )
                     stmt.finalize()
                     lastBlock = block_array.splice(0, 1)[0]
+                    log('commit, syncTransactions')
                     db.run('commit')
                 })
                 log(
@@ -1008,6 +1012,7 @@ async function syncTransactions(success) {
                     )
                     let data2 = response.data
                     db.serialize(function () {
+                        log('begin transaction else side, syncTransactions')
                         db.run('begin transaction')
                         var stmt = db.prepare(
                             'REPLACE INTO out_info VALUES (?,?,?,?)'
@@ -1020,6 +1025,7 @@ async function syncTransactions(success) {
                         )
                         stmt.finalize()
                         localBl.tr_out.splice(0, 1)
+                        log('commit else side, syncTransactions')
                         db.run('commit')
                     })
                     log('tr_out left = ' + localBl.tr_out.length)
@@ -1088,6 +1094,7 @@ async function syncTransactions(success) {
                 }
 
                 db.serialize(function () {
+                    log('begin transaction 3rd, syncTransactions')
                     db.run('begin transaction')
                     var stmt = db.prepare(
                         'REPLACE INTO transactions VALUES (?,?,?,?,?,?,?,?,?,?,?)'
@@ -1106,6 +1113,7 @@ async function syncTransactions(success) {
                         JSON.stringify(data.result.tx_info.attachments)
                     )
                     stmt.finalize()
+                    log('commit 3rd, syncTransactions')
                     db.run('commit')
                 })
                 await delay(serverTimeout)
