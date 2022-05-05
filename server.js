@@ -761,9 +761,11 @@ async function syncPool() {
             statusSyncPool = false
         } else {
             let response = await get_all_pool_tx_list()
-            const data = response.data
-            if (data.result.ids) {
-                pools_array = data.result.ids ? data.result.ids : []
+            // const data = response.data
+            if (response.data.result.ids) {
+                pools_array = response.data.result.ids
+                    ? response.data.result.ids
+                    : []
                 try {
                     await query(
                         `DELETE FROM pool WHERE id NOT IN ( '${pools_array.join(
@@ -795,19 +797,21 @@ async function syncPool() {
                     if (new_ids.length) {
                         try {
                             let response = await get_pool_txs_details(new_ids)
-                            let data = response.data
-                            if (data.result && data.result.txs) {
+                            if (
+                                response.data.result &&
+                                response.data.result.txs
+                            ) {
                                 db.serialize(function () {
                                     db.run('begin transaction')
                                     var stmt = db.prepare(
                                         'INSERT INTO pool VALUES (?,?,?,?)'
                                     )
-                                    for (var x in data.result.txs) {
+                                    for (var tx of response.data.result.txs) {
                                         stmt.run(
-                                            data.result.txs[x].blob_size,
-                                            data.result.txs[x].fee,
-                                            data.result.txs[x].id,
-                                            data.result.txs[x].timestamp
+                                            tx.blob_size,
+                                            tx.fee,
+                                            tx.id,
+                                            tx.timestamp
                                         )
                                     }
                                     stmt.finalize()
