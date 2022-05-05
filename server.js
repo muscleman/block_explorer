@@ -883,8 +883,8 @@ async function syncTransactions(success) {
         if (localBl.transactions_details.length === 0) {
             if (localBl.tr_out.length === 0) {
                 db.serialize(async function () {
-                    log('begin transaction, syncTransactions')
-                    db.run('begin transaction')
+                    // log('begin transaction, syncTransactions')
+                    // db.run('begin transaction')
 
                     var hashrate100 = 0
                     var hashrate400 = 0
@@ -937,7 +937,7 @@ async function syncTransactions(success) {
                             )
                             stmtCharts.finalize()
                         } catch (error) {
-                            db.run('rollback')
+                            // db.run('rollback')
                             log('syncTransactions', error)
                         }
                     } else {
@@ -988,8 +988,8 @@ async function syncTransactions(success) {
                         localBl.pow_seed
                     )
                     stmt.finalize()
-                    log('commit, syncTransactions')
-                    db.run('commit')
+                    // log('commit, syncTransactions')
+                    // db.run('commit')
                     lastBlock = block_array.splice(0, 1)[0]
                 })
                 log(
@@ -1096,8 +1096,8 @@ async function syncTransactions(success) {
                 }
 
                 db.serialize(function () {
-                    log('begin transaction 3rd, syncTransactions')
-                    db.run('begin transaction')
+                    // log('begin transaction 3rd, syncTransactions')
+                    // db.run('begin transaction')
                     var stmt = db.prepare(
                         'REPLACE INTO transactions VALUES (?,?,?,?,?,?,?,?,?,?,?)'
                     )
@@ -1116,7 +1116,7 @@ async function syncTransactions(success) {
                     )
                     stmt.finalize()
                     log('commit 3rd, syncTransactions')
-                    db.run('commit')
+                    // db.run('commit')
                 })
                 await delay(serverTimeout)
                 log(
