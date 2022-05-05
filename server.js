@@ -56,29 +56,6 @@ const get_info = () => {
     })
 }
 
-// function get_blocks_details(start, count, callback) {
-//     axios({
-//         method: 'get',
-//         url: api,
-//         data: {
-//             method: 'get_blocks_details',
-//             params: {
-//                 height_start: parseInt(start ? start : 0),
-//                 count: parseInt(count ? count : 10),
-//                 ignore_transactions: false
-//             }
-//         },
-//         transformResponse: [(data) => JSONbig.parse(data)]
-//     })
-//         .then(function (response) {
-//             callback(200, response.data)
-//         })
-//         .catch(function (error) {
-//             log('get_blocks_details failed', error)
-//             callback(400, error)
-//         })
-// }
-
 const get_blocks_details = (start, count) => {
     return axios({
         method: 'get',
@@ -95,28 +72,6 @@ const get_blocks_details = (start, count) => {
     })
 }
 
-// function get_alt_blocks_details(offset, count, callback) {
-//     axios({
-//         method: 'get',
-//         url: api,
-//         data: {
-//             method: 'get_alt_blocks_details',
-//             params: {
-//                 offset: parseInt(offset),
-//                 count: parseInt(count)
-//             }
-//         },
-//         transformResponse: [(data) => JSONbig.parse(data)]
-//     })
-//         .then(function (response) {
-//             callback(200, response.data)
-//         })
-//         .catch(function (error) {
-//             log('get_alt_blocks_details failed', error)
-//             callback(400, error)
-//         })
-// }
-
 const get_alt_blocks_details = (offset, count) => {
     return axios({
         method: 'get',
@@ -132,24 +87,6 @@ const get_alt_blocks_details = (offset, count) => {
     })
 }
 
-// function get_all_pool_tx_list(callback) {
-//     axios({
-//         method: 'get',
-//         url: api,
-//         data: {
-//             method: 'get_all_pool_tx_list'
-//         },
-//         transformResponse: [(data) => JSONbig.parse(data)]
-//     })
-//         .then(function (response) {
-//             callback(200, response.data)
-//         })
-//         .catch(function (error) {
-//             log('get_all_pool_tx_list failed', error)
-//             callback(400, error)
-//         })
-// }
-
 const get_all_pool_tx_list = () => {
     return axios({
         method: 'get',
@@ -160,25 +97,6 @@ const get_all_pool_tx_list = () => {
         transformResponse: [(data) => JSONbig.parse(data)]
     })
 }
-
-// function get_pool_txs_details(ids, callback) {
-//     axios({
-//         method: 'get',
-//         url: api,
-//         data: {
-//             method: 'get_pool_txs_details',
-//             params: { ids: ids }
-//         },
-//         transformResponse: [(data) => JSONbig.parse(data)]
-//     })
-//         .then(function (response) {
-//             callback(200, response.data)
-//         })
-//         .catch(function (error) {
-//             log('get_pool_txs_details failed', error)
-//             callback(400, error)
-//         })
-// }
 
 const get_pool_txs_details = (ids) => {
     return axios({
@@ -192,25 +110,6 @@ const get_pool_txs_details = (ids) => {
     })
 }
 
-// function get_tx_details(tx_hash, callback) {
-//     axios({
-//         method: 'get',
-//         url: api,
-//         data: {
-//             method: 'get_tx_details',
-//             params: { tx_hash: tx_hash }
-//         },
-//         transformResponse: [(data) => JSONbig.parse(data)]
-//     })
-//         .then(function (response) {
-//             callback(200, response.data)
-//         })
-//         .catch(function (error) {
-//             log('get_tx_details failed', error)
-//             callback(400, error)
-//         })
-// }
-
 const get_tx_details = (tx_hash) => {
     return axios({
         method: 'get',
@@ -223,27 +122,8 @@ const get_tx_details = (tx_hash) => {
     })
 }
 
-// function get_out_info(amount, i, callback) {
-//     axios({
-//         method: 'get',
-//         url: api,
-//         data: {
-//             method: 'get_out_info',
-//             params: { amount: parseInt(amount), i: parseInt(i) }
-//         },
-//         transformResponse: [(data) => JSONbig.parse(data)]
-//     })
-//         .then(function (response) {
-//             callback(200, response.data)
-//         })
-//         .catch(function (error) {
-//             log('get_out_info failed', error)
-//             callback(400, error)
-//         })
-// }
-
 const get_out_info = (amount, i) => {
-    axios({
+    return axios({
         method: 'get',
         url: api,
         data: {
@@ -390,27 +270,6 @@ app.get('/get_tx_details/:tx_hash', (req, res) => {
         })
     }
 })
-
-// app.get('/get_out_info/:amount/:i', (req, res) => {
-//     let amount = req.params.amount
-//     let i = req.params.i
-
-//     if (amount !== undefined && i !== undefined) {
-//         db.get(
-//             'SELECT * FROM out_info WHERE amount = ? AND i = ?',
-//             [amount, i],
-//             function (err, row) {
-//                 if (row === undefined) {
-//                     get_out_info(amount, i, function (code, data) {
-//                         res.send(JSON.stringify({ tx_id: data.result.tx_id }))
-//                     })
-//                 } else {
-//                     res.send(JSON.stringify(row))
-//                 }
-//             }
-//         )
-//     }
-// })
 
 app.get('/get_out_info/:amount/:i', async (req, res) => {
     let amount = req.params.amount
@@ -863,12 +722,12 @@ db.serialize(function () {
                     }
                     db.get(
                         'SELECT COUNT(*) AS height FROM alt_blocks',
-                        function (err, row) {
+                        async function (err, row) {
                             if (err) log('select count alt-blocks', err)
                             if (row) {
                                 countAltBlocksDB = row.height
                             }
-                            getInfoTimer()
+                            await getInfoTimer()
                         }
                     )
                 }
@@ -919,7 +778,6 @@ async function syncPool() {
                 }
                 try {
                     let rows = await query('SELECT id FROM pool', 'all')
-                    if (err) log('select id from pool', err)
                     var new_ids = []
                     for (var j = 0; j < pools_array.length; j++) {
                         var find = false
@@ -968,14 +826,14 @@ async function syncPool() {
                         statusSyncPool = false
                     }
                 } catch (error) {
-                    log(error)
+                    log('select id from pool', error)
                 }
             } else {
                 statusSyncPool = false
             }
         }
     } catch (error) {
-        query('DELETE FROm pool', 'run')
+        query('DELETE FROM pool', 'run')
         statusSyncPool = false
     }
 }
@@ -1017,72 +875,67 @@ function parseTrackingKey(trackingKey) {
 
 async function syncTransactions(success) {
     if (block_array.length === 0) {
-        success()
+        success
     } else {
         var localBl = block_array[0]
         if (localBl.transactions_details.length === 0) {
             if (localBl.tr_out.length === 0) {
-                db.serialize(function () {
+                db.serialize(async function () {
                     db.run('begin transaction')
 
                     var hashrate100 = 0
                     var hashrate400 = 0
 
                     if (localBl.type === 1) {
-                        db.all(
-                            'SELECT height, actual_timestamp, cumulative_diff_precise FROM charts WHERE type=1',
-                            function (err, rows) {
-                                if (err) {
-                                    log('syncTransactions', err)
-                                } else {
-                                    for (let i = 0; i < rows.length; i++) {
-                                        hashrate100 =
-                                            i > 99 - 1
-                                                ? (localBl[
-                                                      'cumulative_diff_precise'
-                                                  ] -
-                                                      rows[rows.length - 100][
-                                                          'cumulative_diff_precise'
-                                                      ]) /
-                                                  (localBl['actual_timestamp'] -
-                                                      rows[rows.length - 100][
-                                                          'actual_timestamp'
-                                                      ])
-                                                : 0
-                                        hashrate400 =
-                                            i > 399 - 1
-                                                ? (localBl[
-                                                      'cumulative_diff_precise'
-                                                  ] -
-                                                      rows[rows.length - 400][
-                                                          'cumulative_diff_precise'
-                                                      ]) /
-                                                  (localBl['actual_timestamp'] -
-                                                      rows[rows.length - 400][
-                                                          'actual_timestamp'
-                                                      ])
-                                                : 0
-                                    }
-
-                                    var stmtCharts = db.prepare(
-                                        'INSERT INTO charts VALUES (?,?,?,?,?,?,?,?,?,?)'
-                                    )
-                                    stmtCharts.run(
-                                        localBl.height,
-                                        localBl.actual_timestamp,
-                                        localBl.block_cumulative_size,
-                                        localBl.cumulative_diff_precise.toString(),
-                                        localBl.difficulty.toString(),
-                                        localBl.tr_count ? localBl.tr_count : 0,
-                                        localBl.type,
-                                        (localBl.difficulty / 120).toFixed(0),
-                                        hashrate100,
-                                        hashrate400
-                                    )
-                                    stmtCharts.finalize()
-                                }
+                        try {
+                            let rows = await query(
+                                `SELECT height, actual_timestamp, cumulative_diff_precise FROM charts WHERE type=1`,
+                                'all'
+                            )
+                            for (let i = 0; i < rows.length; i++) {
+                                hashrate100 =
+                                    i > 99 - 1
+                                        ? (localBl['cumulative_diff_precise'] -
+                                              rows[rows.length - 100][
+                                                  'cumulative_diff_precise'
+                                              ]) /
+                                          (localBl['actual_timestamp'] -
+                                              rows[rows.length - 100][
+                                                  'actual_timestamp'
+                                              ])
+                                        : 0
+                                hashrate400 =
+                                    i > 399 - 1
+                                        ? (localBl['cumulative_diff_precise'] -
+                                              rows[rows.length - 400][
+                                                  'cumulative_diff_precise'
+                                              ]) /
+                                          (localBl['actual_timestamp'] -
+                                              rows[rows.length - 400][
+                                                  'actual_timestamp'
+                                              ])
+                                        : 0
                             }
-                        )
+
+                            var stmtCharts = db.prepare(
+                                'INSERT INTO charts VALUES (?,?,?,?,?,?,?,?,?,?)'
+                            )
+                            stmtCharts.run(
+                                localBl.height,
+                                localBl.actual_timestamp,
+                                localBl.block_cumulative_size,
+                                localBl.cumulative_diff_precise.toString(),
+                                localBl.difficulty.toString(),
+                                localBl.tr_count ? localBl.tr_count : 0,
+                                localBl.type,
+                                (localBl.difficulty / 120).toFixed(0),
+                                hashrate100,
+                                hashrate400
+                            )
+                            stmtCharts.finalize()
+                        } catch (error) {
+                            log('syncTransactions', error)
+                        }
                     } else {
                         var stmtCharts = db.prepare(
                             'INSERT INTO charts VALUES (?,?,?,?,?,?,?,?,?,?)'
@@ -1142,9 +995,8 @@ async function syncTransactions(success) {
                         ' transaction left = ' +
                         localBl.tr_count
                 )
-                setTimeout(async function () {
-                    await syncTransactions(success)
-                }, serverTimeout)
+                await delay(serverTimeout)
+                await syncTransactions(success)
             } else {
                 var localOut = localBl.tr_out[0]
                 let localOutAmount = new BigNumber(localOut.amount).toNumber()
@@ -1171,12 +1023,10 @@ async function syncTransactions(success) {
                         db.run('commit')
                     })
                     log('tr_out left = ' + localBl.tr_out.length)
-                    setTimeout(async function () {
-                        await syncTransactions(success)
-                    }, serverTimeout)
+                    await delay(serverTimeout)
+                    await syncTransactions(success)
                 } catch (error) {
-                    log('syncTransactions() get_out_info ERROR')
-                    log(data2)
+                    log('syncTransactions() get_out_info ERROR', error)
                     now_blocks_sync = false
                 }
             }
@@ -1258,17 +1108,16 @@ async function syncTransactions(success) {
                     stmt.finalize()
                     db.run('commit')
                 })
-                setTimeout(async function () {
-                    log(
-                        'BLOCKS: db =' +
-                            localBl.height +
-                            '/ server =' +
-                            blockInfo.height +
-                            ' transaction left = ' +
-                            localBl.transactions_details.length
-                    )
-                    await syncTransactions(success)
-                }, serverTimeout)
+                await delay(serverTimeout)
+                log(
+                    'BLOCKS: db =' +
+                        localBl.height +
+                        '/ server =' +
+                        blockInfo.height +
+                        ' transaction left = ' +
+                        localBl.transactions_details.length
+                )
+                await syncTransactions(success)
             } catch (error) {
                 log('syncTransactions() get_tx_details ERROR')
                 log(data)
@@ -1277,94 +1126,6 @@ async function syncTransactions(success) {
         }
     }
 }
-
-// function syncBlocks() {
-//     var count = blockInfo.height - lastBlock.height + 1
-//     if (count > 100) {
-//         count = 100
-//     }
-//     if (count < 0) {
-//         count = 1
-//     }
-//     get_blocks_details(lastBlock.height + 1, count, function (code2, body2) {
-//         if (code2 === 200) {
-//             var localBlocks =
-//                 body2.result && body2.result.blocks ? body2.result.blocks : []
-//             if (localBlocks.length && lastBlock.id === localBlocks[0].prev_id) {
-//                 block_array = localBlocks
-//                 syncTransactions(function () {
-//                     if (lastBlock.height >= blockInfo.height - 1) {
-//                         now_blocks_sync = false
-//                     } else {
-//                         setTimeout(function () {
-//                             syncBlocks()
-//                         }, serverTimeout)
-//                     }
-//                 })
-//             } else {
-//                 db.serialize(function () {
-//                     var deleteCount = 100
-//                     log(
-//                         'height > ' +
-//                             (parseInt(lastBlock.height) - deleteCount) +
-//                             ' deleted'
-//                     )
-//                     db.run(
-//                         'DELETE FROM blocks WHERE height > ' +
-//                             (parseInt(lastBlock.height) - deleteCount) +
-//                             ';'
-//                     )
-//                     db.run(
-//                         'DELETE FROM charts WHERE height > ' +
-//                             (parseInt(lastBlock.height) - deleteCount) +
-//                             ';'
-//                     )
-//                     db.run(
-//                         'DELETE FROM transactions WHERE keeper_block > ' +
-//                             (parseInt(lastBlock.height) - deleteCount) +
-//                             ';'
-//                     )
-//                     db.run(
-//                         'UPDATE aliases SET enabled=1 WHERE transact IN (SELECT transact FROM aliases WHERE alias IN (select alias from aliases where block > ' +
-//                             (parseInt(lastBlock.height) - deleteCount) +
-//                             ' ) AND enabled == 0 GROUP BY alias);'
-//                     )
-//                     db.run(
-//                         'DELETE FROM aliases WHERE block > ' +
-//                             (parseInt(lastBlock.height) - deleteCount) +
-//                             ';'
-//                     )
-//                     db.run(
-//                         'DELETE FROM out_info WHERE block > ' +
-//                             (parseInt(lastBlock.height) - deleteCount) +
-//                             ';'
-//                     )
-//                     db.get(
-//                         'SELECT * FROM blocks WHERE  height=(SELECT MAX(height) FROM blocks)',
-//                         [],
-//                         function (err, row) {
-//                             if (row) {
-//                                 lastBlock = row
-//                             } else {
-//                                 lastBlock = {
-//                                     height: -1,
-//                                     id: '0000000000000000000000000000000000000000000000000000000000000000'
-//                                 }
-//                             }
-//                             setTimeout(function () {
-//                                 syncBlocks()
-//                             }, serverTimeout)
-//                         }
-//                     )
-//                 })
-//             }
-//         } else {
-//             log('syncBlocks() get_blocks_details ERROR')
-//             log(body2)
-//             now_blocks_sync = false
-//         }
-//     })
-// }
 
 async function syncBlocks() {
     try {
@@ -1381,15 +1142,13 @@ async function syncBlocks() {
             body2.result && body2.result.blocks ? body2.result.blocks : []
         if (localBlocks.length && lastBlock.id === localBlocks[0].prev_id) {
             block_array = localBlocks
-            syncTransactions(function () {
-                if (lastBlock.height >= blockInfo.height - 1) {
-                    now_blocks_sync = false
-                } else {
-                    setTimeout(async function () {
-                        await syncBlocks()
-                    }, serverTimeout)
-                }
-            })
+            await syncTransactions()
+            if (lastBlock.height >= blockInfo.height - 1) {
+                now_blocks_sync = false
+            } else {
+                await delay(serverTimeout)
+                await syncBlocks()
+            }
         } else {
             db.serialize(function () {
                 var deleteCount = 100
@@ -1431,7 +1190,7 @@ async function syncBlocks() {
                 db.get(
                     'SELECT * FROM blocks WHERE  height=(SELECT MAX(height) FROM blocks)',
                     [],
-                    function (err, row) {
+                    async function (err, row) {
                         if (row) {
                             lastBlock = row
                         } else {
@@ -1440,9 +1199,8 @@ async function syncBlocks() {
                                 id: '0000000000000000000000000000000000000000000000000000000000000000'
                             }
                         }
-                        setTimeout(async function () {
-                            await syncBlocks()
-                        }, serverTimeout)
+                        await delay(serverTimeout)
+                        await syncBlocks()
                     }
                 )
             })
@@ -1453,97 +1211,6 @@ async function syncBlocks() {
         now_blocks_sync = false
     }
 }
-
-// function syncAltBlocks() {
-//     statusSyncAltBlocks = true
-//     db.run('DELETE FROM alt_blocks', function () {
-//         get_alt_blocks_details(0, countAltBlocksServer, function (code, data) {
-//             if (code === 200) {
-//                 db.serialize(function () {
-//                     var stmt = db.prepare(
-//                         'INSERT INTO alt_blocks VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
-//                     )
-//                     for (var x in data.result.blocks) {
-//                         var height = data.result.blocks[x].height
-//                         var timestamp = data.result.blocks[x].timestamp
-//                         var actual_timestamp =
-//                             data.result.blocks[x].actual_timestamp
-//                         var size = data.result.blocks[x].block_cumulative_size
-//                         var hash = data.result.blocks[x].id
-//                         var type = data.result.blocks[x].type
-//                         var difficulty =
-//                             data.result.blocks[x].difficulty.toString()
-//                         var cumulative_diff_adjusted =
-//                             data.result.blocks[
-//                                 x
-//                             ].cumulative_diff_adjusted.toString()
-//                         var cumulative_diff_precise =
-//                             data.result.blocks[
-//                                 x
-//                             ].cumulative_diff_precise.toString()
-//                         var is_orphan = data.result.blocks[x].is_orphan
-//                         var base_reward = data.result.blocks[x].base_reward
-//                         var total_fee =
-//                             data.result.blocks[x].total_fee.toString()
-//                         var penalty = data.result.blocks[x].penalty
-//                         var summary_reward =
-//                             data.result.blocks[x].summary_reward
-//                         var block_cumulative_size =
-//                             data.result.blocks[x].block_cumulative_size
-//                         var this_block_fee_median =
-//                             data.result.blocks[x].this_block_fee_median
-//                         var effective_fee_median =
-//                             data.result.blocks[x].effective_fee_median
-//                         var total_txs_size =
-//                             data.result.blocks[x].total_txs_size
-//                         var transact_details = JSON.stringify(
-//                             data.result.blocks[x].transactions_details
-//                         )
-//                         var miner_txt_info =
-//                             data.result.blocks[x].miner_text_info
-//                         var pow_seed = ''
-//                         stmt.run(
-//                             height,
-//                             timestamp,
-//                             actual_timestamp,
-//                             size,
-//                             hash,
-//                             type,
-//                             difficulty,
-//                             cumulative_diff_adjusted,
-//                             cumulative_diff_precise,
-//                             is_orphan,
-//                             base_reward,
-//                             total_fee,
-//                             penalty,
-//                             summary_reward,
-//                             block_cumulative_size,
-//                             this_block_fee_median,
-//                             effective_fee_median,
-//                             total_txs_size,
-//                             transact_details,
-//                             miner_txt_info,
-//                             pow_seed
-//                         )
-//                     }
-//                     stmt.finalize()
-//                     db.get(
-//                         'SELECT COUNT(*) AS height FROM alt_blocks',
-//                         function (err, rows) {
-//                             if (err) log(err)
-//                             if (rows) {
-//                                 countAltBlocksDB = rows.height
-//                             }
-//                             statusSyncAltBlocks = false
-//                         }
-//                     )
-//                 })
-//             } else {
-//                 statusSyncAltBlocks = false
-//             }
-//         })
-//     })
-// }
 
 const query = (command, method = 'all') => {
     return new Promise((resolve, reject) => {
@@ -1637,83 +1304,80 @@ async function syncAltBlocks() {
     }
 }
 
-function getInfoTimer() {
+async function getInfoTimer() {
     if (now_delete_offers === false) {
-        get_info(async function (code, body) {
-            if (code === 200) {
-                blockInfo = body.result
-                countAliasesServer = blockInfo.alias_count
-                countAltBlocksServer = blockInfo.alt_blocks_count
-                countTrPoolServer = blockInfo.tx_pool_size
+        try {
+            let response = await get_info()
+            let body = response.data
+            blockInfo = body.result
+            countAliasesServer = blockInfo.alias_count
+            countAltBlocksServer = blockInfo.alt_blocks_count
+            countTrPoolServer = blockInfo.tx_pool_size
 
-                if (statusSyncPool === false) {
-                    db.get(
-                        'SELECT COUNT(*) AS transactions FROM pool',
-                        function (err, rows) {
-                            if (err) log(err)
-                            if (rows) {
-                                if (rows.transactions !== countTrPoolServer) {
-                                    log(
-                                        'need update pool transactions db=' +
-                                            rows.transactions +
-                                            ' server=' +
-                                            countTrPoolServer
-                                    )
-                                    syncPool()
-                                }
-                            }
-                        }
-                    )
-                }
-
-                if (statusSyncAltBlocks === false) {
-                    if (countAltBlocksServer !== countAltBlocksDB) {
+            if (statusSyncPool === false) {
+                let rows = await query(
+                    'SELECT COUNT(*) AS transactions FROM pool',
+                    'get'
+                )
+                if (rows) {
+                    if (rows.transactions !== countTrPoolServer) {
                         log(
-                            'need update alt-blocks db=' +
-                                countAltBlocksDB +
+                            'need update pool transactions db=' +
+                                rows.transactions +
                                 ' server=' +
-                                countAltBlocksServer
+                                countTrPoolServer
                         )
-                        await syncAltBlocks()
+                        await syncPool()
                     }
                 }
-                if (
-                    lastBlock.height !== blockInfo.height - 1 &&
-                    now_blocks_sync === false
-                ) {
-                    log(
-                        'need update blocks db=' +
-                            lastBlock.height +
-                            ' server=' +
-                            blockInfo.height
-                    )
-                    log(
-                        'need update aliases db=' +
-                            countAliasesDB +
-                            ' server=' +
-                            countAliasesServer
-                    )
-                    now_blocks_sync = true
-                    await syncBlocks()
-                }
-
-                setTimeout(function () {
-                    getInfoTimer()
-                }, 10000)
-            } else {
-                log('getInfoTimer() get_info error')
-                blockInfo.daemon_network_state = 0
-
-                setTimeout(function () {
-                    getInfoTimer()
-                }, 300000)
             }
-        })
+
+            if (statusSyncAltBlocks === false) {
+                if (countAltBlocksServer !== countAltBlocksDB) {
+                    log(
+                        'need update alt-blocks db=' +
+                            countAltBlocksDB +
+                            ' server=' +
+                            countAltBlocksServer
+                    )
+                    await syncAltBlocks()
+                }
+            }
+            if (
+                lastBlock.height !== blockInfo.height - 1 &&
+                now_blocks_sync === false
+            ) {
+                log(
+                    'need update blocks db=' +
+                        lastBlock.height +
+                        ' server=' +
+                        blockInfo.height
+                )
+                log(
+                    'need update aliases db=' +
+                        countAliasesDB +
+                        ' server=' +
+                        countAliasesServer
+                )
+                now_blocks_sync = true
+                await syncBlocks()
+            }
+            await delay(10000)
+            await getInfoTimer()
+        } catch (error) {
+            log('getInfoTimer() get_info error')
+            blockInfo.daemon_network_state = 0
+            await delay(300000)
+            await getInfoTimer()
+        }
     } else {
-        setTimeout(function () {
-            getInfoTimer()
-        }, 10000)
+        await delay(10000)
+        await getInfoTimer()
     }
+}
+
+const delay = (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 // API
