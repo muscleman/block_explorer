@@ -86,8 +86,30 @@ function get_blocks_details(start, count, callback) {
         })
 }
 
-function get_alt_blocks_details(offset, count, callback) {
-    axios({
+// function get_alt_blocks_details(offset, count, callback) {
+//     axios({
+//         method: 'get',
+//         url: api,
+//         data: {
+//             method: 'get_alt_blocks_details',
+//             params: {
+//                 offset: parseInt(offset),
+//                 count: parseInt(count)
+//             }
+//         },
+//         transformResponse: [(data) => JSONbig.parse(data)]
+//     })
+//         .then(function (response) {
+//             callback(200, response.data)
+//         })
+//         .catch(function (error) {
+//             log('get_alt_blocks_details failed', error)
+//             callback(400, error)
+//         })
+// }
+
+const get_alt_blocks_details = (offset, count) => {
+    let options = {
         method: 'get',
         url: api,
         data: {
@@ -98,14 +120,8 @@ function get_alt_blocks_details(offset, count, callback) {
             }
         },
         transformResponse: [(data) => JSONbig.parse(data)]
-    })
-        .then(function (response) {
-            callback(200, response.data)
-        })
-        .catch(function (error) {
-            log('get_alt_blocks_details failed', error)
-            callback(400, error)
-        })
+    }
+    return axios(options)
 }
 
 function get_all_pool_tx_list(callback) {
@@ -1321,100 +1337,188 @@ function syncBlocks() {
     })
 }
 
-function syncAltBlocks() {
-    statusSyncAltBlocks = true
-    db.run('DELETE FROM alt_blocks', function () {
-        get_alt_blocks_details(0, countAltBlocksServer, function (code, data) {
-            if (code === 200) {
-                db.serialize(function () {
-                    var stmt = db.prepare(
-                        'INSERT INTO alt_blocks VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
-                    )
-                    for (var x in data.result.blocks) {
-                        var height = data.result.blocks[x].height
-                        var timestamp = data.result.blocks[x].timestamp
-                        var actual_timestamp =
-                            data.result.blocks[x].actual_timestamp
-                        var size = data.result.blocks[x].block_cumulative_size
-                        var hash = data.result.blocks[x].id
-                        var type = data.result.blocks[x].type
-                        var difficulty =
-                            data.result.blocks[x].difficulty.toString()
-                        var cumulative_diff_adjusted =
-                            data.result.blocks[
-                                x
-                            ].cumulative_diff_adjusted.toString()
-                        var cumulative_diff_precise =
-                            data.result.blocks[
-                                x
-                            ].cumulative_diff_precise.toString()
-                        var is_orphan = data.result.blocks[x].is_orphan
-                        var base_reward = data.result.blocks[x].base_reward
-                        var total_fee =
-                            data.result.blocks[x].total_fee.toString()
-                        var penalty = data.result.blocks[x].penalty
-                        var summary_reward =
-                            data.result.blocks[x].summary_reward
-                        var block_cumulative_size =
-                            data.result.blocks[x].block_cumulative_size
-                        var this_block_fee_median =
-                            data.result.blocks[x].this_block_fee_median
-                        var effective_fee_median =
-                            data.result.blocks[x].effective_fee_median
-                        var total_txs_size =
-                            data.result.blocks[x].total_txs_size
-                        var transact_details = JSON.stringify(
-                            data.result.blocks[x].transactions_details
-                        )
-                        var miner_txt_info =
-                            data.result.blocks[x].miner_text_info
-                        var pow_seed = ''
-                        stmt.run(
-                            height,
-                            timestamp,
-                            actual_timestamp,
-                            size,
-                            hash,
-                            type,
-                            difficulty,
-                            cumulative_diff_adjusted,
-                            cumulative_diff_precise,
-                            is_orphan,
-                            base_reward,
-                            total_fee,
-                            penalty,
-                            summary_reward,
-                            block_cumulative_size,
-                            this_block_fee_median,
-                            effective_fee_median,
-                            total_txs_size,
-                            transact_details,
-                            miner_txt_info,
-                            pow_seed
-                        )
-                    }
-                    stmt.finalize()
-                    db.get(
-                        'SELECT COUNT(*) AS height FROM alt_blocks',
-                        function (err, rows) {
-                            if (err) log(err)
-                            if (rows) {
-                                countAltBlocksDB = rows.height
-                            }
-                            statusSyncAltBlocks = false
-                        }
-                    )
-                })
-            } else {
-                statusSyncAltBlocks = false
-            }
+// function syncAltBlocks() {
+//     statusSyncAltBlocks = true
+//     db.run('DELETE FROM alt_blocks', function () {
+//         get_alt_blocks_details(0, countAltBlocksServer, function (code, data) {
+//             if (code === 200) {
+//                 db.serialize(function () {
+//                     var stmt = db.prepare(
+//                         'INSERT INTO alt_blocks VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+//                     )
+//                     for (var x in data.result.blocks) {
+//                         var height = data.result.blocks[x].height
+//                         var timestamp = data.result.blocks[x].timestamp
+//                         var actual_timestamp =
+//                             data.result.blocks[x].actual_timestamp
+//                         var size = data.result.blocks[x].block_cumulative_size
+//                         var hash = data.result.blocks[x].id
+//                         var type = data.result.blocks[x].type
+//                         var difficulty =
+//                             data.result.blocks[x].difficulty.toString()
+//                         var cumulative_diff_adjusted =
+//                             data.result.blocks[
+//                                 x
+//                             ].cumulative_diff_adjusted.toString()
+//                         var cumulative_diff_precise =
+//                             data.result.blocks[
+//                                 x
+//                             ].cumulative_diff_precise.toString()
+//                         var is_orphan = data.result.blocks[x].is_orphan
+//                         var base_reward = data.result.blocks[x].base_reward
+//                         var total_fee =
+//                             data.result.blocks[x].total_fee.toString()
+//                         var penalty = data.result.blocks[x].penalty
+//                         var summary_reward =
+//                             data.result.blocks[x].summary_reward
+//                         var block_cumulative_size =
+//                             data.result.blocks[x].block_cumulative_size
+//                         var this_block_fee_median =
+//                             data.result.blocks[x].this_block_fee_median
+//                         var effective_fee_median =
+//                             data.result.blocks[x].effective_fee_median
+//                         var total_txs_size =
+//                             data.result.blocks[x].total_txs_size
+//                         var transact_details = JSON.stringify(
+//                             data.result.blocks[x].transactions_details
+//                         )
+//                         var miner_txt_info =
+//                             data.result.blocks[x].miner_text_info
+//                         var pow_seed = ''
+//                         stmt.run(
+//                             height,
+//                             timestamp,
+//                             actual_timestamp,
+//                             size,
+//                             hash,
+//                             type,
+//                             difficulty,
+//                             cumulative_diff_adjusted,
+//                             cumulative_diff_precise,
+//                             is_orphan,
+//                             base_reward,
+//                             total_fee,
+//                             penalty,
+//                             summary_reward,
+//                             block_cumulative_size,
+//                             this_block_fee_median,
+//                             effective_fee_median,
+//                             total_txs_size,
+//                             transact_details,
+//                             miner_txt_info,
+//                             pow_seed
+//                         )
+//                     }
+//                     stmt.finalize()
+//                     db.get(
+//                         'SELECT COUNT(*) AS height FROM alt_blocks',
+//                         function (err, rows) {
+//                             if (err) log(err)
+//                             if (rows) {
+//                                 countAltBlocksDB = rows.height
+//                             }
+//                             statusSyncAltBlocks = false
+//                         }
+//                     )
+//                 })
+//             } else {
+//                 statusSyncAltBlocks = false
+//             }
+//         })
+//     })
+// }
+
+const query = (command, method = 'all') => {
+    return new Promise((resolve, reject) => {
+        db[method](command, (error, result) => {
+            if (error) reject(error)
+            else resolve(result)
         })
     })
 }
 
+async function syncAltBlocks() {
+    statusSyncAltBlocks = true
+    try {
+        await query('DELETE FROm alt_block', 'run')
+        const data = await get_alt_blocks_details()
+        db.serialize(async function () {
+            var stmt = db.prepare(
+                'INSERT INTO alt_blocks VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+            )
+            for (var x in data.result.blocks) {
+                var height = data.result.blocks[x].height
+                var timestamp = data.result.blocks[x].timestamp
+                var actual_timestamp = data.result.blocks[x].actual_timestamp
+                var size = data.result.blocks[x].block_cumulative_size
+                var hash = data.result.blocks[x].id
+                var type = data.result.blocks[x].type
+                var difficulty = data.result.blocks[x].difficulty.toString()
+                var cumulative_diff_adjusted =
+                    data.result.blocks[x].cumulative_diff_adjusted.toString()
+                var cumulative_diff_precise =
+                    data.result.blocks[x].cumulative_diff_precise.toString()
+                var is_orphan = data.result.blocks[x].is_orphan
+                var base_reward = data.result.blocks[x].base_reward
+                var total_fee = data.result.blocks[x].total_fee.toString()
+                var penalty = data.result.blocks[x].penalty
+                var summary_reward = data.result.blocks[x].summary_reward
+                var block_cumulative_size =
+                    data.result.blocks[x].block_cumulative_size
+                var this_block_fee_median =
+                    data.result.blocks[x].this_block_fee_median
+                var effective_fee_median =
+                    data.result.blocks[x].effective_fee_median
+                var total_txs_size = data.result.blocks[x].total_txs_size
+                var transact_details = JSON.stringify(
+                    data.result.blocks[x].transactions_details
+                )
+                var miner_txt_info = data.result.blocks[x].miner_text_info
+                var pow_seed = ''
+                stmt.run(
+                    height,
+                    timestamp,
+                    actual_timestamp,
+                    size,
+                    hash,
+                    type,
+                    difficulty,
+                    cumulative_diff_adjusted,
+                    cumulative_diff_precise,
+                    is_orphan,
+                    base_reward,
+                    total_fee,
+                    penalty,
+                    summary_reward,
+                    block_cumulative_size,
+                    this_block_fee_median,
+                    effective_fee_median,
+                    total_txs_size,
+                    transact_details,
+                    miner_txt_info,
+                    pow_seed
+                )
+            }
+            stmt.finalize()
+            try {
+                let rows = await query(
+                    'SELECT COUNT(*) AS height FROM alt_blocks',
+                    'get'
+                )
+                if (rows) countAltBlocksDB = rows.height
+                statusSyncAltBlocks = false
+            } catch (error) {
+                log(error)
+            }
+        })
+    } catch (error) {
+        statusSyncAltBlocks = false
+    }
+}
+
 function getInfoTimer() {
     if (now_delete_offers === false) {
-        get_info(function (code, body) {
+        get_info(async function (code, body) {
             if (code === 200) {
                 blockInfo = body.result
                 countAliasesServer = blockInfo.alias_count
@@ -1449,7 +1553,7 @@ function getInfoTimer() {
                                 ' server=' +
                                 countAltBlocksServer
                         )
-                        syncAltBlocks()
+                        await syncAltBlocks()
                     }
                 }
                 if (
