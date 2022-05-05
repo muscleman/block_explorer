@@ -1,15 +1,10 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
-
 import { BlockDetailsComponent } from './block-details.component'
-import {
-    BitNumberPipe,
-    HashPowerConverterPipe,
-    MoneyParsePipe
-} from '.././pipes.pipe'
 import { HttpService, MobileNavState } from './../http.service'
 import { RouterTestingModule } from '@angular/router/testing'
 import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
+import { PipesModule } from 'app/pipes/pipes.module'
 
 describe('BlockDetailsComponent', () => {
     let component: BlockDetailsComponent
@@ -17,14 +12,13 @@ describe('BlockDetailsComponent', () => {
 
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
-            declarations: [
-                BlockDetailsComponent,
-                BitNumberPipe,
-                MoneyParsePipe,
-                HashPowerConverterPipe
-            ],
+            declarations: [BlockDetailsComponent],
             providers: [HttpService, MobileNavState],
-            imports: [HttpClientTestingModule, RouterTestingModule],
+            imports: [
+                HttpClientTestingModule,
+                RouterTestingModule,
+                PipesModule
+            ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA]
         }).compileComponents()
     }))

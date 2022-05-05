@@ -20,20 +20,6 @@ import { HttpService } from './http.service'
 import { ServiceResolver, ResolveAltBlock } from './http.service'
 import { MobileNavState } from './http.service'
 
-//  Pipes
-import { OrderPipe } from './pipes.pipe'
-import { OrderByPipe } from './pipes.pipe'
-import { SortGridPipe } from './pipes.pipe'
-import { BitNumberPipe } from './pipes.pipe'
-import { MoneyParsePipe } from './pipes.pipe'
-import { TruncatePipe } from './pipes.pipe'
-import { TimeAgoPipe } from './pipes.pipe'
-import { SortByAlphabetPipe } from './pipes.pipe'
-import { HashPowerConverterPipe } from './pipes.pipe'
-import { DateFormatPipe } from './pipes.pipe'
-import { UtcPipe } from './pipes.pipe'
-import { TimeAgoPipe2 } from './pipes.pipe'
-
 // Components
 import { AppComponent } from './app.component'
 import { MainInfoComponent } from './main-info/main-info.component'
@@ -55,6 +41,7 @@ import { ConfirmTransPerDayComponent } from './charts/confirm-trans-per-day/conf
 import { DifficultyPowComponent } from './charts/difficulty-pow/difficulty-pow.component'
 import { ApiComponent } from './api/api.component'
 import { CookieService } from 'ngx-cookie-service'
+import { PipesModule } from './pipes/pipes.module'
 
 @NgModule({
     declarations: [
@@ -76,19 +63,6 @@ import { CookieService } from 'ngx-cookie-service'
         DifficultyComponent,
         DifficultyPowComponent,
         ConfirmTransPerDayComponent,
-
-        OrderPipe,
-        OrderByPipe,
-        SortGridPipe,
-        BitNumberPipe,
-        MoneyParsePipe,
-        TruncatePipe,
-        TimeAgoPipe,
-        SortByAlphabetPipe,
-        HashPowerConverterPipe,
-        DateFormatPipe,
-        UtcPipe,
-        TimeAgoPipe2,
         ApiComponent
     ],
     imports: [
@@ -99,7 +73,8 @@ import { CookieService } from 'ngx-cookie-service'
         MatProgressSpinnerModule,
         NgxJsonViewerModule,
         ChartModule,
-        AppRoutingModule
+        AppRoutingModule,
+        PipesModule
     ],
     providers: [
         HttpService,
