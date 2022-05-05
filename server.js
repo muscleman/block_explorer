@@ -937,6 +937,7 @@ async function syncTransactions(success) {
                             )
                             stmtCharts.finalize()
                         } catch (error) {
+                            db.run('rollback')
                             log('syncTransactions', error)
                         }
                     } else {
@@ -987,9 +988,9 @@ async function syncTransactions(success) {
                         localBl.pow_seed
                     )
                     stmt.finalize()
-                    lastBlock = block_array.splice(0, 1)[0]
                     log('commit, syncTransactions')
                     db.run('commit')
+                    lastBlock = block_array.splice(0, 1)[0]
                 })
                 log(
                     'BLOCKS: db =' +
@@ -1032,6 +1033,7 @@ async function syncTransactions(success) {
                     await delay(serverTimeout)
                     await syncTransactions(success)
                 } catch (error) {
+                    db.run('rollback')
                     log('syncTransactions() get_out_info ERROR', error)
                     now_blocks_sync = false
                 }
