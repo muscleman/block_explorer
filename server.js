@@ -882,116 +882,167 @@ async function syncTransactions(success) {
         var localBl = block_array[0]
         if (localBl.transactions_details.length === 0) {
             if (localBl.tr_out.length === 0) {
-                db.serialize(async function () {
-                    // log('begin transaction, syncTransactions')
-                    // db.run('begin transaction')
+                // db.serialize(async function () {
+                log('begin transaction, syncTransactions')
+                db.run('begin transaction')
 
-                    var hashrate100 = 0
-                    var hashrate400 = 0
+                var hashrate100 = 0
+                var hashrate400 = 0
 
-                    if (localBl.type === 1) {
-                        try {
-                            let rows = await query(
-                                `SELECT height, actual_timestamp, cumulative_diff_precise FROM charts WHERE type=1`,
-                                'all'
-                            )
-                            for (let i = 0; i < rows.length; i++) {
-                                hashrate100 =
-                                    i > 99 - 1
-                                        ? (localBl['cumulative_diff_precise'] -
-                                              rows[rows.length - 100][
-                                                  'cumulative_diff_precise'
-                                              ]) /
-                                          (localBl['actual_timestamp'] -
-                                              rows[rows.length - 100][
-                                                  'actual_timestamp'
-                                              ])
-                                        : 0
-                                hashrate400 =
-                                    i > 399 - 1
-                                        ? (localBl['cumulative_diff_precise'] -
-                                              rows[rows.length - 400][
-                                                  'cumulative_diff_precise'
-                                              ]) /
-                                          (localBl['actual_timestamp'] -
-                                              rows[rows.length - 400][
-                                                  'actual_timestamp'
-                                              ])
-                                        : 0
-                            }
-
-                            var stmtCharts = db.prepare(
-                                'INSERT INTO charts VALUES (?,?,?,?,?,?,?,?,?,?)'
-                            )
-                            stmtCharts.run(
-                                localBl.height,
-                                localBl.actual_timestamp,
-                                localBl.block_cumulative_size,
-                                localBl.cumulative_diff_precise.toString(),
-                                localBl.difficulty.toString(),
-                                localBl.tr_count ? localBl.tr_count : 0,
-                                localBl.type,
-                                (localBl.difficulty / 120).toFixed(0),
-                                hashrate100,
-                                hashrate400
-                            )
-                            stmtCharts.finalize()
-                        } catch (error) {
-                            // db.run('rollback')
-                            log('syncTransactions', error)
+                if (localBl.type === 1) {
+                    try {
+                        let rows = await query(
+                            `SELECT height, actual_timestamp, cumulative_diff_precise FROM charts WHERE type=1`,
+                            'all'
+                        )
+                        for (let i = 0; i < rows.length; i++) {
+                            hashrate100 =
+                                i > 99 - 1
+                                    ? (localBl['cumulative_diff_precise'] -
+                                          rows[rows.length - 100][
+                                              'cumulative_diff_precise'
+                                          ]) /
+                                      (localBl['actual_timestamp'] -
+                                          rows[rows.length - 100][
+                                              'actual_timestamp'
+                                          ])
+                                    : 0
+                            hashrate400 =
+                                i > 399 - 1
+                                    ? (localBl['cumulative_diff_precise'] -
+                                          rows[rows.length - 400][
+                                              'cumulative_diff_precise'
+                                          ]) /
+                                      (localBl['actual_timestamp'] -
+                                          rows[rows.length - 400][
+                                              'actual_timestamp'
+                                          ])
+                                    : 0
                         }
-                    } else {
-                        var stmtCharts = db.prepare(
-                            'INSERT INTO charts VALUES (?,?,?,?,?,?,?,?,?,?)'
-                        )
-                        stmtCharts.run(
-                            localBl.height,
-                            localBl.actual_timestamp,
-                            localBl.block_cumulative_size,
-                            localBl.cumulative_diff_precise.toString(),
-                            localBl.difficulty.toString(),
-                            localBl.tr_count ? localBl.tr_count : 0,
-                            localBl.type,
-                            0,
-                            0,
-                            0
-                        )
-                        stmtCharts.finalize()
-                    }
 
-                    var stmt = db.prepare(
-                        'INSERT INTO blocks VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
-                    )
-                    stmt.run(
-                        localBl.height,
-                        localBl.actual_timestamp,
-                        localBl.base_reward,
-                        localBl.blob,
-                        localBl.block_cumulative_size,
-                        localBl.block_tself_size,
-                        localBl.cumulative_diff_adjusted.toString(),
-                        localBl.cumulative_diff_precise.toString(),
-                        localBl.difficulty.toString(),
-                        localBl.effective_fee_median,
-                        localBl.id,
-                        localBl.is_orphan,
-                        localBl.penalty,
-                        localBl.prev_id,
-                        localBl.summary_reward,
-                        localBl.this_block_fee_median,
-                        localBl.timestamp,
-                        localBl.total_fee.toString(),
-                        localBl.total_txs_size,
-                        localBl.tr_count ? localBl.tr_count : 0,
-                        localBl.type,
-                        localBl.miner_text_info,
-                        localBl.pow_seed
-                    )
-                    stmt.finalize()
-                    // log('commit, syncTransactions')
-                    // db.run('commit')
-                    lastBlock = block_array.splice(0, 1)[0]
-                })
+                        let sql = `INSERT INTO charts VALUES (${
+                            localBl.height
+                        }, 
+                                ${localBl.actual_timestamp}, 
+                                ${localBl.block_cumulative_size}, 
+                                '${localBl.cumulative_diff_precise.toString()}', 
+                                '${localBl.difficulty.toString()}', 
+                                ${localBl.tr_count ? localBl.tr_count : 0}, 
+                                ${localBl.type}, 
+                                '${(localBl.difficulty / 120).toFixed(0)}', 
+                                '${hashrate100}', 
+                                '${hashrate400}');`
+                        await query(sql, 'run')
+                        // var stmtCharts = db.prepare(
+                        //     'INSERT INTO charts VALUES (?,?,?,?,?,?,?,?,?,?)'
+                        // )
+                        // stmtCharts.run(
+                        //     localBl.height,
+                        //     localBl.actual_timestamp,
+                        //     localBl.block_cumulative_size,
+                        //     localBl.cumulative_diff_precise.toString(),
+                        //     localBl.difficulty.toString(),
+                        //     localBl.tr_count ? localBl.tr_count : 0,
+                        //     localBl.type,
+                        //     (localBl.difficulty / 120).toFixed(0),
+                        //     hashrate100,
+                        //     hashrate400
+                        // )
+                        // stmtCharts.finalize()
+                    } catch (error) {
+                        // db.run('rollback')
+                        log('syncTransactions', error)
+                    }
+                } else {
+                    let sql = `INSERT INTO charts VALUES (${localBl.height}, 
+                            ${localBl.actual_timestamp}, 
+                            ${localBl.block_cumulative_size}, 
+                            '${localBl.cumulative_diff_precise.toString()}', 
+                            '${localBl.difficulty.toString()}', 
+                            ${localBl.tr_count ? localBl.tr_count : 0}, 
+                            ${localBl.type}, 
+                            '0', 
+                            '0', 
+                            '0');`
+                    await query(sql, 'run')
+
+                    // var stmtCharts = db.prepare(
+                    //     'INSERT INTO charts VALUES (?,?,?,?,?,?,?,?,?,?)'
+                    // )
+                    // stmtCharts.run(
+                    //     localBl.height,
+                    //     localBl.actual_timestamp,
+                    //     localBl.block_cumulative_size,
+                    //     localBl.cumulative_diff_precise.toString(),
+                    //     localBl.difficulty.toString(),
+                    //     localBl.tr_count ? localBl.tr_count : 0,
+                    //     localBl.type,
+                    //     0,
+                    //     0,
+                    //     0
+                    // )
+                    // stmtCharts.finalize()
+                }
+
+                let sql = `INSERT INTO blocks VALUES (${localBl.height},
+                        '${localBl.actual_timestamp}',
+                        '${localBl.base_reward}',
+                        '${localBl.blob}',
+                        ${localBl.block_cumulative_size},
+                        '${localBl.block_tself_size}',
+                        '${localBl.cumulative_diff_adjusted.toString()}',
+                        '${localBl.cumulative_diff_precise.toString()}',
+                        '${localBl.difficulty.toString()}',
+                        '${localBl.effective_fee_median}',
+                        '${localBl.id}',
+                        ${localBl.is_orphan},
+                        '${localBl.penalty}',
+                        '${localBl.prev_id}',
+                        '${localBl.summary_reward}',
+                        '${localBl.this_block_fee_median}',
+                        ${localBl.timestamp},
+                        '${localBl.total_fee.toString()}',
+                        ${localBl.total_txs_size},
+                        ${localBl.tr_count ? localBl.tr_count : 0},
+                        ${localBl.type},
+                        '${localBl.miner_text_info}',
+                        '${localBl.pow_seed}');`
+                await query(sql, 'run')
+
+                // var stmt = db.prepare(
+                //     'INSERT INTO blocks VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+                // )
+                // stmt.run(
+                //     localBl.height,
+                //     localBl.actual_timestamp,
+                //     localBl.base_reward,
+                //     localBl.blob,
+                //     localBl.block_cumulative_size,
+                //     localBl.block_tself_size,
+                //     localBl.cumulative_diff_adjusted.toString(),
+                //     localBl.cumulative_diff_precise.toString(),
+                //     localBl.difficulty.toString(),
+                //     localBl.effective_fee_median,
+                //     localBl.id,
+                //     localBl.is_orphan,
+                //     localBl.penalty,
+                //     localBl.prev_id,
+                //     localBl.summary_reward,
+                //     localBl.this_block_fee_median,
+                //     localBl.timestamp,
+                //     localBl.total_fee.toString(),
+                //     localBl.total_txs_size,
+                //     localBl.tr_count ? localBl.tr_count : 0,
+                //     localBl.type,
+                //     localBl.miner_text_info,
+                //     localBl.pow_seed
+                // )
+                // stmt.finalize()
+                log('commit, syncTransactions')
+                db.run('commit')
+                lastBlock = block_array.splice(0, 1)[0]
+                // })
+
                 log(
                     'BLOCKS: db =' +
                         lastBlock.height +
@@ -1012,28 +1063,49 @@ async function syncTransactions(success) {
                         localOut.i
                     )
                     let data2 = response.data
-                    db.serialize(function () {
-                        log('begin transaction else side, syncTransactions')
-                        db.run('begin transaction')
-                        var stmt = db.prepare(
-                            'REPLACE INTO out_info VALUES (?,?,?,?)'
-                        )
-                        stmt.run(
-                            localOut.amount.toString(),
-                            localOut.i,
-                            data2.result.tx_id,
-                            localBl.height
-                        )
-                        stmt.finalize()
-                        localBl.tr_out.splice(0, 1)
-                        log('commit else side, syncTransactions')
-                        db.run('commit')
-                    })
+
+                    log('begin transaction else side, syncTransactions')
+                    db.run('begin transaction')
+                    let sql = `REPLACE INTO out_info VALUES ('${localOut.amount.toString()}', 
+                                ${localOut.i}, 
+                                '${data2.result.tx_id}', 
+                                ${localBl.height});`
+                    await query(sql, 'run')
+                    // var stmt = db.prepare(
+                    //     'REPLACE INTO out_info VALUES (?,?,?,?)'
+                    // )
+                    // stmt.run(
+                    //     localOut.amount.toString(),
+                    //     localOut.i,
+                    //     data2.result.tx_id,
+                    //     localBl.height
+                    // )
+                    // stmt.finalize()
+                    localBl.tr_out.splice(0, 1)
+                    log('commit else side, syncTransactions')
+                    db.run('commit')
+
+                    // db.serialize(function () {
+                    //     log('begin transaction else side, syncTransactions')
+                    //     db.run('begin transaction')
+                    //     var stmt = db.prepare(
+                    //         'REPLACE INTO out_info VALUES (?,?,?,?)'
+                    //     )
+                    //     stmt.run(
+                    //         localOut.amount.toString(),
+                    //         localOut.i,
+                    //         data2.result.tx_id,
+                    //         localBl.height
+                    //     )
+                    //     stmt.finalize()
+                    //     localBl.tr_out.splice(0, 1)
+                    //     log('commit else side, syncTransactions')
+                    //     db.run('commit')
+                    // })
                     log('tr_out left = ' + localBl.tr_out.length)
                     await delay(serverTimeout)
                     await syncTransactions(success)
                 } catch (error) {
-                    db.run('rollback')
                     log('syncTransactions() get_out_info ERROR', error)
                     now_blocks_sync = false
                 }
