@@ -1160,60 +1160,34 @@ async function syncBlocks() {
                 await syncBlocks()
             }
         } else {
-            db.serialize(function () {
-                var deleteCount = 100
-                log(
-                    'height > ' +
-                        (parseInt(lastBlock.height) - deleteCount) +
-                        ' deleted'
-                )
-                db.run(
-                    'DELETE FROM blocks WHERE height > ' +
-                        (parseInt(lastBlock.height) - deleteCount) +
-                        ';'
-                )
-                db.run(
-                    'DELETE FROM charts WHERE height > ' +
-                        (parseInt(lastBlock.height) - deleteCount) +
-                        ';'
-                )
-                db.run(
-                    'DELETE FROM transactions WHERE keeper_block > ' +
-                        (parseInt(lastBlock.height) - deleteCount) +
-                        ';'
-                )
-                db.run(
-                    'UPDATE aliases SET enabled=1 WHERE transact IN (SELECT transact FROM aliases WHERE alias IN (select alias from aliases where block > ' +
-                        (parseInt(lastBlock.height) - deleteCount) +
-                        ' ) AND enabled == 0 GROUP BY alias);'
-                )
-                db.run(
-                    'DELETE FROM aliases WHERE block > ' +
-                        (parseInt(lastBlock.height) - deleteCount) +
-                        ';'
-                )
-                db.run(
-                    'DELETE FROM out_info WHERE block > ' +
-                        (parseInt(lastBlock.height) - deleteCount) +
-                        ';'
-                )
-                db.get(
-                    'SELECT * FROM blocks WHERE  height=(SELECT MAX(height) FROM blocks)',
-                    [],
-                    async function (err, row) {
-                        if (row) {
-                            lastBlock = row
-                        } else {
-                            lastBlock = {
-                                height: -1,
-                                id: '0000000000000000000000000000000000000000000000000000000000000000'
-                            }
-                        }
-                        await delay(serverTimeout)
-                        await syncBlocks()
-                    }
-                )
-            })
+            const deleteCount = 100
+            const height = parseInt(lastBlock.height) - deleteCount
+            await query(`DELETE FROM blocks WHERE height > ${height};`, 'run')
+            await query(`DELETE FROM charts WHERE height > ${height};`, 'run')
+            await query(
+                `DELETE FROM transactions WHERE keeper_block > ${height};`,
+                'run'
+            )
+            await query(
+                `UPDATE aliases SET enabled=1 WHERE transact IN (SELECT transact FROM aliases WHERE alias IN (select alias from aliases where block > ${height}`,
+                'run'
+            )
+            await query(`DELETE FROM aliases WHERE block > ${height};`, 'run')
+            await query(`DELETE FROM out_info WHERE block > ${height};`, 'run')
+            const row = await query(
+                'SELECT * FROM blocks WHERE  height=(SELECT MAX(height) FROM blocks);',
+                'get'
+            )
+            if (row) {
+                lastBlock = row
+            } else {
+                lastBlock = {
+                    height: -1,
+                    id: '0000000000000000000000000000000000000000000000000000000000000000'
+                }
+            }
+            await delay(serverTimeout)
+            await syncBlocks()
         }
     } catch (error) {
         log('syncBlocks() get_blocks_details ERROR')
