@@ -282,8 +282,7 @@ app.get('/get_out_info/:amount/:i', async (req, res) => {
         )
         if (row === undefined) {
             let response = await get_out_info(amount, i)
-            let data = response.data
-            res.send(JSON.stringify({ tx_id: data.result.tx_id }))
+            res.send(JSON.stringify({ tx_id: response.data.result.tx_id }))
         } else {
             res.send(JSON.stringify(row))
         }
@@ -514,8 +513,7 @@ app.get('/search_by_id/:id', async (req, res) => {
                 if (row === undefined) {
                     try {
                         let response = await get_tx_details(id)
-                        let data = response.data
-                        if (data.result) {
+                        if (response.data.result) {
                             res.send(JSON.stringify({ result: 'tx' }))
                         } else {
                             db.all(
@@ -987,11 +985,11 @@ async function syncTransactions() {
                         localOutAmount,
                         localOut.i
                     )
-                    let data2 = response.data
+                    // let data2 = response.data
                     db.run('begin transaction')
                     let sql = `REPLACE INTO out_info VALUES ('${localOut.amount.toString()}', 
                                 ${localOut.i}, 
-                                '${data2.result.tx_id}', 
+                                '${response.data.result.tx_id}', 
                                 ${localBl.height});`
                     await query(sql, 'run')
                     localBl.tr_out.splice(0, 1)
@@ -1094,9 +1092,10 @@ async function syncBlocks() {
             count = 1
         }
         let response = await get_blocks_details(lastBlock.height + 1, count)
-        let body2 = response.data
         var localBlocks =
-            body2.result && body2.result.blocks ? body2.result.blocks : []
+            response.data.result && response.data.result.blocks
+                ? response.data.result.blocks
+                : []
         if (localBlocks.length && lastBlock.id === localBlocks[0].prev_id) {
             block_array = localBlocks
             await syncTransactions()
@@ -1159,29 +1158,28 @@ async function syncAltBlocks() {
     try {
         await query('DELETE FROM alt_blocks', 'run')
         let response = await get_alt_blocks_details(0, countAltBlocksServer)
-        let data = response.data
-        for (var x in data.result.blocks) {
+        for (var block of response.data.result.blocks) {
             let sql = `INSERT INTO alt_blocks VALUES (
-            ${data.result.blocks[x].height},
-            ${data.result.blocks[x].timestamp},
-            ${data.result.blocks[x].actual_timestamp},
-            ${data.result.blocks[x].block_cumulative_size},
-            '${data.result.blocks[x].id}',
-            ${data.result.blocks[x].type},
-            '${data.result.blocks[x].difficulty.toString()}',
-            '${data.result.blocks[x].cumulative_diff_adjusted.toString()}',
-            '${data.result.blocks[x].cumulative_diff_precise.toString()}',
-            ${data.result.blocks[x].is_orphan},
-            '${data.result.blocks[x].base_reward}',
-            '${data.result.blocks[x].total_fee.toString()}',
-            '${data.result.blocks[x].penalty}',
-            '${data.result.blocks[x].summary_reward}',
-            ${data.result.blocks[x].block_cumulative_size},
-            '${data.result.blocks[x].this_block_fee_median}',
-            '${data.result.blocks[x].effective_fee_median}',
-            ${data.result.blocks[x].total_txs_size},
-            '${JSON.stringify(data.result.blocks[x].transactions_details)}',
-            '${data.result.blocks[x].miner_text_info}',
+            ${block.height},
+            ${block.timestamp},
+            ${block.actual_timestamp},
+            ${block.block_cumulative_size},
+            '${block.id}',
+            ${block.type},
+            '${block.difficulty.toString()}',
+            '${block.cumulative_diff_adjusted.toString()}',
+            '${block.cumulative_diff_precise.toString()}',
+            ${block.is_orphan},
+            '${block.base_reward}',
+            '${block.total_fee.toString()}',
+            '${block.penalty}',
+            '${block.summary_reward}',
+            ${block.block_cumulative_size},
+            '${block.this_block_fee_median}',
+            '${block.effective_fee_median}',
+            ${block.total_txs_size},
+            '${JSON.stringify(block.transactions_details)}',
+            '${block.miner_text_info}',
             ''
             );`
             await query(sql, 'run')
@@ -1205,8 +1203,7 @@ async function getInfoTimer() {
     if (now_delete_offers === false) {
         try {
             let response = await get_info()
-            let body = response.data
-            blockInfo = body.result
+            blockInfo = response.data.result
             countAliasesServer = blockInfo.alias_count
             countAltBlocksServer = blockInfo.alt_blocks_count
             countTrPoolServer = blockInfo.tx_pool_size
