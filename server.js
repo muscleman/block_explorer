@@ -841,7 +841,7 @@ async function syncPool() {
 }
 
 function parseComment(comment) {
-    var splitComment = comment.split(/\s*,\s*/)
+    var splitComment = comment.split(/\s*,\s*/).filter((el) => !!el)
     var splitResult = splitComment[4]
     if (splitResult) {
         var result = splitResult.split(/\s*"\s*/)
@@ -858,7 +858,7 @@ function parseComment(comment) {
 }
 
 function parseTrackingKey(trackingKey) {
-    var splitKey = trackingKey.split(/\s*,\s*/)
+    var splitKey = trackingKey.split(/\s*,\s*/).filter((el) => !!el)
     var resultKey = splitKey[5]
     if (resultKey) {
         var key = resultKey.split(':')
