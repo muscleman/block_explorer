@@ -52,20 +52,19 @@ export class MainInfoComponent
 
     ngOnInit() {
         this.getInfoPrepare(this.route.snapshot.data['MainInfo'])
-        this.httpService
-            .subscribeInfo()
-            .pipe(take(1))
-            .subscribe(
-                (data) => {
+        this._track(
+            this.httpService.subscribeInfo().subscribe({
+                next: (data) => {
                     this.getInfoPrepare(data)
                 },
-                (err) => {
+                error: (err) => {
                     console.log(err)
                 },
-                () => {
+                complete: () => {
                     this.letGetInfo.emit(this.info)
                 }
-            )
+            })
+        )
     }
 
     ngOnDestroy() {

@@ -69,18 +69,13 @@ export class BlockDetailsComponent
             this.navBlockchainMobile.classList.add('active')
         this.getInfoPrepare(this.route.snapshot.data['MainInfo'])
 
-        this.httpService
-            .subscribeInfo()
-            .pipe(take(1))
-            .subscribe((data) => {
+        this._track(
+            this.httpService.subscribeInfo().subscribe((data) => {
                 this.getInfoPrepare(data)
-            })
+            }),
 
-        this.route.params.subscribe((params) => {
-            this.httpService
-                .getMainBlockDetails(params.id)
-                .pipe(take(1))
-                .subscribe({
+            this.route.params.subscribe((params) => {
+                this.httpService.getMainBlockDetails(params.id).subscribe({
                     next: (data) => {
                         this.Block = data
                         this.prevBlockId = this.Block.prev_id
@@ -102,10 +97,12 @@ export class BlockDetailsComponent
                         this.BlockNotFound = true
                     }
                 })
-        })
-        this.mobileNavState.change.subscribe((navIsOpen) => {
-            this.navIsOpen = navIsOpen
-        })
+            }),
+
+            this.mobileNavState.change.subscribe((navIsOpen) => {
+                this.navIsOpen = navIsOpen
+            })
+        )
     }
 
     ngOnDestroy() {

@@ -6,42 +6,42 @@ import {
     RouterStateSnapshot,
     Router
 } from '@angular/router'
-import { Observable, Subject } from 'rxjs'
+import { defer, Observable, Subject } from 'rxjs'
 import { environment } from '../environments/environment'
-import { map } from 'rxjs/operators'
+import { delay, map, repeat } from 'rxjs/operators'
 
 @Injectable()
 export class HttpService {
-    private serverApi = ''
+    public serverApi = ''
     private Info = new Subject<any>()
     private infoObj: any
 
     constructor(protected httpClient: HttpClient, private router: Router) {
-        if (!environment.production) {
-            this.serverApi = environment.backend
-        }
-
-        function getTimeOut() {
-            setTimeout(function () {
-                this.httpClient.get(this.serverApi + '/get_info').subscribe(
-                    (response) => {
+        this.serverApi = environment.backend
+        defer(() => {
+            return this.httpClient
+                .get<Response>(`${this.serverApi}/get_info`)
+                .pipe(
+                    map((response) => {
                         this.infoObj = response
-                        this.Info.next(this.infoObj)
-                        if (this.router.url === '/server-error') {
-                            this.router.navigate(['/'])
-                        }
-                        getTimeOut()
-                    },
-                    (err: HttpErrorResponse) => {
-                        console.log('error', err)
-                        this.router.navigate(['/server-error'])
-                        getTimeOut()
-                    }
+                        return this.infoObj
+                    })
                 )
-            }, 6000)
-        }
-
-        getTimeOut()
+        })
+            .pipe(delay(6000), repeat())
+            .subscribe({
+                next: (response) => {
+                    this.infoObj = response
+                    this.Info.next(response)
+                    if (this.router.url === '/server-error') {
+                        this.router.navigate(['/'])
+                    }
+                },
+                error: (err) => {
+                    console.log('error', err)
+                    this.router.navigate(['/server-error'])
+                }
+            })
     }
 
     subscribeInfo() {
@@ -51,7 +51,7 @@ export class HttpService {
     getInfo(): Observable<Response> {
         if (this.infoObj === undefined) {
             const URL = `${this.serverApi}/get_info`
-            return this.httpClient.get(URL).pipe(
+            return this.httpClient.get<Response>(URL).pipe(
                 map((response) => {
                     this.infoObj = response
                     return this.infoObj

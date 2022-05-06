@@ -126,17 +126,16 @@ export class BlockchainComponent
 
         this.getInfoPrepare(this.route.snapshot.data['MainInfo'])
 
-        this.httpService
-            .subscribeInfo()
-            .pipe(take(1))
-            .subscribe((data) => {
+        this._track(
+            this.httpService.subscribeInfo().subscribe((data) => {
                 this.getInfoPrepare(data)
-            })
-        this.onChange()
+            }),
 
-        this.mobileNavState.change.subscribe((navIsOpen) => {
-            this.navIsOpen = navIsOpen
-        })
+            this.mobileNavState.change.subscribe((navIsOpen) => {
+                this.navIsOpen = navIsOpen
+            })
+        )
+        this.onChange()
     }
 
     ngOnDestroy() {

@@ -19,7 +19,7 @@
  */
 
 /** Evergreen browsers require these. **/
-import 'core-js/es/'
+// import 'core-js/es/'
 
 /***************************************************************************************************
  * Zone JS is required by Angular itself.
