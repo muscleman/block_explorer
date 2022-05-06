@@ -70,10 +70,8 @@ export class AltBlocksComponent
         this.limitList = +this.count
         this.cookieService.set('setCountAltBlocksCookie', this.limitList)
         this.offset = (this.currentPage - 1) * this.count
-        this.httpService
-            .getAltBlocks(this.offset, this.count)
-            .pipe(take(1))
-            .subscribe({
+        this._track(
+            this.httpService.getAltBlocks(this.offset, this.count).subscribe({
                 next: (data) => {
                     this.altBlocks = data
                     for (let i = 0; i < this.altBlocks.length; i++) {
@@ -90,6 +88,7 @@ export class AltBlocksComponent
                     this.visiblePagination = true
                 }
             })
+        )
     }
 
     nextPage() {

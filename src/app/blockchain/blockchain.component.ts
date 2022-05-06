@@ -293,69 +293,70 @@ export class BlockchainComponent
                 this.lastSendBlockDetail.start = this.listBlockStart
                 this.lastSendBlockDetail.limit = this.limit
                 this.loader = true
-                this.httpService
-                    .getBlockDetails(this.listBlockStart, this.limit)
-                    .pipe(take(1))
-                    .subscribe({
-                        next: (data) => {
-                            this.BlockDetails = data
-                            if (this.BlockDetails.length) {
-                                const self = this
-                                if (this.maxViewedBlockHeight) {
-                                    for (const item of this.BlockDetails) {
-                                        item.isNew =
-                                            item.height >
-                                            this.maxViewedBlockHeight
-                                    }
-                                    this.ngZone.runOutsideAngular(() => {
-                                        setTimeout(() => {
-                                            this.ngZone.run(() => {
-                                                for (const item of self.BlockDetails) {
-                                                    item.isNew = false
-                                                }
-                                            })
-                                        }, 2000)
-                                    })
-                                    if (
-                                        this.maxViewedBlockHeight <
-                                        this.BlockDetails[
-                                            this.BlockDetails.length - 1
-                                        ].height
-                                    ) {
+                this._track(
+                    this.httpService
+                        .getBlockDetails(this.listBlockStart, this.limit)
+                        .subscribe({
+                            next: (data) => {
+                                this.BlockDetails = data
+                                if (this.BlockDetails.length) {
+                                    const self = this
+                                    if (this.maxViewedBlockHeight) {
+                                        for (const item of this.BlockDetails) {
+                                            item.isNew =
+                                                item.height >
+                                                this.maxViewedBlockHeight
+                                        }
+                                        this.ngZone.runOutsideAngular(() => {
+                                            setTimeout(() => {
+                                                this.ngZone.run(() => {
+                                                    for (const item of self.BlockDetails) {
+                                                        item.isNew = false
+                                                    }
+                                                })
+                                            }, 2000)
+                                        })
+                                        if (
+                                            this.maxViewedBlockHeight <
+                                            this.BlockDetails[
+                                                this.BlockDetails.length - 1
+                                            ].height
+                                        ) {
+                                            this.maxViewedBlockHeight =
+                                                this.BlockDetails[
+                                                    this.BlockDetails.length - 1
+                                                ].height
+                                        }
+                                    } else {
                                         this.maxViewedBlockHeight =
                                             this.BlockDetails[
                                                 this.BlockDetails.length - 1
                                             ].height
                                     }
-                                } else {
-                                    this.maxViewedBlockHeight =
-                                        this.BlockDetails[
-                                            this.BlockDetails.length - 1
-                                        ].height
-                                }
-                                if (
-                                    this.goToBlock &&
-                                    this.setBlockValid === true
-                                ) {
-                                    for (const row of this.BlockDetails) {
-                                        row.select =
-                                            row.height === +this.goToBlock
+                                    if (
+                                        this.goToBlock &&
+                                        this.setBlockValid === true
+                                    ) {
+                                        for (const row of this.BlockDetails) {
+                                            row.select =
+                                                row.height === +this.goToBlock
+                                        }
+                                        this.ngZone.runOutsideAngular(() => {
+                                            setTimeout(() => {
+                                                this.ngZone.run(() => {
+                                                    for (const row of self.BlockDetails) {
+                                                        row.select = false
+                                                    }
+                                                })
+                                            }, 2000)
+                                        })
                                     }
-                                    this.ngZone.runOutsideAngular(() => {
-                                        setTimeout(() => {
-                                            this.ngZone.run(() => {
-                                                for (const row of self.BlockDetails) {
-                                                    row.select = false
-                                                }
-                                            })
-                                        }, 2000)
-                                    })
                                 }
-                            }
-                        },
-                        error: (err) => (this.BlockDetails = []),
-                        complete: () => (this.loader = false)
-                    })
+                            },
+                            error: (err) => (this.BlockDetails = []),
+                            complete: () => (this.loader = false)
+                        })
+                )
             }
         }
     }
