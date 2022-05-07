@@ -5,6 +5,7 @@ const { Pool } = require('pg')
 const axios = require('axios')
 const JSONbig = require('json-bigint')
 const BigNumber = require('bignumber.js')
+const exceptionHandler = require('./exceptionHandler')
 
 let config = fs.readFileSync('config.json', 'utf8')
 config = JSON.parse(config)
@@ -142,396 +143,314 @@ const get_out_info = (amount, i) => {
     })
 }
 
-app.get('/get_info', (req, res) => {
-    blockInfo.lastBlock = lastBlock.height
-    res.send(JSON.stringify(blockInfo))
-})
+app.get(
+    '/get_info',
+    exceptionHandler((req, res, next) => {
+        blockInfo.lastBlock = lastBlock.height
+        res.json(blockInfo)
+    })
+)
 
 // Blockchain page
-app.get('/get_blocks_details/:start/:count', async (req, res) => {
-    let start = req.params.start
-    let count = req.params.count
+app.get(
+    '/get_blocks_details/:start/:count',
+    exceptionHandler(async (req, res, next) => {
+        let start = req.params.start
+        let count = req.params.count
 
-    if (start && count) {
-        try {
+        if (start && count) {
             let result = await db.query(
                 `SELECT blocks.* FROM blocks WHERE blocks.height >= ${start} ORDER BY blocks.height ASC LIMIT ${count};`
             )
-            res.send(JSON.stringify(JSON.stringify(result.rows[0])))
-        } catch (error) {
-            log('get_blocks_details', error)
+            res.json(result && result.rowCount > 0 ? result.rows : [])
         }
-    }
-})
+    })
+)
 
-app.get('/get_main_block_details/:id', (req, res) => {
-    let id = req.params.id.toLowerCase()
-    if (id) {
-        db.serialize(function () {
-            db.get(
-                'SELECT b2.id as next_id, b1.* FROM blocks as b1 left join blocks as b2 on b2.height > b1.height WHERE b1.id == ? ORDER BY b2.height ASC LIMIT 1;',
-                [id],
-                function (err, row) {
-                    if (row) {
-                        db.all(
-                            'SELECT * FROM transactions WHERE keeper_block == ? ;',
-                            [row.height],
-                            function (err2, rows2) {
-                                for (let i = 0; i < rows2.length; i++) {
-                                    rows2[i].extra = JSON.parse(rows2[i].extra)
-                                    rows2[i].ins = JSONbig(rows2[i].ins)
-                                    rows2[i].outs = JSONbig(rows2[i].outs)
-                                    rows2[i].attachments = JSON.parse(
-                                        rows2[i].attachments
-                                    )
-                                }
-                                row.transactions_details = rows2
-                                res.send(JSON.stringify(row))
-                            }
-                        )
-                    } else {
-                        res.send(JSON.stringify('block not found'))
-                    }
-                }
+app.get(
+    '/get_main_block_details/:id',
+    exceptionHandler(async (req, res, next) => {
+        let id = req.params.id.toLowerCase()
+        if (id) {
+            let result = await db.query(
+                `SELECT b2.id as next_id, b1.* FROM blocks as b1 left join blocks as b2 on b2.height > b1.height WHERE b1.id = '${id}' ORDER BY b2.height ASC LIMIT 1;`
             )
-        })
-    }
-})
+            if (result && result.rowCount > 0) {
+                let result2 = await db.query(
+                    `SELECT * FROM transactions WHERE keeper_block = ${result.rows[0].height};`
+                )
+                result.rows[0].transactions_details = result2.rows
+                res.json(result.rows[0])
+            } else {
+                res.send(JSON.stringify('block not found'))
+            }
+        }
+    })
+)
 
-app.get('/get_tx_pool_details/:count', async (req, res) => {
-    let count = req.params.count
-    if (count !== undefined) {
-        try {
+app.get(
+    '/get_tx_pool_details/:count',
+    exceptionHandler(async (req, res, next) => {
+        let count = req.params.count
+        if (count !== undefined) {
             let result = await db.query(
                 `SELECT * FROM pool ORDER BY timestamp DESC limit ${count};`
             )
-            res.send(JSON.stringify(JSON.stringify(result.rows[0])))
-        } catch (error) {
-            log('get_tx_pool_details', error)
+            res.send(
+                JSON.stringify(result && result.rowCount > 0 ? result.rows : [])
+            )
+        } else {
+            res.send("Error. Need 'count' params")
         }
-    } else {
-        res.send("Error. Need 'count' params")
-    }
-})
+    })
+)
 
 // Alt-blocks
-app.get('/get_alt_blocks_details/:offset/:count', async (req, res) => {
-    let offset = req.params.offset
-    let count = req.params.count
+app.get(
+    '/get_alt_blocks_details/:offset/:count',
+    exceptionHandler(async (req, res, next) => {
+        let offset = parseInt(req.params.offset)
+        let count = parseInt(req.params.count)
 
-    if (count > maxCount) {
-        count = maxCount
-    }
-    try {
+        if (count > maxCount) {
+            count = maxCount
+        }
         let result = await db.query(
             `SELECT * FROM alt_blocks ORDER BY height DESC limit ${count} offset ${offset};`
         )
-        res.send(JSON.stringify(JSON.stringify(result.rows[0])))
-    } catch (error) {
-        log('get_alt_block_details', error)
-    }
-})
+        res.send(
+            JSON.stringify(result && result.rowCount > 0 ? result.rows : [])
+        )
+    })
+)
 
-app.get('/get_alt_block_details/:id', async (req, res) => {
-    let id = req.params.id.toLowerCase()
-    if (id) {
-        try {
+app.get(
+    '/get_alt_block_details/:id',
+    exceptionHandler(async (req, res, next) => {
+        let id = req.params.id.toLowerCase()
+        if (!!id) {
             let result = await db.query(
-                `SELECT * FROM alt_blocks WHERE hash == ${id};`
+                `SELECT * FROM alt_blocks WHERE hash = '${id}';`
             )
-            res.send(JSON.stringify(JSON.stringify(result.rows[0])))
-        } catch (error) {
-            log('get_alt_block_details', error)
-        }
-    }
-})
+            res.send(
+                JSON.stringify(
+                    result && result.rowCount > 0 ? result.rows[0] : []
+                )
+            )
+        } else
+            res.status({ status: 500 }).json({
+                message: `/get_out_info/:amount/:i ${req.params}, ${error}`
+            })
+    })
+)
 
 // Transactions
-app.get('/get_tx_details/:tx_hash', (req, res) => {
-    let tx_hash = req.params.tx_hash.toLowerCase()
-    if (tx_hash) {
-        db.serialize(function () {
-            db.all(
-                'SELECT transactions.*, blocks.id as block_hash, blocks.timestamp as block_timestamp FROM transactions LEFT JOIN blocks ON transactions.keeper_block = blocks.height WHERE transactions.id == ? ;',
-                [tx_hash],
-                async function (err, row) {
-                    if (row.length) {
-                        res.send(JSON.stringify(row[0]))
-                    } else {
-                        try {
-                            let response = await get_tx_details(tx_hash)
-                            let data = response.data
-                            if (data.result !== undefined) {
-                                res.send(JSON.stringify(data.result.tx_info))
-                            } else {
-                                res.send("Error. Need 'tx_hash' param")
-                            }
-                        } catch (error) {
-                            res.send("Error. Need 'tx_hash' param")
-                        }
-                    }
-                }
+app.get(
+    '/get_tx_details/:tx_hash',
+    exceptionHandler(async (req, res, next) => {
+        let tx_hash = req.params.tx_hash.toLowerCase()
+        if (tx_hash) {
+            let result = await db.query(
+                `SELECT transactions.*, blocks.id as block_hash, blocks.timestamp as block_timestamp FROM transactions LEFT JOIN blocks ON transactions.keeper_block = blocks.height WHERE transactions.id = '${tx_hash}';`
             )
-        })
-    }
-})
-
-app.get('/get_out_info/:amount/:i', async (req, res) => {
-    let amount = req.params.amount
-    let i = req.params.i
-
-    if (amount !== undefined && i !== undefined) {
-        let result = await db.query(
-            `SELECT * FROM out_info WHERE amount = ${amount} AND i = ${i}`
-        )
-        if (result === undefined) {
-            let response = await get_out_info(amount, i)
-            res.send(JSON.stringify({ tx_id: response.data.result.tx_id }))
-        } else {
-            res.send(JSON.stringify(result.rows[0]))
+            if (result && result.rowCount > 0)
+                res.send(JSON.stringify(result.rows[0]))
+            else {
+                let response = await get_tx_details(tx_hash)
+                let data = response.data
+                if (data.result !== undefined) {
+                    res.send(JSON.stringify(data.result.tx_info))
+                } else {
+                    res.status({ status: 500 }).json({
+                        message: `/get_tx_details/:tx_hash ${req.params}, ${error}`
+                    })
+                }
+            }
         }
-    }
-})
+    })
+)
+
+app.get(
+    '/get_out_info/:amount/:i',
+    exceptionHandler(async (req, res, next) => {
+        let amount = req.params.amount
+        let i = parseInt(req.params.i)
+        if (!!amount && !!i) {
+            let result = await db.query(
+                `SELECT * FROM out_info WHERE amount = '${amount}' AND i = ${i}`
+            )
+            if (result === undefined || result.rowCount === 0) {
+                let response = await get_out_info(amount, i)
+                res.send(JSON.stringify({ tx_id: response.data.result.tx_id }))
+            } else {
+                res.send(JSON.stringify(result.rows[0]))
+            }
+        } else {
+            res.status({ status: 500 }).json({
+                message: `/get_out_info/:amount/:i ${req.params}, ${error}`
+            })
+        }
+    })
+)
 
 // Aliases
-app.get('/get_aliases/:offset/:count/:search', (req, res) => {
-    let offset = req.params.offset
-    let count = req.params.count
-    let search = req.params.search.toLowerCase()
-    if (count > maxCount) {
-        count = maxCount
-    }
-    if (search === 'all' && offset !== undefined && count !== undefined) {
-        db.serialize(function () {
-            db.all(
-                'SELECT * FROM aliases WHERE enabled == 1 ORDER BY block DESC limit ? offset ?',
-                [count, offset],
-                function (err, rows) {
-                    res.send(JSON.stringify(rows))
-                }
+app.get(
+    '/get_aliases/:offset/:count/:search',
+    exceptionHandler(async (req, res, next) => {
+        let offset = parseInt(req.params.offset)
+        let count = parseInt(req.params.count)
+        if (count > maxCount) {
+            count = maxCount
+        }
+        let search = req.params.search.toLowerCase()
+
+        if (search === 'all' && offset !== undefined && count !== undefined) {
+            let result = await db.query(
+                `SELECT * FROM aliases WHERE enabled = 1 ORDER BY block DESC limit ${count} offset ${offset};`
             )
-        })
-    } else if (
-        search !== undefined &&
-        offset !== undefined &&
-        count !== undefined
-    ) {
-        db.serialize(function () {
-            db.all(
-                "SELECT * FROM aliases WHERE enabled == 1 AND (alias LIKE '%" +
-                    search +
-                    "%' OR address LIKE '%" +
-                    search +
-                    "%' OR comment LIKE '%" +
-                    search +
-                    "%') ORDER BY block DESC limit ? offset ?",
-                [count, offset],
-                function (err, rows) {
-                    res.send(JSON.stringify(rows))
-                }
+            res.send(
+                JSON.stringify(
+                    result && result.rowCount > 0 ? result.rows[0] : []
+                )
             )
-        })
-    }
-})
+        } else if (
+            search !== undefined &&
+            offset !== undefined &&
+            count !== undefined
+        ) {
+            let result = db.query(
+                `SELECT * FROM aliases WHERE enabled = 1 AND (alias LIKE '%{search}%' OR address LIKE '%${search}%' OR comment LIKE '%${search}%') ORDER BY block DESC limit ${count} offset ${offset};`
+            )
+            res.send(
+                JSON.stringify(
+                    result && result.rowCount > 0 ? result.rows[0] : []
+                )
+            )
+        }
+    })
+)
 
 // Charts
-app.get('/get_chart/:chart/:period', async (req, res) => {
-    let chart = req.params.chart
-    if (chart !== undefined) {
-        if (chart === 'all') {
-            let period = Math.round(new Date().getTime() / 1000) - 24 * 3600 // + 86400000
-            let period2 = Math.round(new Date().getTime() / 1000) - 48 * 3600 // + 86400000
-            if (!!req.params.period) {
-                if (req.params.period !== 'all') period = req.params.period
-            }
-
-            db.serialize(function () {
-                // Charts AvgBlockSize, AvgTransPerBlock, difficultyPoS, difficultyPoW
-                db.all(
-                    'SELECT actual_timestamp as at, block_cumulative_size as bcs, tr_count as trc, difficulty as d, type as t FROM charts WHERE actual_timestamp > ' +
-                        period +
-                        ' ORDER BY actual_timestamp;',
-                    function (err, arrayAll) {
-                        if (err) {
-                            log('all charts error', err)
-                        } else {
-                            // Chart Confirmed Transactions Per Day
-                            db.all(
-                                "SELECT actual_timestamp as at, SUM(tr_count) as sum_trc FROM charts GROUP BY strftime('%Y-%m-%d', datetime(actual_timestamp, 'unixepoch')) ORDER BY actual_timestamp;",
-                                function (err, rows0) {
-                                    if (err) {
-                                        log(
-                                            'all charts confirmed-transactions-per-day',
-                                            err
-                                        )
-                                    } else {
-                                        // Chart HashRate
-                                        db.all(
-                                            'SELECT actual_timestamp as at, difficulty120 as d120, hashrate100 as h100, hashrate400 as h400 FROM charts WHERE type=1 AND actual_timestamp > ' +
-                                                period2 +
-                                                ' ORDER BY actual_timestamp;',
-                                            function (err, rows1) {
-                                                if (err) {
-                                                    log('all hashrate', err)
-                                                } else {
-                                                    arrayAll[0] = rows0
-                                                    arrayAll[1] = rows1
-                                                    res.send(
-                                                        JSON.stringify(arrayAll)
-                                                    )
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-                            )
-                        }
-                    }
+app.get(
+    '/get_chart/:chart/:period',
+    exceptionHandler(async (req, res) => {
+        let chart = req.params.chart
+        if (chart !== undefined) {
+            if (chart === 'all') {
+                let period = 0 //Math.round(new Date().getTime() / 1000) - 24 * 3600 // + 86400000
+                let period2 =
+                    Math.round(new Date().getTime() / 1000) - 48 * 3600 // + 86400000
+                // if (!!req.params.period) {
+                //     if (req.params.period !== 'all')
+                //         period = req.params.period
+                // }
+                //convert me into a sp or view[sqllite3] please!!
+                let arrayAll = await db.query(
+                    `SELECT actual_timestamp as at, block_cumulative_size as bcs, tr_count as trc, difficulty as d, type as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at;`
                 )
-            })
-        } else if (chart === 'AvgBlockSize') {
-            let result = null
-            try {
+                let rows0 = await db.query(
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, SUM(tr_count)::integer as sum_trc FROM charts GROUP BY at ORDER BY at;`
+                )
+                let rows1 = await db.query(
+                    `SELECT actual_timestamp as at, difficulty120 as d120, hashrate100 as h100, hashrate400 as h400 FROM charts WHERE type=1 AND actual_timestamp > ${period2} ORDER BY at;`
+                )
+                arrayAll.rows[0] = rows0.rows
+                arrayAll.rows[1] = rows1.rows
+                res.json(arrayAll.rows)
+            } else if (chart === 'AvgBlockSize') {
                 result = await db.query(
-                    `SELECT actual_timestamp as at, avg(block_cumulative_size) as bcs FROM charts GROUP BY strftime('%Y-%m-%d, %H', datetime(actual_timestamp, 'unixepoch')) ORDER BY actual_timestamp;`
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, avg(block_cumulative_size)::integer as bcs FROM charts GROUP BY at ORDER BY at;`
                 )
-                res.send(JSON.stringify(JSON.stringify(result.rows[0])))
-            } catch (error) {
-                log('pow-AvgBlockSize', error)
-            }
-        } else if (chart === 'AvgTransPerBlock') {
-            let result = null
-            try {
+                res.json(result && result.rowCount > 0 ? result.rows : [])
+            } else if (chart === 'AvgTransPerBlock') {
                 result = await db.query(
-                    `SELECT actual_timestamp as at, avg(tr_count) as trc FROM charts GROUP BY strftime('%Y-%m-%d, %H', datetime(actual_timestamp, 'unixepoch')) ORDER BY actual_timestamp;`
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, avg(tr_count) as trc FROM charts GROUP BY at ORDER BY at;`
                 )
-                res.send(JSON.stringify(JSON.stringify(result.rows[0])))
-            } catch (error) {
-                log('pow-AvgTransPerBlock', error)
-            }
-        } else if (chart === 'hashRate') {
-            let result = null
-            try {
+                res.json(result && result.rowCount > 0 ? result.rows : [])
+            } else if (chart === 'hashRate') {
                 result = await db.query(
-                    `SELECT actual_timestamp as at, avg(difficulty120) as d120, avg(hashrate100) as h100, avg(hashrate400) as h400 FROM charts WHERE type=1 GROUP BY strftime('%Y-%m-%d, %H', datetime(actual_timestamp, 'unixepoch')) ORDER BY actual_timestamp;`
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, avg(difficulty120) as d120, avg(hashrate100) as h100, avg(hashrate400) as h400 FROM charts WHERE type=1 GROUP BY at ORDER BY at;`
                 )
-                res.send(JSON.stringify(result.rows[0]))
-            } catch (error) {
-                log('pow-difficulty', error)
-            }
-        } else if (chart === 'pos-difficulty') {
-            let result = null
-            let result1 = null
-            try {
-                result = await db.query(
-                    `SELECT actual_timestamp as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty) else min(difficulty) end as d FROM charts WHERE type=0 GROUP BY strftime('%Y-%m-%d, %H', datetime(actual_timestamp, 'unixepoch')) ORDER BY actual_timestamp;`
-                )
-            } catch (error) {
-                log('pow-difficulty', error)
-            }
-            try {
-                result1 = await db.query(
-                    'SELECT actual_timestamp as at, difficulty as d FROM charts WHERE type=0 ORDER BY actual_timestamp;'
-                )
-                res.send(
-                    JSON.stringify({
-                        aggregated: result.rows[0],
-                        detailed: result1.rows[0]
-                    })
-                )
-            } catch (error) {
-                log('pow-difficulty', error)
-            }
-        } else if (chart === 'pow-difficulty') {
-            let result = null
-            let result1 = null
-            try {
-                result = await db.query(
-                    `SELECT actual_timestamp as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty) else min(difficulty) end as d FROM charts WHERE type=1 GROUP BY strftime('%Y-%m-%d, %H', datetime(actual_timestamp, 'unixepoch'))  ORDER BY actual_timestamp;`
-                )
-            } catch (error) {
-                log('pow-difficulty', error)
-            }
-            try {
-                result1 = await db.query(
-                    'SELECT actual_timestamp as at, difficulty as d FROM charts WHERE type=1 ORDER BY actual_timestamp;'
-                )
-                res.send(
-                    JSON.stringify({
-                        aggregated: result.rows[0],
-                        detailed: result1.rows[0]
-                    })
-                )
-            } catch (error) {
-                log('pow-difficulty', error)
-            }
-        } else if (chart === 'ConfirmTransactPerDay') {
-            try {
+                res.json(result && result.rowCount > 0 ? result.rows : [])
+            } else if (chart === 'pos-difficulty') {
                 let result = await db.query(
-                    "SELECT actual_timestamp as at, SUM(tr_count) as sum_trc FROM charts GROUP BY strftime('%Y-%m-%d', datetime(actual_timestamp, 'unixepoch')) ORDER BY actual_timestamp;"
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty) else min(difficulty) end as d FROM charts WHERE type=0 GROUP BY at ORDER BY at;`
                 )
-                if (result.rowCount > 0)
-                    res.send(JSON.stringify(result.rows[0]))
-            } catch (error) {
-                log('ConfirmTransactPerDay', error)
+                let result1 = await db.query(
+                    'SELECT actual_timestamp as at, difficulty as d FROM charts WHERE type=0 ORDER BY at;'
+                )
+                res.json({
+                    aggregated: result.rows,
+                    detailed: result1.rows
+                })
+            } else if (chart === 'pow-difficulty') {
+                let result = await db.query(
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty) else min(difficulty) end as d FROM charts WHERE type=1 GROUP BY at ORDER BY at;`
+                )
+                let result1 = await db.query(
+                    'SELECT actual_timestamp as at, difficulty as d FROM charts WHERE type=1 ORDER BY at;'
+                )
+                res.json({
+                    aggregated: result.rows,
+                    detailed: result1.rows
+                })
+            } else if (chart === 'ConfirmTransactPerDay') {
+                let result = await db.query(
+                    'SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, SUM(tr_count)::integer as sum_trc FROM charts GROUP BY at ORDER BY at;'
+                )
+                res.json(result && result.rowCount > 0 ? result.rows : [])
             }
         }
-    }
-})
+    })
+)
 
 // Search
-app.get('/search_by_id/:id', async (req, res) => {
-    let id = req.params.id.toLowerCase()
-    if (id) {
-        let result = await db.query(`SELECT * FROM blocks WHERE id == ${id} ;`)
-        if (result === undefined) {
-            result = await db.query(
-                `SELECT * FROM alt_blocks WHERE hash == ${id} ;`
+app.get(
+    '/search_by_id/:id',
+    exceptionHandler(async (req, res, next) => {
+        let id = req.params.id.toLowerCase()
+        if (!!id) {
+            let result = await db.query(
+                `SELECT * FROM blocks WHERE id = '${id}' ;`
             )
             if (result === undefined) {
                 result = await db.query(
-                    `SELECT * FROM transactions WHERE id == ${id} ;`
+                    `SELECT * FROM alt_blocks WHERE hash = '${id}' ;`
                 )
                 if (result === undefined) {
-                    try {
-                        let response = await get_tx_details(id)
-                        if (response.data.result) {
-                            res.send(JSON.stringify({ result: 'tx' }))
-                        } else {
-                            let result = await db.query(
-                                "SELECT * FROM aliases WHERE enabled == 1 AND (alias LIKE '%" +
-                                    id +
-                                    "%' OR address LIKE '%" +
-                                    id +
-                                    "%' OR comment LIKE '%" +
-                                    id +
-                                    "%') ORDER BY block DESC limit 1 offset 0;"
-                            )
-
-                            if (result.rowCount > 0) {
-                                res.send(JSON.stringify({ result: 'alias' }))
+                    result = await db.query(
+                        `SELECT * FROM transactions WHERE id = '${id}' ;`
+                    )
+                    if (result === undefined) {
+                        try {
+                            let response = await get_tx_details(id)
+                            if (response.data.result) {
+                                res.json({ result: 'tx' })
                             } else {
-                                res.send(
-                                    JSON.stringify({
-                                        result: 'NOT FOUND'
-                                    })
+                                let result = await db.query(
+                                    `SELECT * FROM aliases WHERE enabled = 1 AND (alias LIKE '%${id}%' OR address LIKE '%${id}%' OR comment LIKE '%${id}%') ORDER BY block DESC limit 1 offset 0;`
                                 )
+                                if (result.rowCount > 0) {
+                                    res.json({ result: 'alias' })
+                                } else {
+                                    res.json({ result: 'NOT FOUND' })
+                                }
                             }
+                        } catch (error) {
+                            res.json({ result: 'NOT FOUND' })
                         }
-                    } catch (error) {
-                        res.send(JSON.stringify({ result: 'NOT FOUND' }))
+                    } else {
+                        res.json({ result: 'tx' })
                     }
                 } else {
-                    res.send(JSON.stringify({ result: 'tx' }))
+                    res.json({ result: 'alt_block' })
                 }
             } else {
-                res.send(JSON.stringify({ result: 'alt_block' }))
+                res.json({ result: 'block' })
             }
-        } else {
-            res.send(JSON.stringify({ result: 'block' }))
         }
-    }
-})
+    })
+)
 
 var lastBlock = {
     height: -1,
@@ -563,7 +482,7 @@ const start = async () => {
         let result = await db.query(
             'SELECT * FROM blocks WHERE height=(SELECT MAX(height) FROM blocks);'
         )
-        if (result) {
+        if (result && result.rowCount === 1) {
             lastBlock = result.rows[0]
         }
         result = await db.query('SELECT COUNT(*) AS alias FROM aliases;')
@@ -746,17 +665,17 @@ async function syncTransactions() {
                                         : 0
                             }
 
-                            let sql = `INSERT INTO charts VALUES (
-                                    ${localBl.height}, 
-                                    ${localBl.actual_timestamp}, 
-                                    ${localBl.block_cumulative_size}, 
-                                    '${localBl.cumulative_diff_precise.toString()}', 
-                                    '${localBl.difficulty.toString()}', 
-                                    ${localBl.tr_count ? localBl.tr_count : 0}, 
-                                    ${localBl.type}, 
-                                    '${(localBl.difficulty / 120).toFixed(0)}', 
-                                    '${hashrate100}', 
-                                    '${hashrate400}');`
+                            let sql = `INSERT INTO charts VALUES (${
+                                localBl.height
+                            }, ${localBl.actual_timestamp}, ${
+                                localBl.block_cumulative_size
+                            }, ${localBl.cumulative_diff_precise}, ${
+                                localBl.difficulty
+                            }, ${localBl.tr_count ? localBl.tr_count : 0},  ${
+                                localBl.type
+                            }, ${(localBl.difficulty / 120).toFixed(
+                                0
+                            )}, ${hashrate100}, ${hashrate400});`
                             await db.query(sql)
                         }
                     } catch (error) {
@@ -766,13 +685,13 @@ async function syncTransactions() {
                     let sql = `INSERT INTO charts VALUES (${localBl.height}, 
                             ${localBl.actual_timestamp}, 
                             ${localBl.block_cumulative_size}, 
-                            '${localBl.cumulative_diff_precise.toString()}', 
-                            '${localBl.difficulty.toString()}', 
+                            ${localBl.cumulative_diff_precise}, 
+                            ${localBl.difficulty}, 
                             ${localBl.tr_count ? localBl.tr_count : 0}, 
                             ${localBl.type}, 
-                            '0', 
-                            '0', 
-                            '0');`
+                            0, 
+                            0, 
+                            0);`
                     await db.query(sql)
                 }
 
@@ -851,11 +770,6 @@ async function syncTransactions() {
                                 ${
                                     localBl.height
                                 }) ON CONFLICT(tx_id) DO NOTHING;`
-                    /* ON CONFLICT (block) DO UPDATE SET 
-                                amount = '${localOut.amount.toString()}',
-                                i = ${localOut.i},
-                                tx_id = '${response.data.result.tx_id}',
-                                height = ${localBl.height};`*/
                     await db.query(sql)
                     localBl.tr_out.splice(0, 1)
                     await db.query('commit')
@@ -987,7 +901,7 @@ async function syncBlocks() {
             }
         } else {
             const deleteCount = 100
-            const height = parseInt(lastBlock.height) - deleteCount
+            const height = lastBlock.height - deleteCount
             await db.query(`DELETE FROM blocks WHERE height > ${height};`)
             await db.query(`DELETE FROM charts WHERE height > ${height};`)
             await db.query(
@@ -1023,7 +937,7 @@ async function syncAltBlocks() {
     try {
         await db.query('DELETE FROM alt_blocks')
         let response = await get_alt_blocks_details(0, countAltBlocksServer)
-        for (var block of response.data.result.blocks) {
+        for (var block in response.data.result.blocks) {
             let sql = `INSERT INTO alt_blocks VALUES (
             ${block.height},
             ${block.timestamp},

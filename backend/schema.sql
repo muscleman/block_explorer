@@ -97,14 +97,14 @@ CREATE INDEX IF NOT EXISTS index_pool_id ON pool(id);
 CREATE TABLE IF NOT EXISTS charts (
             height integer,
             actual_timestamp integer,
-            block_cumulative_size integer,
-            cumulative_diff_precise text,
-            difficulty text,
+            block_cumulative_size decimal(100,0),
+            cumulative_diff_precise decimal(100,0),
+            difficulty decimal,
             tr_count integer,
             type integer,
-            difficulty120 text,
-            hashrate100 text,
-            hashrate400 text
+            difficulty120 bigint,
+            hashrate100 bigint,
+            hashrate400 bigint
 );
 
 CREATE INDEX IF NOT EXISTS index_bl_height ON charts(height);
