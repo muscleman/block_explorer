@@ -117,3 +117,48 @@ CREATE TABLE IF NOT EXISTS out_info (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS index_out ON out_info(amount, i, tx_id);
+
+CREATE OR REPLACE PROCEDURE purgeAboveHeight(IN p_height int) AS $$
+BEGIN
+    DELETE FROM blocks WHERE height > p_height;
+	DELETE FROM charts WHERE height > p_height;
+    DELETE FROM transactions WHERE keeper_block > p_height;
+	UPDATE aliases 
+	   SET enabled = 1
+	 WHERE transact IN (SELECT transact 
+						  FROM aliases 
+						 WHERE alias IN (select alias 
+										   from aliases 
+										  where block > p_height));
+	DELETE FROM aliases WHERE block > p_height;
+	DELETE FROM out_info WHERE block > p_height;								 
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE purge() AS $$
+BEGIN
+    DELETE FROM blocks;
+    DELETE FROM transactions;
+	DELETE FROM aliases;
+	DELETE FROM alt_blocks;
+	DELETE FROM pool;
+	DELETE FROM charts;	
+	DELETE FROM out_info;								 
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+GRANT ALL ON TABLE public.aliases TO zano;
+
+GRANT ALL ON TABLE public.alt_blocks TO zano;
+
+GRANT ALL ON TABLE public.blocks TO zano;
+
+GRANT ALL ON TABLE public.charts TO zano;
+
+GRANT ALL ON TABLE public.out_info TO zano;
+
+GRANT ALL ON TABLE public.pool TO zano;
+
+GRANT ALL ON TABLE public.transactions TO zano;

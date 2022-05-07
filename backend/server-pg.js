@@ -338,8 +338,7 @@ app.get(
         if (chart !== undefined) {
             if (chart === 'all') {
                 let period = 0 //Math.round(new Date().getTime() / 1000) - 24 * 3600 // + 86400000
-                let period2 =
-                    Math.round(new Date().getTime() / 1000) - 48 * 3600 // + 86400000
+                let period2 = 0 // Math.round(new Date().getTime() / 1000) - 48 * 3600 // + 86400000
                 // if (!!req.params.period) {
                 //     if (req.params.period !== 'all')
                 //         period = req.params.period
@@ -901,17 +900,9 @@ async function syncBlocks() {
             }
         } else {
             const deleteCount = 100
-            const height = lastBlock.height - deleteCount
-            await db.query(`DELETE FROM blocks WHERE height > ${height};`)
-            await db.query(`DELETE FROM charts WHERE height > ${height};`)
             await db.query(
-                `DELETE FROM transactions WHERE keeper_block > ${height};`
+                `CALL purgeAboveHeight(${lastBlock.height - deleteCount})`
             )
-            await db.query(
-                `UPDATE aliases SET enabled=1 WHERE transact IN (SELECT transact FROM aliases WHERE alias IN (select alias from aliases where block > ${height}`
-            )
-            await db.query(`DELETE FROM aliases WHERE block > ${height};`)
-            await db.query(`DELETE FROM out_info WHERE block > ${height};`)
             const result = await db.query(
                 'SELECT * FROM blocks WHERE  height=(SELECT MAX(height) FROM blocks);'
             )
