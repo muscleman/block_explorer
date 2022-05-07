@@ -945,7 +945,7 @@ async function syncTransactions() {
                 }
 
                 let sql = `INSERT INTO blocks VALUES (${localBl.height},
-                        '${localBl.actual_timestamp}',
+                        ${localBl.actual_timestamp},
                         '${localBl.base_reward}',
                         '${localBl.blob}',
                         ${localBl.block_cumulative_size},
