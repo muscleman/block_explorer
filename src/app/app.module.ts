@@ -10,10 +10,10 @@ import { NgxJsonViewerModule } from 'ngx-json-viewer'
 import { ChartModule } from 'angular-highcharts'
 import * as highstock from 'highcharts/modules/stock.src'
 
-// import * as Highcharts from 'highcharts';
-// import StockModule from 'highcharts/modules/stock';
+import * as Highcharts from 'highcharts'
+import StockModule from 'highcharts/modules/stock'
 
-// StockModule(Highcharts);
+StockModule(Highcharts)
 
 // Services
 import { HttpService } from './http.service'
