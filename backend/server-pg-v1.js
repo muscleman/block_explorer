@@ -338,7 +338,7 @@ app.get(
             if (chart === 'all') {
                 //convert me into a sp or view[sqllite3] please!!
                 let arrayAll = await db.query(
-                    `SELECT actual_timestamp as at, block_cumulative_size as bcs, tr_count as trc, difficulty as d, type as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at;`
+                    `SELECT actual_timestamp::integer as at, block_cumulative_size as bcs, tr_count as trc, difficulty as d, type as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at;`
                 )
                 let rows0 = await db.query(
                     `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, SUM(tr_count)::integer as sum_trc FROM charts GROUP BY at ORDER BY at;`
