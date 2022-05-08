@@ -387,14 +387,11 @@ app.get('/get_aliases/:offset/:count/:search', (req, res) => {
 // Charts
 app.get('/get_chart/:chart/:period', (req, res) => {
     let chart = req.params.chart
+    let period = req.params.period
     if (chart !== undefined) {
+        let period = Math.round(new Date().getTime() / 1000) - 24 * 3600 // + 86400000
+        let period2 = Math.round(new Date().getTime() / 1000) - 48 * 3600 // + 86400000
         if (chart === 'all') {
-            let period = Math.round(new Date().getTime() / 1000) - 24 * 3600 // + 86400000
-            let period2 = Math.round(new Date().getTime() / 1000) - 48 * 3600 // + 86400000
-            if (!!req.params.period) {
-                if (req.params.period !== 'all') period = req.params.period
-            }
-
             db.serialize(function () {
                 // Charts AvgBlockSize, AvgTransPerBlock, difficultyPoS, difficultyPoW
                 db.all(
