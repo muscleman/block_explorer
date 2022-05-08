@@ -351,22 +351,22 @@ app.get(
                 res.json(arrayAll.rows)
             } else if (chart === 'AvgBlockSize') {
                 result = await db.query(
-                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, avg(block_cumulative_size)::integer as bcs FROM charts GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, avg(block_cumulative_size)::real as bcs FROM charts GROUP BY at ORDER BY at;`
                 )
                 res.json(result && result.rowCount > 0 ? result.rows : [])
             } else if (chart === 'AvgTransPerBlock') {
                 result = await db.query(
-                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, avg(tr_count)::decimal(10,9) as trc FROM charts GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, avg(tr_count)::real as trc FROM charts GROUP BY at ORDER BY at;`
                 )
                 res.json(result && result.rowCount > 0 ? result.rows : [])
             } else if (chart === 'hashRate') {
                 result = await db.query(
-                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, avg(difficulty120) as d120, avg(hashrate100) as h100, avg(hashrate400) as h400 FROM charts WHERE type=1 GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, avg(difficulty120)::real as d120, avg(hashrate100)::real as h100, avg(hashrate400)::real as h400 FROM charts WHERE type=1 GROUP BY at ORDER BY at;`
                 )
                 res.json(result && result.rowCount > 0 ? result.rows : [])
             } else if (chart === 'pos-difficulty') {
                 let result = await db.query(
-                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty) else min(difficulty) end as d FROM charts WHERE type=0 GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty)::real else min(difficulty)::real end as d FROM charts WHERE type=0 GROUP BY at ORDER BY at;`
                 )
                 let result1 = await db.query(
                     'SELECT actual_timestamp as at, difficulty as d FROM charts WHERE type=0 ORDER BY at;'
@@ -377,7 +377,7 @@ app.get(
                 })
             } else if (chart === 'pow-difficulty') {
                 let result = await db.query(
-                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty) else min(difficulty) end as d FROM charts WHERE type=1 GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty)::real else min(difficulty)::real end as d FROM charts WHERE type=1 GROUP BY at ORDER BY at;`
                 )
                 let result1 = await db.query(
                     'SELECT actual_timestamp as at, difficulty as d FROM charts WHERE type=1 ORDER BY at;'
