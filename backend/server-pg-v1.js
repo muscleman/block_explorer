@@ -919,42 +919,41 @@ async function syncAltBlocks() {
     try {
         await db.query('DELETE FROM alt_blocks')
         let response = await get_alt_blocks_details(0, countAltBlocksServer)
-        for (var block in response.data.result.blocks) {
-            let sql = `INSERT INTO alt_blocks VALUES (
-            ${block.height},
-            ${block.timestamp},
-            ${block.actual_timestamp},
-            ${block.block_cumulative_size},
-            '${block.id}',
-            ${block.type},
-            '${block.difficulty.toString()}',
-            '${block.cumulative_diff_adjusted.toString()}',
-            '${block.cumulative_diff_precise.toString()}',
-            ${block.is_orphan},
-            '${block.base_reward}',
-            '${block.total_fee.toString()}',
-            '${block.penalty}',
-            '${block.summary_reward}',
-            ${block.block_cumulative_size},
-            '${block.this_block_fee_median}',
-            '${block.effective_fee_median}',
-            ${block.total_txs_size},
-            '${JSON.stringify(block.transactions_details)}',
-            '${block.miner_text_info}',
-            ''
-            );`
+        for (var block of response.data.result.blocks) {
+            let sql =
+                `INSERT INTO alt_blocks(height, timestamp, actual_timestamp, size, hash, type, difficulty, cumulative_diff_adjusted, cumulative_diff_precise,` +
+                ` is_orphan, base_reward, total_fee, penalty, summary_reward, block_cumulative_size, this_block_fee_median, effective_fee_median, total_txs_size, transactions_details, miner_txt_info, pow_seed) VALUES (` +
+                `${block.height},` +
+                `${block.timestamp},` +
+                `${block.actual_timestamp},` +
+                `${block.block_cumulative_size},` +
+                `'${block.id}',` +
+                `${block.type},` +
+                `'${block.difficulty}',` +
+                `'${block.cumulative_diff_adjusted}',` +
+                `'${block.cumulative_diff_precise}',` +
+                `${block.is_orphan},` +
+                `'${block.base_reward}',` +
+                `'${block.total_fee}',` +
+                `'${block.penalty}',` +
+                `'${block.summary_reward}',` +
+                `${block.block_cumulative_size},` +
+                `'${block.this_block_fee_median}',` +
+                `'${block.effective_fee_median}',` +
+                `${block.total_txs_size},` +
+                `'${JSON.stringify(block.transactions_details)}',` +
+                `'${block.miner_text_info}',` +
+                `''` +
+                `);`
             await db.query(sql)
         }
-        try {
-            let result = await db.query(
-                'SELECT COUNT(*)::integer AS height FROM alt_blocks'
-            )
-            if (result) countAltBlocksDB = result.rows[0].height
-            statusSyncAltBlocks = false
-        } catch (error) {
-            log('syncAltBlocks() ERROR', error)
-        }
+        let result = await db.query(
+            'SELECT COUNT(*)::integer AS height FROM alt_blocks'
+        )
+        if (result) countAltBlocksDB = result.rows[0].height
+        statusSyncAltBlocks = false
     } catch (error) {
+        log('syncAltBlocks() ERROR', error)
         statusSyncAltBlocks = false
     }
 }
