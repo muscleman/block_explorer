@@ -3,7 +3,6 @@ const express = require('express')
 const app = express()
 const { Pool } = require('pg')
 const axios = require('axios')
-const JSONbig = require('json-bigint')
 const BigNumber = require('bignumber.js')
 const exceptionHandler = require('./exceptionHandler')
 
@@ -61,7 +60,7 @@ const get_info = () => {
             method: 'getinfo',
             params: { flags: 0x410 }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -77,7 +76,7 @@ const get_blocks_details = (start, count) => {
                 ignore_transactions: false
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -92,7 +91,7 @@ const get_alt_blocks_details = (offset, count) => {
                 count: parseInt(count)
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -103,7 +102,7 @@ const get_all_pool_tx_list = () => {
         data: {
             method: 'get_all_pool_tx_list'
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -115,7 +114,7 @@ const get_pool_txs_details = (ids) => {
             method: 'get_pool_txs_details',
             params: { ids: ids }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -127,7 +126,7 @@ const get_tx_details = (tx_hash) => {
             method: 'get_tx_details',
             params: { tx_hash: tx_hash }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -139,7 +138,7 @@ const get_out_info = (amount, i) => {
             method: 'get_out_info',
             params: { amount: parseInt(amount), i: parseInt(i) }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -1051,7 +1050,7 @@ app.get('/api/get_info/:flags', (req, res) => {
             method: 'getinfo',
             params: { flags: parseInt(flags) }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             res.send(JSON.stringify(response.data))
@@ -1069,7 +1068,7 @@ app.get('/api/get_total_coins', (req, res) => {
             method: 'getinfo',
             params: { flags: parseInt(4294967295) }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             let str = response.data.result.total_coins
@@ -1100,7 +1099,7 @@ app.get('/api/get_blocks_details/:start/:count', (req, res) => {
                 ignore_transactions: false
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then(function (response) {
             res.send(JSON.stringify(response.data))
@@ -1121,7 +1120,7 @@ app.get('/api/get_main_block_details/:id', (req, res) => {
                 id: id
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then(function (response) {
             res.send(JSON.stringify(response.data))
@@ -1144,7 +1143,7 @@ app.get('/api/get_alt_blocks_details/:offset/:count', (req, res) => {
                 count: parseInt(count)
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then(function (response) {
             res.send(JSON.stringify(response.data))
@@ -1165,7 +1164,7 @@ app.get('/api/get_alt_block_details/:id', (req, res) => {
                 id: id
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then(function (response) {
             res.send(JSON.stringify(response.data))
@@ -1182,7 +1181,7 @@ app.get('/api/get_all_pool_tx_list', (req, res) => {
         data: {
             method: 'get_all_pool_tx_list'
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             res.send(JSON.stringify(response.data))
@@ -1199,7 +1198,7 @@ app.get('/api/get_pool_txs_details', (req, res) => {
         data: {
             method: 'get_pool_txs_details'
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             res.send(JSON.stringify(response.data))
@@ -1216,7 +1215,7 @@ app.get('/api/get_pool_txs_brief_details', (req, res) => {
         data: {
             method: 'get_pool_txs_brief_details'
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             res.send(JSON.stringify(response.data))
@@ -1235,7 +1234,7 @@ app.get('/api/get_tx_details/:tx_hash', (req, res) => {
             method: 'get_tx_details',
             params: { tx_hash: tx_hash }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             res.send(JSON.stringify(response.data))
@@ -1255,7 +1254,7 @@ app.get('/api/get_tx_details/:tx_hash', (req, res) => {
 //             method: 'get_out_info',
 //             params: {'amount': amount, 'i': i},
 //         },
-//         transformResponse: [data => JSONbig.parse(data)]
+//         transformResponse: [data => JSON.parse(data)]
 //     })
 //         .then((response) => {
 //             res.send(JSON.stringify(response.data))

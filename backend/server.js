@@ -3,7 +3,6 @@ const express = require('express')
 const app = express()
 const sqlite3 = require('sqlite3').verbose()
 const axios = require('axios')
-const JSONbig = require('json-bigint')
 const BigNumber = require('bignumber.js')
 
 let config = fs.readFileSync('config.json', 'utf8')
@@ -52,7 +51,7 @@ const get_info = () => {
             method: 'getinfo',
             params: { flags: 0x410 }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -68,7 +67,7 @@ const get_blocks_details = (start, count) => {
                 ignore_transactions: false
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -83,7 +82,7 @@ const get_alt_blocks_details = (offset, count) => {
                 count: parseInt(count)
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -94,7 +93,7 @@ const get_all_pool_tx_list = () => {
         data: {
             method: 'get_all_pool_tx_list'
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -106,7 +105,7 @@ const get_pool_txs_details = (ids) => {
             method: 'get_pool_txs_details',
             params: { ids: ids }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -118,7 +117,7 @@ const get_tx_details = (tx_hash) => {
             method: 'get_tx_details',
             params: { tx_hash: tx_hash }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -130,7 +129,7 @@ const get_out_info = (amount, i) => {
             method: 'get_out_info',
             params: { amount: parseInt(amount), i: parseInt(i) }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
 }
 
@@ -175,8 +174,8 @@ app.get('/get_main_block_details/:id', (req, res) => {
                             function (err2, rows2) {
                                 for (let i = 0; i < rows2.length; i++) {
                                     rows2[i].extra = JSON.parse(rows2[i].extra)
-                                    rows2[i].ins = JSONbig(rows2[i].ins)
-                                    rows2[i].outs = JSONbig(rows2[i].outs)
+                                    rows2[i].ins = JSON(rows2[i].ins)
+                                    rows2[i].outs = JSON(rows2[i].outs)
                                     rows2[i].attachments = JSON.parse(
                                         rows2[i].attachments
                                     )
@@ -1297,7 +1296,7 @@ app.get('/api/get_info/:flags', (req, res) => {
             method: 'getinfo',
             params: { flags: parseInt(flags) }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             res.send(JSON.stringify(response.data))
@@ -1315,7 +1314,7 @@ app.get('/api/get_total_coins', (req, res) => {
             method: 'getinfo',
             params: { flags: parseInt(4294967295) }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             let str = response.data.result.total_coins
@@ -1346,7 +1345,7 @@ app.get('/api/get_blocks_details/:start/:count', (req, res) => {
                 ignore_transactions: false
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then(function (response) {
             res.send(JSON.stringify(response.data))
@@ -1367,7 +1366,7 @@ app.get('/api/get_main_block_details/:id', (req, res) => {
                 id: id
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then(function (response) {
             res.send(JSON.stringify(response.data))
@@ -1390,7 +1389,7 @@ app.get('/api/get_alt_blocks_details/:offset/:count', (req, res) => {
                 count: parseInt(count)
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then(function (response) {
             res.send(JSON.stringify(response.data))
@@ -1411,7 +1410,7 @@ app.get('/api/get_alt_block_details/:id', (req, res) => {
                 id: id
             }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then(function (response) {
             res.send(JSON.stringify(response.data))
@@ -1428,7 +1427,7 @@ app.get('/api/get_all_pool_tx_list', (req, res) => {
         data: {
             method: 'get_all_pool_tx_list'
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             res.send(JSON.stringify(response.data))
@@ -1445,7 +1444,7 @@ app.get('/api/get_pool_txs_details', (req, res) => {
         data: {
             method: 'get_pool_txs_details'
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             res.send(JSON.stringify(response.data))
@@ -1462,7 +1461,7 @@ app.get('/api/get_pool_txs_brief_details', (req, res) => {
         data: {
             method: 'get_pool_txs_brief_details'
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             res.send(JSON.stringify(response.data))
@@ -1481,7 +1480,7 @@ app.get('/api/get_tx_details/:tx_hash', (req, res) => {
             method: 'get_tx_details',
             params: { tx_hash: tx_hash }
         },
-        transformResponse: [(data) => JSONbig.parse(data)]
+        transformResponse: [(data) => JSON.parse(data)]
     })
         .then((response) => {
             res.send(JSON.stringify(response.data))
@@ -1501,7 +1500,7 @@ app.get('/api/get_tx_details/:tx_hash', (req, res) => {
 //             method: 'get_out_info',
 //             params: {'amount': amount, 'i': i},
 //         },
-//         transformResponse: [data => JSONbig.parse(data)]
+//         transformResponse: [data => JSON.parse(data)]
 //     })
 //         .then((response) => {
 //             res.send(JSON.stringify(response.data))
