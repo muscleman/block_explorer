@@ -356,7 +356,7 @@ app.get(
                 res.json(result && result.rowCount > 0 ? result.rows : [])
             } else if (chart === 'AvgTransPerBlock') {
                 result = await db.query(
-                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, avg(tr_count) as trc FROM charts GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, avg(tr_count)::decimal(10,9) as trc FROM charts GROUP BY at ORDER BY at;`
                 )
                 res.json(result && result.rowCount > 0 ? result.rows : [])
             } else if (chart === 'hashRate') {
