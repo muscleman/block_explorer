@@ -331,14 +331,11 @@ app.get(
     '/get_chart/:chart/:period',
     exceptionHandler(async (req, res) => {
         let chart = req.params.chart
+        let period = req.params.period
         if (chart !== undefined) {
+            let period = Math.round(new Date().getTime() / 1000) - 24 * 3600 // + 86400000
+            let period2 = Math.round(new Date().getTime() / 1000) - 48 * 3600 // + 86400000
             if (chart === 'all') {
-                let period = Math.round(new Date().getTime() / 1000) - 24 * 3600 // + 86400000
-                let period2 =
-                    Math.round(new Date().getTime() / 1000) - 48 * 3600 // + 86400000
-                if (!!req.params.period) {
-                    if (req.params.period !== 'all') period = req.params.period
-                }
                 //convert me into a sp or view[sqllite3] please!!
                 let arrayAll = await db.query(
                     `SELECT actual_timestamp as at, block_cumulative_size as bcs, tr_count as trc, difficulty as d, type as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at;`
