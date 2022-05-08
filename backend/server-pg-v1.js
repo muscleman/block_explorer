@@ -337,12 +337,12 @@ app.get(
         let chart = req.params.chart
         if (chart !== undefined) {
             if (chart === 'all') {
-                let period = 0 //Math.round(new Date().getTime() / 1000) - 24 * 3600 // + 86400000
-                let period2 = 0 // Math.round(new Date().getTime() / 1000) - 48 * 3600 // + 86400000
-                // if (!!req.params.period) {
-                //     if (req.params.period !== 'all')
-                //         period = req.params.period
-                // }
+                let period = Math.round(new Date().getTime() / 1000) - 24 * 3600 // + 86400000
+                let period2 =
+                    Math.round(new Date().getTime() / 1000) - 48 * 3600 // + 86400000
+                if (!!req.params.period) {
+                    if (req.params.period !== 'all') period = req.params.period
+                }
                 //convert me into a sp or view[sqllite3] please!!
                 let arrayAll = await db.query(
                     `SELECT actual_timestamp as at, block_cumulative_size as bcs, tr_count as trc, difficulty as d, type as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at;`
@@ -484,10 +484,14 @@ const start = async () => {
         if (result && result.rowCount === 1) {
             lastBlock = result.rows[0]
         }
-        result = await db.query('SELECT COUNT(*) AS alias FROM aliases;')
+        result = await db.query(
+            'SELECT COUNT(*)::integer AS alias FROM aliases;'
+        )
         if (result) countAliasesDB = result.rows[0].alias
 
-        result = await db.query('SELECT COUNT(*) AS height FROM alt_blocks;')
+        result = await db.query(
+            'SELECT COUNT(*)::integer AS height FROM alt_blocks;'
+        )
         if (result) countAltBlocksDB = result.rows[0].height
         getInfoTimer()
     } catch (error) {
@@ -613,9 +617,7 @@ function parseTrackingKey(trackingKey) {
         var key = resultKey.split(':')
         var keyValue = key[1].replace(/\[|\]/g, '')
         if (keyValue) {
-            keyValue.toString()
-            keyValue = keyValue.replace(/\s+/g, '')
-            return keyValue
+            return keyValue.toString().replace(/\s+/g, '')
         } else {
             return ''
         }
@@ -626,252 +628,248 @@ function parseTrackingKey(trackingKey) {
 
 async function syncTransactions() {
     if (block_array.length > 0) {
-        var localBl = block_array[0]
-        if (localBl.transactions_details.length === 0) {
-            if (localBl.tr_out.length === 0) {
-                await db.query('begin')
-                var hashrate100 = 0
-                var hashrate400 = 0
-
-                if (localBl.type === 1) {
-                    try {
-                        let result = await db.query(
-                            `SELECT height, actual_timestamp, cumulative_diff_precise FROM charts WHERE type=1`
-                        )
-                        if (result && result.rowCount > 0) {
-                            for (let i = 0; i < result.rows.length; i++) {
-                                hashrate100 =
-                                    i > 99 - 1
-                                        ? (localBl['cumulative_diff_precise'] -
-                                              result.rows[
-                                                  result.rows.length - 100
-                                              ]['cumulative_diff_precise']) /
-                                          (localBl['actual_timestamp'] -
-                                              result.rows[
-                                                  result.rows.length - 100
-                                              ]['actual_timestamp'])
-                                        : 0
-                                hashrate400 =
-                                    i > 399 - 1
-                                        ? (localBl['cumulative_diff_precise'] -
-                                              result.rows[
-                                                  result.rows.length - 400
-                                              ]['cumulative_diff_precise']) /
-                                          (localBl['actual_timestamp'] -
-                                              result.rows[
-                                                  result.rows.length - 400
-                                              ]['actual_timestamp'])
-                                        : 0
-                            }
-
-                            let sql = `INSERT INTO charts VALUES (${
-                                localBl.height
-                            }, ${localBl.actual_timestamp}, ${
-                                localBl.block_cumulative_size
-                            }, ${localBl.cumulative_diff_precise}, ${
-                                localBl.difficulty
-                            }, ${localBl.tr_count ? localBl.tr_count : 0},  ${
-                                localBl.type
-                            }, ${(localBl.difficulty / 120).toFixed(
-                                0
-                            )}, ${hashrate100}, ${hashrate400});`
-                            await db.query(sql)
-                        }
-                    } catch (error) {
-                        log('syncTransactions', error)
-                    }
-                } else {
-                    let sql = `INSERT INTO charts VALUES (${localBl.height}, 
-                            ${localBl.actual_timestamp}, 
-                            ${localBl.block_cumulative_size}, 
-                            ${localBl.cumulative_diff_precise}, 
-                            ${localBl.difficulty}, 
-                            ${localBl.tr_count ? localBl.tr_count : 0}, 
-                            ${localBl.type}, 
-                            0, 
-                            0, 
-                            0);`
-                    await db.query(sql)
+        let blockInserts = []
+        let transactionInserts = []
+        let chartInserts = []
+        let outInfoInserts = []
+        for (const bl of block_array) {
+            //build transaction inserts
+            {
+                if (bl.height === 181367) {
+                    console.log('yes')
                 }
-
-                let sql = `INSERT INTO blocks (height,
-                    actual_timestamp,
-                    base_reward,
-                    blob,
-                    block_cumulative_size,
-                    block_tself_size,
-                    cumulative_diff_adjusted,
-                    cumulative_diff_precise,
-                    difficulty,
-                    effective_fee_median,
-                    id,
-                    is_orphan,
-                    penalty,
-                    prev_id,
-                    summary_reward,
-                    this_block_fee_median,
-                    timestamp,
-                    total_fee,
-                    total_txs_size,
-                    tr_count,
-                    type,
-                    miner_text_info,
-                    pow_seed) VALUES (${localBl.height},
-                        ${localBl.actual_timestamp},
-                        '${localBl.base_reward}',
-                        '${localBl.blob}',
-                        ${localBl.block_cumulative_size},
-                        '${localBl.block_tself_size}',
-                        '${localBl.cumulative_diff_adjusted.toString()}',
-                        '${localBl.cumulative_diff_precise.toString()}',
-                        '${localBl.difficulty.toString()}',
-                        '${localBl.effective_fee_median}',
-                        '${localBl.id}',
-                        ${localBl.is_orphan},
-                        '${localBl.penalty}',
-                        '${localBl.prev_id}',
-                        '${localBl.summary_reward}',
-                        '${localBl.this_block_fee_median}',
-                        ${localBl.timestamp},
-                        '${localBl.total_fee.toString()}',
-                        ${localBl.total_txs_size},
-                        ${localBl.tr_count ? localBl.tr_count : 0},
-                        ${localBl.type},
-                        '${localBl.miner_text_info}',
-                        '${localBl.pow_seed}');`
-                await db.query(sql)
-                await db.query('commit')
-                lastBlock = block_array.splice(0, 1)[0]
-                log(
-                    'BLOCKS: db =' +
-                        lastBlock.height +
-                        '/server =' +
-                        blockInfo.height +
-                        ' transaction left = ' +
-                        localBl.tr_count
-                )
-                await delay(serverTimeout)
-                await syncTransactions()
-            } else {
-                var localOut = localBl.tr_out[0]
-                let localOutAmount = new BigNumber(localOut.amount).toNumber()
-
                 try {
+                    if (bl.tr_count === undefined)
+                        bl.tr_count = bl.transactions_details.length
+                    if (bl.tr_out === undefined) bl.tr_out = []
+
+                    while (
+                        !!(localTr = bl.transactions_details.splice(0, 1)[0])
+                    ) {
+                        let response = await get_tx_details(localTr.id)
+                        let tx_info = response.data.result.tx_info
+                        for (var item of tx_info.extra) {
+                            if (item.type === 'alias_info') {
+                                var arr = item.short_view.split('-->')
+                                var aliasName = arr[0]
+                                var aliasAddress = arr[1]
+                                var aliasComment = parseComment(
+                                    item.datails_view
+                                )
+                                var aliasTrackingKey = parseTrackingKey(
+                                    item.datails_view
+                                )
+                                var aliasBlock = bl.height
+                                var aliasTransaction = localTr.id
+                                await db.query(
+                                    `UPDATE aliases SET enabled=0 WHERE alias = '${aliasName}';`
+                                )
+                                let sql =
+                                    `INSERT INTO aliases VALUES ('${aliasName}',` +
+                                    `'${aliasAddress}',` +
+                                    `'${aliasComment}',` +
+                                    `'${aliasTrackingKey}',` +
+                                    `'${aliasBlock}',` +
+                                    `'${aliasTransaction}',` +
+                                    `${1}` +
+                                    `) ON CONFLICT (address) DO NOTHING;`
+                                await db.query(sql)
+                            }
+                        }
+
+                        for (var item of tx_info.ins) {
+                            if (item.global_indexes) {
+                                bl.tr_out.push({
+                                    amount: item.amount,
+                                    i: item.global_indexes[0]
+                                })
+                            }
+                        }
+
+                        transactionInserts.push(
+                            `('${tx_info.keeper_block}',` +
+                                `'${tx_info.id}',` +
+                                `'${tx_info.amount.toString()}',` +
+                                `${tx_info.blob_size},` +
+                                `'${JSON.stringify(tx_info.extra)}',` +
+                                `'${tx_info.fee.toString()}',` +
+                                `'${JSON.stringify(tx_info.ins)}',` +
+                                `'${JSON.stringify(tx_info.outs)}',` +
+                                `'${tx_info.pub_key}',` +
+                                `${tx_info.timestamp},` +
+                                `'${JSON.stringify(
+                                    !!tx_info.attachments
+                                        ? tx_info.attachments
+                                        : {}
+                                )}')`
+                        )
+                    }
+                } catch (error) {
+                    log('shit')
+                }
+            }
+
+            // if (bl.tr_out.length === 0) {
+
+            //build chart inserts or use sp after block and trans inserts
+            if (bl.type === 1) {
+                /*calculate chart averages*/
+            }
+
+            //build chart inserts
+            if (bl.type !== 1) {
+                chartInserts.push(
+                    `(${bl.height},` +
+                        `${bl.actual_timestamp},` +
+                        `${bl.block_cumulative_size},` +
+                        `${bl.cumulative_diff_precise},` +
+                        `${bl.difficulty},` +
+                        `${bl.tr_count ? bl.tr_count : 0},` +
+                        `${bl.type},` +
+                        `0,` +
+                        `0,` +
+                        `0)`
+                )
+            }
+
+            //build out_info inserts
+            {
+                if (bl.tr_out && bl.tr_out.length > 0) {
+                    var localOut = bl.tr_out[0]
+                    let localOutAmount = new BigNumber(
+                        localOut.amount
+                    ).toNumber()
+
                     let response = await get_out_info(
                         localOutAmount,
                         localOut.i
                     )
-                    // let data2 = response.data
-                    await db.query('begin transaction')
-                    let sql = `INSERT INTO out_info VALUES ('${localOut.amount.toString()}', 
-                                ${localOut.i}, 
-                                '${response.data.result.tx_id}', 
-                                ${
-                                    localBl.height
-                                }) ON CONFLICT(tx_id) DO NOTHING;`
-                    await db.query(sql)
-                    localBl.tr_out.splice(0, 1)
-                    await db.query('commit')
-                    log('tr_out left = ' + localBl.tr_out.length)
-                    await delay(serverTimeout)
-                    await syncTransactions()
-                } catch (error) {
-                    log('syncTransactions() get_out_info ERROR', error)
-                    now_blocks_sync = false
+
+                    outInfoInserts.push(
+                        `('${localOut.amount.toString()}',` +
+                            `${localOut.i}, ` +
+                            `'${response.data.result.tx_id}', ` +
+                            `${bl.height})`
+                    )
                 }
             }
-        } else {
-            if (localBl.tr_count === undefined)
-                localBl.tr_count = localBl.transactions_details.length
-            if (localBl.tr_out === undefined) localBl.tr_out = []
-            var localTr = localBl.transactions_details.splice(0, 1)[0]
-            try {
-                let response = await get_tx_details(localTr.id)
-                let tx_info = response.data.result.tx_info
-                for (var item of tx_info.extra) {
-                    if (item.type === 'alias_info') {
-                        var arr = item.short_view.split('-->')
-                        var aliasName = arr[0]
-                        var aliasAddress = arr[1]
-                        var aliasComment = parseComment(item.datails_view)
-                        var aliasTrackingKey = parseTrackingKey(
-                            item.datails_view
-                        )
-                        var aliasBlock = localBl.height
-                        var aliasTransaction = localTr.id
-                        await db.query(
-                            `UPDATE aliases SET enabled=0 WHERE alias == '${aliasName}';`
-                        )
-                        let sql = `INSERT INTO aliases VALUES ('${aliasName}',
-                            '${aliasAddress}',
-                            '${aliasComment}',
-                            '${aliasTrackingKey}',
-                            '${aliasBlock}',
-                            '${aliasTransaction}',
-                            ${1}
-                        ) ON CONFLICT () DO NOTHING;`
-                        await db.query(sql)
-                    }
-                }
 
-                for (var item of tx_info.ins) {
-                    if (item.global_indexes) {
-                        localBl.tr_out.push({
-                            amount: item.amount,
-                            i: item.global_indexes[0]
-                        })
-                    }
-                }
-
-                await db.query('begin')
-                let sql = `INSERT INTO transactions VALUES (
-                        '${tx_info.keeper_block}',
-                        '${tx_info.id}',
-                        '${tx_info.amount.toString()}',
-                        ${tx_info.blob_size},
-                        '${JSON.stringify(tx_info.extra)}',
-                        '${tx_info.fee.toString()}',
-                        '${JSON.stringify(tx_info.ins)}',
-                        '${JSON.stringify(tx_info.outs)}',
-                        '${tx_info.pub_key}',
-                        ${tx_info.timestamp},
-                        '${JSON.stringify(
-                            !!tx_info.attachments ? tx_info.attachments : {}
-                        )}'
-                ) ON CONFLICT (id) DO NOTHING;`
-                /*UPDATE SET
-                    keeper_block = '${tx_info.keeper_block}',
-                    id = '${tx_info.id}',
-                    amount = '${tx_info.amount.toString()}',
-                    blob_size = ${tx_info.blob_size},
-                    extra = '${JSON.stringify(tx_info.extra)}',
-                    fee ='${tx_info.fee.toString()}',
-                    ins = '${JSON.stringify(tx_info.ins)}',
-                    outs = '${JSON.stringify(tx_info.outs)}',
-                    pub_key = '${tx_info.pub_key}',
-                    timestamp = ${tx_info.timestamp},
-                    attachments = '${JSON.stringify(
-                            !!tx_info.attachments ? tx_info.attachments : {}
-                        )}'
-                ;`
-                */
-                await db.query(sql)
-                await db.query('commit')
-                await delay(serverTimeout)
-                log(
-                    'BLOCKS: db =' +
-                        localBl.height +
-                        '/ server =' +
-                        blockInfo.height +
-                        ' transaction left = ' +
-                        localBl.transactions_details.length
+            //build block inserts
+            {
+                blockInserts.push(
+                    `(${bl.height},` +
+                        `${bl.actual_timestamp},` +
+                        `'${bl.base_reward}',` +
+                        `'${bl.blob}',` +
+                        `${bl.block_cumulative_size},` +
+                        `'${bl.block_tself_size}',` +
+                        `'${bl.cumulative_diff_adjusted.toString()}',` +
+                        `'${bl.cumulative_diff_precise.toString()}',` +
+                        `'${bl.difficulty.toString()}',` +
+                        `'${bl.effective_fee_median}',` +
+                        `'${bl.id}',` +
+                        `${bl.is_orphan},` +
+                        `'${bl.penalty}',` +
+                        `'${bl.prev_id}',` +
+                        `'${bl.summary_reward}',` +
+                        `'${bl.this_block_fee_median}',` +
+                        `${bl.timestamp},` +
+                        `'${bl.total_fee.toString()}',` +
+                        `${bl.total_txs_size},` +
+                        `${bl.tr_count ? bl.tr_count : 0},` +
+                        `${bl.type},` +
+                        `'${bl.miner_text_info}',` +
+                        `'${bl.pow_seed}')`
                 )
-                await syncTransactions()
-            } catch (error) {
-                log('syncTransactions() get_tx_details ERROR', error)
-                now_blocks_sync = false
             }
         }
+
+        await db.query('begin')
+        //save transactions
+        {
+            try {
+                if (transactionInserts.length > 0) {
+                    let sql =
+                        `INSERT INTO transactions VALUES ` +
+                        transactionInserts.join(',') +
+                        ' ON CONFLICT (id) DO NOTHING;'
+                    await db.query(sql)
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        //save charts
+        {
+            try {
+                if (chartInserts.length > 0) {
+                    let sql =
+                        `INSERT INTO charts VALUES ` +
+                        chartInserts.join(',') +
+                        ';'
+                    await db.query(sql)
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        //save out_info
+        {
+            try {
+                if (outInfoInserts.length > 0) {
+                    let sql =
+                        `INSERT INTO out_info VALUES ` +
+                        outInfoInserts.join(',') +
+                        ' ON CONFLICT(tx_id) DO NOTHING;'
+                    await db.query(sql)
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        //save blocks
+        {
+            try {
+                if (blockInserts.length > 0) {
+                    let sql =
+                        'INSERT INTO blocks (height,' +
+                        'actual_timestamp,' +
+                        'base_reward,' +
+                        'blob,' +
+                        'block_cumulative_size,' +
+                        'block_tself_size,' +
+                        'cumulative_diff_adjusted,' +
+                        'cumulative_diff_precise,' +
+                        'difficulty,' +
+                        'effective_fee_median,' +
+                        'id,' +
+                        'is_orphan,' +
+                        'penalty,' +
+                        'prev_id,' +
+                        'summary_reward,' +
+                        'this_block_fee_median,' +
+                        'timestamp,' +
+                        'total_fee,' +
+                        'total_txs_size,' +
+                        'tr_count,' +
+                        'type,' +
+                        'miner_text_info,' +
+                        'pow_seed) VALUES ' +
+                        blockInserts.join(',') +
+                        ';'
+                    await db.query(sql)
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        await db.query('commit')
+        lastBlock = block_array.pop()
+        log('BLOCKS: db =' + lastBlock.height + '/ server =' + blockInfo.height)
+        block_array = []
     }
 }
 
@@ -895,7 +893,7 @@ async function syncBlocks() {
             if (lastBlock.height >= blockInfo.height - 1) {
                 now_blocks_sync = false
             } else {
-                await delay(serverTimeout)
+                await pause(serverTimeout)
                 await syncBlocks()
             }
         } else {
@@ -914,7 +912,7 @@ async function syncBlocks() {
                     id: '0000000000000000000000000000000000000000000000000000000000000000'
                 }
             }
-            await delay(serverTimeout)
+            await pause(serverTimeout)
             await syncBlocks()
         }
     } catch (error) {
@@ -956,7 +954,7 @@ async function syncAltBlocks() {
         }
         try {
             let result = await db.query(
-                'SELECT COUNT(*) AS height FROM alt_blocks'
+                'SELECT COUNT(*)::integer AS height FROM alt_blocks'
             )
             if (result) countAltBlocksDB = result.rows[0].height
             statusSyncAltBlocks = false
@@ -978,9 +976,9 @@ async function getInfoTimer() {
             countTrPoolServer = blockInfo.tx_pool_size
             if (statusSyncPool === false) {
                 let result = await db.query(
-                    'SELECT COUNT(*) AS transactions FROM pool'
+                    'SELECT COUNT(*)::integer AS transactions FROM pool'
                 )
-                if (result) {
+                if (result && result.rowCount > 0) {
                     if (result.rows[0].transactions !== countTrPoolServer) {
                         log(
                             'need update pool transactions db=' +
@@ -1023,21 +1021,21 @@ async function getInfoTimer() {
                 now_blocks_sync = true
                 await syncBlocks()
             }
-            await delay(10000)
+            await pause(10000)
             await getInfoTimer()
         } catch (error) {
             log('getInfoTimer() get_info error')
             blockInfo.daemon_network_state = 0
-            await delay(300000)
+            await pause(300000)
             await getInfoTimer()
         }
     } else {
-        await delay(10000)
+        await pause(10000)
         await getInfoTimer()
     }
 }
 
-const delay = (ms) => {
+const pause = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
 

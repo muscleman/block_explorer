@@ -858,7 +858,7 @@ function parseComment(comment) {
 }
 
 function parseTrackingKey(trackingKey) {
-    var splitKey = trackingKey.split(/\s*,\s*/).filter((el) => !!el)
+    var splitKey = trackingKey.split(/\s*,\s*/) //.filter((el) => !!el)
     var resultKey = splitKey[5]
     if (resultKey) {
         var key = resultKey.split(':')
@@ -878,6 +878,11 @@ function parseTrackingKey(trackingKey) {
 async function syncTransactions() {
     if (block_array.length > 0) {
         var localBl = block_array[0]
+
+        if (localBl.height === 181367) {
+            console.log('yes')
+        }
+
         if (localBl.transactions_details.length === 0) {
             if (localBl.tr_out.length === 0) {
                 db.run('begin transaction')
@@ -1012,6 +1017,10 @@ async function syncTransactions() {
             if (localBl.tr_out === undefined) localBl.tr_out = []
             var localTr = localBl.transactions_details.splice(0, 1)[0]
             try {
+                if (localBl.height === 181367) {
+                    console.log('yes')
+                }
+
                 let response = await get_tx_details(localTr.id)
                 let tx_info = response.data.result.tx_info
                 for (var item of tx_info.extra) {
