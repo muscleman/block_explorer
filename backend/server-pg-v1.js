@@ -652,8 +652,16 @@ async function syncTransactions() {
                                     `'${aliasBlock}',` +
                                     `'${aliasTransaction}',` +
                                     `${1}` +
-                                    `) ON CONFLICT (address) DO NOTHING;`
-                                await db.query(sql)
+                                    `) ON CONFLICT (address) ` +
+                                    `DO UPDATE SET ` +
+                                    `alias='${aliasName}',` +
+                                    `address='${aliasAddress}',` +
+                                    `comment='${aliasComment}',` +
+                                    `tracking_key='${aliasTrackingKey}',` +
+                                    `block='${aliasBlock}',` +
+                                    `transact='${aliasTransaction}',` +
+                                    `enabled${1}` +
+                                    (await db.query(sql))
                             }
                         }
 
