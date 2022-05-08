@@ -182,7 +182,7 @@ app.get(
                 result.rows[0].transactions_details = result2.rows
                 res.json(result.rows[0])
             } else {
-                res.send(JSON.stringify('block not found'))
+                res.send('block not found')
             }
         }
     })
@@ -196,9 +196,7 @@ app.get(
             let result = await db.query(
                 `SELECT * FROM pool ORDER BY timestamp DESC limit ${count};`
             )
-            res.send(
-                JSON.stringify(result && result.rowCount > 0 ? result.rows : [])
-            )
+            res.json(result && result.rowCount > 0 ? result.rows : [])
         } else {
             res.send("Error. Need 'count' params")
         }
@@ -218,9 +216,7 @@ app.get(
         let result = await db.query(
             `SELECT * FROM alt_blocks ORDER BY height DESC limit ${count} offset ${offset};`
         )
-        res.send(
-            JSON.stringify(result && result.rowCount > 0 ? result.rows : [])
-        )
+        res.json(result && result.rowCount > 0 ? result.rows : [])
     })
 )
 
@@ -232,11 +228,7 @@ app.get(
             let result = await db.query(
                 `SELECT * FROM alt_blocks WHERE hash = '${id}';`
             )
-            res.send(
-                JSON.stringify(
-                    result && result.rowCount > 0 ? result.rows[0] : []
-                )
-            )
+            res.json(result && result.rowCount > 0 ? result.rows[0] : [])
         } else
             res.status({ status: 500 }).json({
                 message: `/get_out_info/:amount/:i ${req.params}, ${error}`
@@ -253,13 +245,12 @@ app.get(
             let result = await db.query(
                 `SELECT transactions.*, blocks.id as block_hash, blocks.timestamp as block_timestamp FROM transactions LEFT JOIN blocks ON transactions.keeper_block = blocks.height WHERE transactions.id = '${tx_hash}';`
             )
-            if (result && result.rowCount > 0)
-                res.send(JSON.stringify(result.rows[0]))
+            if (result && result.rowCount > 0) res.json(result.rows[0])
             else {
                 let response = await get_tx_details(tx_hash)
                 let data = response.data
                 if (data.result !== undefined) {
-                    res.send(JSON.stringify(data.result.tx_info))
+                    res.json(data.result.tx_info)
                 } else {
                     res.status({ status: 500 }).json({
                         message: `/get_tx_details/:tx_hash ${req.params}, ${error}`
@@ -281,9 +272,9 @@ app.get(
             )
             if (result === undefined || result.rowCount === 0) {
                 let response = await get_out_info(amount, i)
-                res.send(JSON.stringify({ tx_id: response.data.result.tx_id }))
+                res.json({ tx_id: response.data.result.tx_id })
             } else {
-                res.send(JSON.stringify(result.rows))
+                res.json(result.rows)
             }
         } else {
             res.status({ status: 500 }).json({
@@ -308,9 +299,7 @@ app.get(
             let result = await db.query(
                 `SELECT * FROM aliases WHERE enabled = 1 ORDER BY block DESC limit ${count} offset ${offset};`
             )
-            res.send(
-                JSON.stringify(result && result.rowCount > 0 ? result.rows : [])
-            )
+            res.json(result && result.rowCount > 0 ? result.rows : [])
         } else if (
             search !== undefined &&
             offset !== undefined &&
@@ -319,9 +308,7 @@ app.get(
             let result = db.query(
                 `SELECT * FROM aliases WHERE enabled = 1 AND (alias LIKE '%{search}%' OR address LIKE '%${search}%' OR comment LIKE '%${search}%') ORDER BY block DESC limit ${count} offset ${offset};`
             )
-            res.send(
-                JSON.stringify(result && result.rowCount > 0 ? result.rows : [])
-            )
+            res.json(result && result.rowCount > 0 ? result.rows : [])
         }
     })
 )
@@ -338,7 +325,7 @@ app.get(
             if (chart === 'all') {
                 //convert me into a sp or view[sqllite3] please!!
                 let arrayAll = await db.query(
-                    `SELECT actual_timestamp::integer as at, block_cumulative_size as bcs, tr_count as trc, difficulty as d, type as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at;`
+                    `SELECT actual_timestamp::real as at, block_cumulative_size as bcs, tr_count as trc, difficulty as d, type as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at;`
                 )
                 let rows0 = await db.query(
                     `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, SUM(tr_count)::integer as sum_trc FROM charts GROUP BY at ORDER BY at;`
