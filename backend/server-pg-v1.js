@@ -615,9 +615,6 @@ async function syncTransactions() {
         for (const bl of block_array) {
             //build transaction inserts
             {
-                if (bl.height === 181367) {
-                    console.log('yes')
-                }
                 try {
                     if (bl.tr_count === undefined)
                         bl.tr_count = bl.transactions_details.length
@@ -660,8 +657,8 @@ async function syncTransactions() {
                                     `tracking_key='${aliasTrackingKey}',` +
                                     `block='${aliasBlock}',` +
                                     `transact='${aliasTransaction}',` +
-                                    `enabled${1}` +
-                                    (await db.query(sql))
+                                    `enabled=${1};`
+                                await db.query(sql)
                             }
                         }
 
@@ -693,7 +690,7 @@ async function syncTransactions() {
                         )
                     }
                 } catch (error) {
-                    log('shit')
+                    log('syncTransactions: Error inserting aliases: ', error)
                 }
             }
 
