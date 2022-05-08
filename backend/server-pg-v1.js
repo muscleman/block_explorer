@@ -283,7 +283,7 @@ app.get(
                 let response = await get_out_info(amount, i)
                 res.send(JSON.stringify({ tx_id: response.data.result.tx_id }))
             } else {
-                res.send(JSON.stringify(result.rows[0]))
+                res.send(JSON.stringify(result.rows))
             }
         } else {
             res.status({ status: 500 }).json({
@@ -309,9 +309,7 @@ app.get(
                 `SELECT * FROM aliases WHERE enabled = 1 ORDER BY block DESC limit ${count} offset ${offset};`
             )
             res.send(
-                JSON.stringify(
-                    result && result.rowCount > 0 ? result.rows[0] : []
-                )
+                JSON.stringify(result && result.rowCount > 0 ? result.rows : [])
             )
         } else if (
             search !== undefined &&
@@ -322,9 +320,7 @@ app.get(
                 `SELECT * FROM aliases WHERE enabled = 1 AND (alias LIKE '%{search}%' OR address LIKE '%${search}%' OR comment LIKE '%${search}%') ORDER BY block DESC limit ${count} offset ${offset};`
             )
             res.send(
-                JSON.stringify(
-                    result && result.rowCount > 0 ? result.rows[0] : []
-                )
+                JSON.stringify(result && result.rowCount > 0 ? result.rows : [])
             )
         }
     })
