@@ -904,6 +904,7 @@ async function syncBlocks() {
 async function syncAltBlocks() {
     statusSyncAltBlocks = true
     try {
+        await db.query('BEGIN')
         await db.query('DELETE FROM alt_blocks')
         let response = await get_alt_blocks_details(0, countAltBlocksServer)
         for (var block of response.data.result.blocks) {
@@ -939,9 +940,11 @@ async function syncAltBlocks() {
         )
         if (result) countAltBlocksDB = result.rows[0].height
         statusSyncAltBlocks = false
+        await db.query('COMMIT')
     } catch (error) {
         log('syncAltBlocks() ERROR', error)
         statusSyncAltBlocks = false
+        await db.query('ROLLBACK')
     }
 }
 
