@@ -2,7 +2,6 @@ const fs = require('fs')
 const express = require('express')
 const http = require('http')
 const app = express()
-const webSocket = require('ws')
 const { Pool } = require('pg')
 const axios = require('axios')
 const BigNumber = require('bignumber.js')
@@ -1254,19 +1253,7 @@ app.use(function (req, res) {
     res.sendFile(__dirname + '/dist/index.html')
 })
 
-const server = http.createServer(app)
-
-const wss = new webSocket.Server({ server })
-
-wss.on('connection', (ws) => {
-    console.log(`New Client Connection ${ws._socket.remoteAddress}`)
-
-    ws.send('hello')
-})
-
-// Start the server
-app.listen(parseInt(front_port), (req, res, error) => {
+const server = app.listen(parseInt(front_port), (req, res, error) => {
     if (error) return log(`Error: ${error}`)
-    log(`Server listening on port ${front_port}`)
-    log(`WS Server listening on port ${front_port}`)
+    log(`Server listening on port ${server.address().port}`)
 })
