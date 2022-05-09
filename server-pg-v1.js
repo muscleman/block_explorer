@@ -1026,228 +1026,193 @@ const pause = (ms) => {
 }
 
 // API
-app.get('/api/get_info/:flags', (req, res) => {
-    let flags = req.params.flags
-    axios({
-        method: 'get',
-        url: api,
-        data: {
-            method: 'getinfo',
-            params: { flags: parseInt(flags) }
-        },
-        transformResponse: [(data) => JSON.parse(data)]
-    })
-        .then((response) => {
-            res.send(JSON.stringify(response.data))
-        })
-        .catch(function (error) {
-            log('api get_info', error)
-        })
-})
-
-app.get('/api/get_total_coins', (req, res) => {
-    axios({
-        method: 'get',
-        url: api,
-        data: {
-            method: 'getinfo',
-            params: { flags: parseInt(4294967295) }
-        },
-        transformResponse: [(data) => JSON.parse(data)]
-    })
-        .then((response) => {
-            let str = response.data.result.total_coins
-            let result
-            let totalCoins = Number(str)
-            if (typeof totalCoins === 'number') {
-                result = parseInt(totalCoins) / 1000000000000
+app.get(
+    '/api/get_info/:flags',
+    exceptionHandler(async (req, res) => {
+        let flags = req.params.flags
+        const response = await axios({
+            method: 'get',
+            url: api,
+            data: {
+                method: 'getinfo',
+                params: { flags: parseInt(flags) }
             }
-            let r2 = result.toFixed(2)
-            res.send(r2)
         })
-        .catch(function (error) {
-            log('api get_info', error)
-        })
-})
+        res.json(response.data)
+    })
+)
 
-app.get('/api/get_blocks_details/:start/:count', (req, res) => {
-    let start = req.params.start
-    let count = req.params.count
-    axios({
-        method: 'get',
-        url: api,
-        data: {
-            method: 'get_blocks_details',
-            params: {
-                height_start: parseInt(start ? start : 0),
-                count: parseInt(count ? count : 10),
-                ignore_transactions: false
+app.get(
+    '/api/get_total_coins',
+    exceptionHandler(async (req, res) => {
+        const response = await axios({
+            method: 'get',
+            url: api,
+            data: {
+                method: 'getinfo',
+                params: { flags: parseInt(4294967295) }
             }
-        },
-        transformResponse: [(data) => JSON.parse(data)]
-    })
-        .then(function (response) {
-            res.send(JSON.stringify(response.data))
         })
-        .catch(function (error) {
-            log('api get_blocks_details failed', error)
-        })
-})
 
-app.get('/api/get_main_block_details/:id', (req, res) => {
-    let id = req.params.id
-    axios({
-        method: 'get',
-        url: api,
-        data: {
-            method: 'get_main_block_details',
-            params: {
-                id: id
+        let str = response.data.result.total_coins
+        let result
+        let totalCoins = Number(str)
+        if (typeof totalCoins === 'number') {
+            result = parseInt(totalCoins) / 1000000000000
+        }
+        let r2 = result.toFixed(2)
+        res.send(r2)
+    })
+)
+
+app.get(
+    '/api/get_blocks_details/:start/:count',
+    exceptionHandler(async (req, res) => {
+        let start = req.params.start
+        let count = req.params.count
+        const response = await axios({
+            method: 'get',
+            url: api,
+            data: {
+                method: 'get_blocks_details',
+                params: {
+                    height_start: parseInt(start ? start : 0),
+                    count: parseInt(count ? count : 10),
+                    ignore_transactions: false
+                }
             }
-        },
-        transformResponse: [(data) => JSON.parse(data)]
+        })
+        res.json(response.data)
     })
-        .then(function (response) {
-            res.send(JSON.stringify(response.data))
-        })
-        .catch(function (error) {
-            log('api get_main_block_details failed', error)
-        })
-})
+)
 
-app.get('/api/get_alt_blocks_details/:offset/:count', (req, res) => {
-    let offset = req.params.offset
-    let count = req.params.count
-    axios({
-        method: 'get',
-        url: api,
-        data: {
-            method: 'get_alt_blocks_details',
-            params: {
-                offset: parseInt(offset),
-                count: parseInt(count)
+app.get(
+    '/api/get_main_block_details/:id',
+    exceptionHandler(async (req, res) => {
+        let id = req.params.id
+        const response = await axios({
+            method: 'get',
+            url: api,
+            data: {
+                method: 'get_main_block_details',
+                params: {
+                    id: id
+                }
             }
-        },
-        transformResponse: [(data) => JSON.parse(data)]
+        })
+        res.json(response.data)
     })
-        .then(function (response) {
-            res.send(JSON.stringify(response.data))
-        })
-        .catch(function (error) {
-            log('api get_alt_blocks_details failed', error)
-        })
-})
+)
 
-app.get('/api/get_alt_block_details/:id', (req, res) => {
-    let id = req.params.id
-    axios({
-        method: 'get',
-        url: api,
-        data: {
-            method: 'get_alt_block_details',
-            params: {
-                id: id
+app.get(
+    '/api/get_alt_blocks_details/:offset/:count',
+    exceptionHandler(async (req, res) => {
+        let offset = req.params.offset
+        let count = req.params.count
+        const response = await axios({
+            method: 'get',
+            url: api,
+            data: {
+                method: 'get_alt_blocks_details',
+                params: {
+                    offset: parseInt(offset),
+                    count: parseInt(count)
+                }
             }
-        },
-        transformResponse: [(data) => JSON.parse(data)]
+        })
+        res.json(response.data)
     })
-        .then(function (response) {
-            res.send(JSON.stringify(response.data))
-        })
-        .catch(function (error) {
-            log('api get_alt_block_details failed', error)
-        })
-})
+)
 
-app.get('/api/get_all_pool_tx_list', (req, res) => {
-    axios({
-        method: 'get',
-        url: api,
-        data: {
-            method: 'get_all_pool_tx_list'
-        },
-        transformResponse: [(data) => JSON.parse(data)]
+app.get(
+    '/api/get_alt_block_details/:id',
+    exceptionHandler(async (req, res) => {
+        let id = req.params.id
+        const response = await axios({
+            method: 'get',
+            url: api,
+            data: {
+                method: 'get_alt_block_details',
+                params: {
+                    id: id
+                }
+            }
+        })
+        req.json(response.data)
     })
-        .then((response) => {
-            res.send(JSON.stringify(response.data))
-        })
-        .catch(function (error) {
-            log('api get_all_pool_tx_list failed', error)
-        })
-})
+)
 
-app.get('/api/get_pool_txs_details', (req, res) => {
-    axios({
-        method: 'get',
-        url: api,
-        data: {
-            method: 'get_pool_txs_details'
-        },
-        transformResponse: [(data) => JSON.parse(data)]
+app.get(
+    '/api/get_all_pool_tx_list',
+    exceptionHandler(async (req, res) => {
+        const response = await axios({
+            method: 'get',
+            url: api,
+            data: {
+                method: 'get_all_pool_tx_list'
+            }
+        })
+        res.json(response.data)
     })
-        .then((response) => {
-            res.send(JSON.stringify(response.data))
-        })
-        .catch(function (error) {
-            log('api get_pool_txs_details failed', error)
-        })
-})
+)
 
-app.get('/api/get_pool_txs_brief_details', (req, res) => {
-    axios({
-        method: 'get',
-        url: api,
-        data: {
-            method: 'get_pool_txs_brief_details'
-        },
-        transformResponse: [(data) => JSON.parse(data)]
+app.get(
+    '/api/get_pool_txs_details',
+    exceptionHandler(async (req, res) => {
+        const response = await axios({
+            method: 'get',
+            url: api,
+            data: {
+                method: 'get_pool_txs_details'
+            }
+        })
+        res.json(response.data)
     })
-        .then((response) => {
-            res.send(JSON.stringify(response.data))
-        })
-        .catch(function (error) {
-            log('api get_pool_txs_details failed', error)
-        })
-})
+)
 
-app.get('/api/get_tx_details/:tx_hash', (req, res) => {
-    let tx_hash = req.params.tx_hash
-    axios({
-        method: 'get',
-        url: api,
-        data: {
-            method: 'get_tx_details',
-            params: { tx_hash: tx_hash }
-        },
-        transformResponse: [(data) => JSON.parse(data)]
+app.get(
+    '/api/get_pool_txs_brief_details',
+    exceptionHandler(async (req, res) => {
+        const response = await axios({
+            method: 'get',
+            url: api,
+            data: {
+                method: 'get_pool_txs_brief_details'
+            }
+        })
+        res.json(response.data)
     })
-        .then((response) => {
-            res.send(JSON.stringify(response.data))
-        })
-        .catch(function (error) {
-            log('api get_tx_details failed', error)
-        })
-})
+)
 
-// app.get('/api/get_out_info/:amount/:i', (req, res) => {
+app.get(
+    '/api/get_tx_details/:tx_hash',
+    exceptionHandler(async (req, res) => {
+        let tx_hash = req.params.tx_hash
+        const response = await axios({
+            method: 'get',
+            url: api,
+            data: {
+                method: 'get_tx_details',
+                params: { tx_hash: tx_hash }
+            }
+        })
+        res.json(response.data)
+    })
+)
+
+// app.get('/api/get_out_info/:amount/:i', exceptionHandler(async (req, res) => {
 //     let amount = req.params.amount
 //     let i = req.params.i
-//     axios({
+//     const response = axios({
 //         method: 'get',
 //         url: api,
 //         data: {
 //             method: 'get_out_info',
-//             params: {'amount': amount, 'i': i},
-//         },
-//         transformResponse: [data => JSON.parse(data)]
+//             params: {'amount': parseInt(amount), 'i': parseInt(i)},
+//         }
 //     })
-//         .then((response) => {
-//             res.send(JSON.stringify(response.data))
-//         })
-//         .catch(function (error) {
-//             log('api get_tx_details failed', error)
-//         })
-// })
+//     res.json(response.data)
+// }))
 
 app.use(function (req, res) {
     res.sendFile(__dirname + '/dist/index.html')
