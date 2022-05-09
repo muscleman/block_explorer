@@ -305,9 +305,6 @@ app.get(
             offset !== undefined &&
             count !== undefined
         ) {
-            console.log(
-                `SELECT * FROM aliases WHERE enabled = 1 AND (alias LIKE '%${search}%' OR address LIKE '%${search}%' OR comment LIKE '%${search}%') ORDER BY block DESC limit ${count} offset ${offset};`
-            )
             let result = await db.query(
                 `SELECT * FROM aliases WHERE enabled = 1 AND (alias LIKE '%${search}%' OR address LIKE '%${search}%' OR comment LIKE '%${search}%') ORDER BY block DESC limit ${count} offset ${offset};`
             )
