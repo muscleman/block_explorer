@@ -392,15 +392,15 @@ app.get(
             let result = await db.query(
                 `SELECT * FROM blocks WHERE id = '${id}' ;`
             )
-            if (result === undefined) {
+            if (!result || result.rowCount === 0) {
                 result = await db.query(
                     `SELECT * FROM alt_blocks WHERE hash = '${id}' ;`
                 )
-                if (result === undefined) {
+                if (!result || result.rowCount === 0) {
                     result = await db.query(
                         `SELECT * FROM transactions WHERE id = '${id}' ;`
                     )
-                    if (result === undefined) {
+                    if (!result || result.rowCount === 0) {
                         try {
                             let response = await get_tx_details(id)
                             if (response.data.result) {
