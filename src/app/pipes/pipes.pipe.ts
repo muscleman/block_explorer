@@ -7,6 +7,8 @@ import {
 } from '@angular/core'
 import * as moment from 'moment'
 
+import BigNumber from 'bignumber.js'
+
 // array reverse
 @Pipe({
     name: 'orderBy',
@@ -94,7 +96,8 @@ export class MoneyParsePipe implements PipeTransform {
                 maxFraction = parseInt(args, 10)
             }
             const power = Math.pow(10, maxFraction)
-            let str = (BigInt(value) / BigInt(power)).toString()
+            console.log('value ', value, ' ', power)
+            let str = new BigNumber(value).div(power).toFixed(maxFraction)
 
             for (let i = str.length - 1; i >= 0; i--) {
                 if (str[i] !== '0') {
@@ -105,6 +108,7 @@ export class MoneyParsePipe implements PipeTransform {
             if (str[str.length - 1] === '.') {
                 str = str.substr(0, str.length - 1)
             }
+            console.log(str)
             return str
         }
         return '0'
