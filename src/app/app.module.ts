@@ -45,6 +45,11 @@ import { PipesModule } from './pipes/pipes.module'
 import { StakedCoinsComponent } from './staked-coins/staked-coins.component'
 import { DevFundComponent } from './dev-fund/dev-fund.component'
 
+import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io'
+import { environment } from 'environments/environment'
+
+const config: SocketIoConfig = { url: environment.backend, options: {} }
+
 @NgModule({
     declarations: [
         AppComponent,
@@ -78,7 +83,8 @@ import { DevFundComponent } from './dev-fund/dev-fund.component'
         NgxJsonViewerModule,
         ChartModule,
         AppRoutingModule,
-        PipesModule
+        PipesModule,
+        SocketIoModule.forRoot(config)
     ],
     providers: [
         HttpService,

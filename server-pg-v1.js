@@ -1,18 +1,30 @@
 const fs = require('fs')
 const express = require('express')
 const http = require('http')
-const { WebSocketServer } = require('ws')
 const app = express()
+const server = http.createServer(app)
+const { Server } = require('socket.io')
+const io = new Server(server)
+// const { WebSocketServer } = require('ws')
 const { Pool } = require('pg')
 const axios = require('axios')
 const BigNumber = require('bignumber.js')
 const exceptionHandler = require('./exceptionHandler')
+const cors = require('cors')
 
 let config = fs.readFileSync('config.json', 'utf8')
 config = JSON.parse(config)
 const api = config.api + '/json_rpc'
 const wallet = `${config.auditable_wallet.api}/json_rpc`
 const front_port = config.front_port
+
+io.engine.on('initial_headers', (headers, req) => {
+    headers['Access-Control-Allow-Origin'] = 'http://localhost:4200'
+})
+
+io.engine.on('headers', (headers, req) => {
+    headers['Access-Control-Allow-Origin'] = 'http://localhost:4200'
+})
 
 app.use(express.static('dist'))
 app.use(function (req, res, next) {
@@ -977,6 +989,30 @@ async function syncAltBlocks() {
     statusSyncAltBlocks = false
 }
 
+const getVisibilityInfo = async () => {
+    let result = {
+        amount: 0,
+        percentage: 0,
+        balance: 0,
+        unlocked_balance: 0
+    }
+    try {
+        const response = await getbalance()
+        result.balance = response.data.result.balance
+        result.unlocked_balance = response.data.result.unlocked_balance
+        result.amount = 9123546523000000000
+        result.percentage = 56
+    } catch (error) {}
+    return JSON.stringify(result)
+}
+
+const emitSocketInfo = async () => {
+    blockInfo.lastBlock = lastBlock.height
+    io.emit('get_info', JSON.stringify(blockInfo))
+
+    io.emit('get_visibility_info', await getVisibilityInfo())
+}
+
 async function getInfoTimer() {
     if (now_delete_offers === false) {
         try {
@@ -1031,6 +1067,7 @@ async function getInfoTimer() {
                 )
                 now_blocks_sync = true
                 await syncBlocks()
+                await emitSocketInfo()
             }
             await pause(10000)
             await getInfoTimer()
@@ -1243,24 +1280,9 @@ app.use(function (req, res) {
     res.sendFile(__dirname + '/dist/index.html')
 })
 
-const server = http.createServer(app)
-const wss = new WebSocketServer({ clientTracking: false, noServer: true })
-
-server.on('upgrade', function (request, socket, head) {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit('connection', ws, request)
-    })
-})
-
-wss.on('connection', function (ws, request) {
-    ws.on('message', function (message) {
-        console.log(`Received message ${message}`)
-        ws.send(JSON.stringify({ foo: 1, bar: 2 }))
-    })
-    ws.send(JSON.stringify({ foo: 1, bar: 2 }))
-    ws.on('close', function () {
-        log(`Disconnectiong socket server ${server.address().port}`)
-    })
+io.on('connection', async (socket) => {
+    console.log('a user connected')
+    await emitSocketInfo()
 })
 
 server.listen(8008, () => {

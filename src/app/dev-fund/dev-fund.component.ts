@@ -20,7 +20,6 @@ export class DevFundComponent
     ngOnInit(): void {
         this._track(
             this.httpService.subscribeVisibilityInfo().subscribe((data) => {
-                console.log(data)
                 this.amount = data.balance
             })
         )
