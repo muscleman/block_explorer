@@ -10,6 +10,7 @@ import { defer, Observable, Subject } from 'rxjs'
 import { environment } from '../environments/environment'
 import { delay, map, repeat } from 'rxjs/operators'
 import { VisibilityInfo } from './models/visibility-info'
+import { webSocket, WebSocketSubject } from 'rxjs/webSocket'
 
 @Injectable()
 export class HttpService {
@@ -17,57 +18,68 @@ export class HttpService {
     private Info = new Subject<any>()
     private infoObj: any
     private visibilityInfo = new Subject<VisibilityInfo>()
+    private ws: Subject<any> = webSocket<any>('ws://127.0.0.1:8008')
 
-    constructor(protected httpClient: HttpClient, private router: Router) {
+    constructor(protected httpClient: HttpClient) {
         this.serverApi = environment.backend
-        defer(() => {
-            return this.httpClient
-                .get<Response>(`${this.serverApi}/get_info`)
-                .pipe(
-                    map((response) => {
-                        this.infoObj = response
-                        return this.infoObj
-                    })
-                )
-        })
-            .pipe(delay(6000), repeat())
-            .subscribe({
-                next: (response) => {
-                    this.infoObj = response
-                    this.Info.next(response)
-                    if (this.router.url === '/server-error') {
-                        this.router.navigate(['/'])
-                    }
-                },
-                error: (err) => {
-                    console.log('error', err)
-                    this.router.navigate(['/server-error'])
-                }
-            })
 
-        defer(() => {
-            return this.httpClient
-                .get<VisibilityInfo>(`${this.serverApi}/get_visibility_info`)
-                .pipe(
-                    map((response) => {
-                        this.infoObj = response
-                        return this.infoObj
-                    })
-                )
+        this.ws.subscribe({
+            next: (msg) =>
+                console.log(
+                    'message received: ' + JSON.stringify(msg, null, '\t')
+                ),
+            error: (err) => console.log(err),
+            complete: () => console.log('complete')
         })
-            .pipe(delay(6000), repeat())
-            .subscribe({
-                next: (response) => {
-                    this.visibilityInfo.next(response)
-                    if (this.router.url === '/server-error') {
-                        this.router.navigate(['/'])
-                    }
-                },
-                error: (err) => {
-                    console.log('error', err)
-                    this.router.navigate(['/server-error'])
-                }
-            })
+
+        // defer(() => {
+        //     return this.httpClient
+        //         .get<Response>(`${this.serverApi}/get_info`)
+        //         .pipe(
+        //             map((response) => {
+        //                 this.infoObj = response
+        //                 return this.infoObj
+        //             })
+        //         )
+        // })
+        //     .pipe(delay(6000), repeat())
+        //     .subscribe({
+        //         next: (response) => {
+        //             this.infoObj = response
+        //             this.Info.next(response)
+        //             if (this.router.url === '/server-error') {
+        //                 this.router.navigate(['/'])
+        //             }
+        //         },
+        //         error: (err) => {
+        //             console.log('error', err)
+        //             this.router.navigate(['/server-error'])
+        //         }
+        //     })
+
+        // defer(() => {
+        //     return this.httpClient
+        //         .get<VisibilityInfo>(`${this.serverApi}/get_visibility_info`)
+        //         .pipe(
+        //             map((response) => {
+        //                 this.infoObj = response
+        //                 return this.infoObj
+        //             })
+        //         )
+        // })
+        //     .pipe(delay(6000), repeat())
+        //     .subscribe({
+        //         next: (response) => {
+        //             this.visibilityInfo.next(response)
+        //             if (this.router.url === '/server-error') {
+        //                 this.router.navigate(['/'])
+        //             }
+        //         },
+        //         error: (err) => {
+        //             console.log('error', err)
+        //             this.router.navigate(['/server-error'])
+        //         }
+        //     })
     }
 
     subscribeVisibilityInfo() {

@@ -1,6 +1,7 @@
 const fs = require('fs')
 const express = require('express')
 const http = require('http')
+const { WebSocketServer } = require('ws')
 const app = express()
 const { Pool } = require('pg')
 const axios = require('axios')
@@ -1242,7 +1243,26 @@ app.use(function (req, res) {
     res.sendFile(__dirname + '/dist/index.html')
 })
 
-const server = app.listen(parseInt(front_port), (req, res, error) => {
-    if (error) return log(`Error: ${error}`)
+const server = http.createServer(app)
+const wss = new WebSocketServer({ clientTracking: false, noServer: true })
+
+server.on('upgrade', function (request, socket, head) {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request)
+    })
+})
+
+wss.on('connection', function (ws, request) {
+    ws.on('message', function (message) {
+        console.log(`Received message ${message}`)
+        ws.send(JSON.stringify({ foo: 1, bar: 2 }))
+    })
+    ws.send(JSON.stringify({ foo: 1, bar: 2 }))
+    ws.on('close', function () {
+        log(`Disconnectiong socket server ${server.address().port}`)
+    })
+})
+
+server.listen(8008, () => {
     log(`Server listening on port ${server.address().port}`)
 })
