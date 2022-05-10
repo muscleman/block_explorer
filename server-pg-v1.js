@@ -781,22 +781,22 @@ async function syncTransactions() {
                 blockInserts.push(
                     `(${bl.height},` +
                         `${bl.actual_timestamp},` +
-                        `'${bl.base_reward}',` +
+                        `${bl.base_reward},` +
                         `'${bl.blob}',` +
                         `${bl.block_cumulative_size},` +
-                        `'${bl.block_tself_size}',` +
-                        `'${bl.cumulative_diff_adjusted.toString()}',` +
-                        `'${bl.cumulative_diff_precise.toString()}',` +
-                        `'${bl.difficulty.toString()}',` +
-                        `'${bl.effective_fee_median}',` +
+                        `${bl.block_tself_size},` +
+                        `${bl.cumulative_diff_adjusted},` +
+                        `${bl.cumulative_diff_precise},` +
+                        `${bl.difficulty},` +
+                        `${bl.effective_fee_median},` +
                         `'${bl.id}',` +
                         `${bl.is_orphan},` +
-                        `'${bl.penalty}',` +
+                        `${bl.penalty},` +
                         `'${bl.prev_id}',` +
-                        `'${bl.summary_reward}',` +
-                        `'${bl.this_block_fee_median}',` +
+                        `${bl.summary_reward},` +
+                        `${bl.this_block_fee_median},` +
                         `${bl.timestamp},` +
-                        `'${bl.total_fee.toString()}',` +
+                        `${bl.total_fee},` +
                         `${bl.total_txs_size},` +
                         `${bl.tr_count ? bl.tr_count : 0},` +
                         `${bl.type},` +
@@ -888,7 +888,11 @@ async function syncTransactions() {
                 console.log(error)
             }
         }
-        await db.query('commit')
+        try {
+            await db.query('commit')
+        } catch (error) {
+            console.log(error)
+        }
         lastBlock = block_array.pop()
         log('BLOCKS: db =' + lastBlock.height + '/ server =' + blockInfo.height)
         block_array = []
@@ -912,6 +916,7 @@ async function syncBlocks() {
         if (localBlocks.length && lastBlock.id === localBlocks[0].prev_id) {
             block_array = localBlocks
             await syncTransactions()
+            await emitSocketInfo()
             if (lastBlock.height >= blockInfo.height - 1) {
                 now_blocks_sync = false
             } else {
