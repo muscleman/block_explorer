@@ -247,3 +247,15 @@
         }
     }
 }
+
+.visibility_info {
+    display: flex;
+    justify-content: space-around;
+    overflow: hidden;
+    height: 70px;
+    margin-bottom: 25px;
+    // background-color: purple;
+    @include max991 {
+        flex-direction: column;
+    }
+}

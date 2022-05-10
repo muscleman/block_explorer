@@ -42,6 +42,8 @@ import { DifficultyPowComponent } from './charts/difficulty-pow/difficulty-pow.c
 import { ApiComponent } from './api/api.component'
 import { CookieService } from 'ngx-cookie-service'
 import { PipesModule } from './pipes/pipes.module'
+import { StakedCoinsComponent } from './staked-coins/staked-coins.component'
+import { DevFundComponent } from './dev-fund/dev-fund.component'
 
 @NgModule({
     declarations: [
@@ -63,7 +65,9 @@ import { PipesModule } from './pipes/pipes.module'
         DifficultyComponent,
         DifficultyPowComponent,
         ConfirmTransPerDayComponent,
-        ApiComponent
+        ApiComponent,
+        StakedCoinsComponent,
+        DevFundComponent
     ],
     imports: [
         BrowserModule,

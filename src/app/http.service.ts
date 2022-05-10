@@ -9,12 +9,14 @@ import {
 import { defer, Observable, Subject } from 'rxjs'
 import { environment } from '../environments/environment'
 import { delay, map, repeat } from 'rxjs/operators'
+import { VisibilityInfo } from './models/visibility-info'
 
 @Injectable()
 export class HttpService {
     public serverApi = ''
     private Info = new Subject<any>()
     private infoObj: any
+    private visibilityInfo = new Subject<VisibilityInfo>()
 
     constructor(protected httpClient: HttpClient, private router: Router) {
         this.serverApi = environment.backend
@@ -42,11 +44,43 @@ export class HttpService {
                     this.router.navigate(['/server-error'])
                 }
             })
+
+        defer(() => {
+            return this.httpClient
+                .get<VisibilityInfo>(`${this.serverApi}/get_visibility_info`)
+                .pipe(
+                    map((response) => {
+                        this.infoObj = response
+                        return this.infoObj
+                    })
+                )
+        })
+            .pipe(delay(6000), repeat())
+            .subscribe({
+                next: (response) => {
+                    this.visibilityInfo.next(response)
+                    if (this.router.url === '/server-error') {
+                        this.router.navigate(['/'])
+                    }
+                },
+                error: (err) => {
+                    console.log('error', err)
+                    this.router.navigate(['/server-error'])
+                }
+            })
+    }
+
+    subscribeVisibilityInfo() {
+        return this.visibilityInfo.asObservable()
     }
 
     subscribeInfo() {
         return this.Info.asObservable()
     }
+
+    // getVisibiltyInfo(): Observable<Response> {
+    //     return this.httpClient.get<Response>(`${this.serverApi}/get_visibility_info`)
+    // }
 
     getInfo(): Observable<Response> {
         if (this.infoObj === undefined) {

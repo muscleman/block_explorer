@@ -10,6 +10,7 @@ const exceptionHandler = require('./exceptionHandler')
 let config = fs.readFileSync('config.json', 'utf8')
 config = JSON.parse(config)
 const api = config.api + '/json_rpc'
+const wallet = `${config.auditable_wallet.api}/json_rpc`
 const front_port = config.front_port
 
 app.use(express.static('dist'))
@@ -143,6 +144,18 @@ const get_out_info = (amount, i) => {
     })
 }
 
+const getbalance = () => {
+    return axios({
+        method: 'post',
+        url: wallet,
+        data: {
+            method: 'getbalance',
+            params: {}
+        },
+        transformResponse: [(data) => JSON.parse(data)]
+    })
+}
+
 app.get(
     '/get_info',
     exceptionHandler((req, res, next) => {
@@ -164,6 +177,17 @@ app.get(
             )
             res.json(result && result.rowCount > 0 ? result.rows : [])
         }
+    })
+)
+
+app.get(
+    '/get_visibility_info',
+    exceptionHandler(async (req, res, next) => {
+        const response = await getbalance()
+        let result = response.data.result
+        result.amount = 9123546523000000000
+        result.percentage = 56
+        res.json(result)
     })
 )
 

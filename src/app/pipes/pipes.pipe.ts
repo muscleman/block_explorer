@@ -96,7 +96,6 @@ export class MoneyParsePipe implements PipeTransform {
                 maxFraction = parseInt(args, 10)
             }
             const power = Math.pow(10, maxFraction)
-            console.log('value ', value, ' ', power)
             let str = new BigNumber(value).div(power).toFixed(maxFraction)
 
             for (let i = str.length - 1; i >= 0; i--) {
@@ -108,7 +107,6 @@ export class MoneyParsePipe implements PipeTransform {
             if (str[str.length - 1] === '.') {
                 str = str.substr(0, str.length - 1)
             }
-            console.log(str)
             return str
         }
         return '0'
