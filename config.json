@@ -1,6 +1,6 @@
 {
     "api": "http://10.0.0.13:12111",
-    "frontEnd_api": "http://localhost:4200",
+    "frontEnd_api": "*",
     "server_port": "8008",
     "auditable_wallet": {
         "api": "http://10.0.0.13:12233"

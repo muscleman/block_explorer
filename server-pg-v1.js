@@ -1280,7 +1280,6 @@ app.use(function (req, res) {
 })
 
 io.on('connection', async (socket) => {
-    console.log('a user connected')
     await emitSocketInfo()
 })
 
