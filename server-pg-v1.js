@@ -734,25 +734,25 @@ async function syncTransactions() {
             // if (bl.tr_out.length === 0) {
 
             //build chart inserts or use sp after block and trans inserts
-            if (bl.type === 1) {
-                /*calculate chart averages*/
-            }
+            // if (bl.type === 1) {
+            //     /*calculate chart averages*/
+            // }
 
             //build chart inserts
-            if (bl.type !== 1) {
-                chartInserts.push(
-                    `(${bl.height},` +
-                        `${bl.actual_timestamp},` +
-                        `${bl.block_cumulative_size},` +
-                        `${bl.cumulative_diff_precise},` +
-                        `${bl.difficulty},` +
-                        `${bl.tr_count ? bl.tr_count : 0},` +
-                        `${bl.type},` +
-                        `0,` +
-                        `0,` +
-                        `0)`
-                )
-            }
+            // if (bl.type !== 1) {
+            chartInserts.push(
+                `(${bl.height},` +
+                    `${bl.actual_timestamp},` +
+                    `${bl.block_cumulative_size},` +
+                    `${bl.cumulative_diff_precise},` +
+                    `${bl.difficulty},` +
+                    `${bl.tr_count ? bl.tr_count : 0},` +
+                    `${bl.type},` +
+                    `0,` +
+                    `0,` +
+                    `0)`
+            )
+            // }
 
             //build out_info inserts
             {
@@ -890,12 +890,20 @@ async function syncTransactions() {
         }
         try {
             await db.query('commit')
+            lastBlock = block_array.pop()
+            log(
+                'BLOCKS: db =' +
+                    lastBlock.height +
+                    '/ server =' +
+                    blockInfo.height
+            )
+            await db.query(
+                `call update_statistics(${block_array[0].height}, ${lastBlock.height})`
+            )
+            block_array = []
         } catch (error) {
             console.log(error)
         }
-        lastBlock = block_array.pop()
-        log('BLOCKS: db =' + lastBlock.height + '/ server =' + blockInfo.height)
-        block_array = []
     }
 }
 
