@@ -5,6 +5,6 @@
 
 export const environment = {
     production: false,
-    backend: 'http://127.0.0.1:8008',
+    backend: 'http://10.0.0.13:8008',
     documentionApi: 'https://docs.zano.org'
 }

@@ -147,7 +147,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE PROCEDURE update_statistics(IN p_startHeight integer, IN p_endHeight integer) AS $$
+CREATE OR REPLACE PROCEDURE public.update_statistics(p_startheight integer)
+    LANGUAGE plpgsql
+    AS $$
 BEGIN
 	WITH cte AS (
 		SELECT height,
@@ -167,21 +169,28 @@ BEGIN
 			   ), 0) cumulative_diff_precise_b,
 			   COALESCE(LAG(actual_timestamp_a,100) OVER (
 				   ORDER BY height asc
-			   ), 0) actual_timestamp_b
+			   ), 0) actual_timestamp_b,
+			   COALESCE(LAG(cumulative_diff_precise_a, 400) OVER (
+				   ORDER BY height asc
+			   ), 0) cumulative_diff_precise_c,
+			   COALESCE(LAG(actual_timestamp_a, 400) OVER (
+				   ORDER BY height asc
+			   ), 0) actual_timestamp_c
 		  FROM cte
 	)
 	update charts
 	   set difficulty120 = sub.difficulty120, 
-		   hashrate100 = sub.hashrate100 from ( SELECT height,
+		   hashrate100 = sub.hashrate100,
+		   hashrate400 = sub.hashrate400 from ( SELECT height,
 													   (difficulty / 120)::integer as difficulty120,
-													   case when cumulative_diff_precise_b = 0 then 0 else ((cumulative_diff_precise_a - cumulative_diff_precise_b) / (actual_timestamp_a - actual_timestamp_b))::decimal(100,11) end as hashrate100
+													   case when cumulative_diff_precise_b = 0 then 0 else ((cumulative_diff_precise_a - cumulative_diff_precise_b) / (actual_timestamp_a - actual_timestamp_b))::decimal(100,11) end as hashrate100,
+		   											   case when cumulative_diff_precise_c = 0 then 0 else ((cumulative_diff_precise_a - cumulative_diff_precise_c) / (actual_timestamp_a - actual_timestamp_c))::decimal(100,11) end as hashrate400
 												  FROM cte2
-												 where height >= p_startHeight 
-												   and height <= p_endHeight
+												 where height >= p_startHeight
 											) as sub
 	where charts.height = sub.height;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 
 GRANT EXECUTE ON PROCEDURE public.purge() TO zano;

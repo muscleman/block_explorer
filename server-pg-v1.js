@@ -890,6 +890,7 @@ async function syncTransactions() {
         }
         try {
             await db.query('commit')
+            elementOne = block_array[0]
             lastBlock = block_array.pop()
             log(
                 'BLOCKS: db =' +
@@ -898,7 +899,10 @@ async function syncTransactions() {
                     blockInfo.height
             )
             await db.query(
-                `call update_statistics(${block_array[0].height}, ${lastBlock.height})`
+                `call update_statistics(${Math.min(
+                    elementOne.height,
+                    lastBlock.height
+                )})`
             )
             block_array = []
         } catch (error) {
