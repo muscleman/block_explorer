@@ -207,9 +207,11 @@ app.get(
         let count = req.params.count
 
         if (start && count) {
-            let result = await db.query(
-                `SELECT blocks.* FROM blocks WHERE blocks.height >= ${start} ORDER BY blocks.height ASC LIMIT ${count};`
-            )
+            const query = {
+                text: 'SELECT blocks.* FROM blocks WHERE blocks.height >= $1 ORDER BY blocks.height ASC LIMIT $2;',
+                values: [start, count]
+            }
+            let result = await db.query(query)
             res.json(result && result.rowCount > 0 ? result.rows : [])
         }
     })
@@ -544,8 +546,8 @@ const syncPool = async () => {
                     let new_ids = []
                     for (let j = 0; j < pools_array.length; j++) {
                         let find = false
-                        for (let i = 0; i < result.rows[0].length; i++) {
-                            if (pools_array[j] === result.rows[0][i].id) {
+                        for (let i = 0; i < result.rows.length; i++) {
+                            if (pools_array[j] === result.rows[i].id) {
                                 find = true
                                 break
                             } else {
@@ -564,23 +566,25 @@ const syncPool = async () => {
                                 response.data.result &&
                                 response.data.result.txs
                             ) {
-                                db.serialize(async function () {
-                                    await db.query('begin')
-                                    let stmt = db.prepare(
-                                        'INSERT INTO pool VALUES (?,?,?,?)'
+                                let txInserts = []
+                                for (let tx of response.data.result.txs) {
+                                    txInserts.push(
+                                        `(${tx.blob_size},` +
+                                            `${tx.fee}` +
+                                            `'${tx.id}'` +
+                                            `${tx.timestamp}` +
+                                            ` )`
                                     )
-                                    for (let tx of response.data.result.txs) {
-                                        stmt.run(
-                                            tx.blob_size,
-                                            tx.fee,
-                                            tx.id,
-                                            tx.timestamp
-                                        )
-                                    }
-                                    stmt.finalize()
-                                    await db.query('commit')
-                                    statusSyncPool = false
-                                })
+                                }
+                                if (txInserts.length > 0) {
+                                    await db.query('BEGIN')
+                                    let sql =
+                                        'INSERT INTO POOL (blob_size, fee, id, timestamp) VALUES ' +
+                                        txInserts.join(',')
+                                    await db.query(sql)
+                                    await db.query('COMMIT')
+                                }
+                                statusSyncPool = false
                             } else {
                                 statusSyncPool = false
                             }
@@ -1072,12 +1076,14 @@ const getInfoTimer = async () => {
                         ' server=' +
                         blockInfo.height
                 )
-                log(
-                    'need update aliases db=' +
-                        countAliasesDB +
-                        ' server=' +
-                        countAliasesServer
-                )
+                if (countAliasesDB !== countAliasesServer) {
+                    log(
+                        'need update aliases db=' +
+                            countAliasesDB +
+                            ' server=' +
+                            countAliasesServer
+                    )
+                }
                 now_blocks_sync = true
                 await syncBlocks()
                 await emitSocketInfo()
