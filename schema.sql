@@ -99,12 +99,12 @@ CREATE TABLE IF NOT EXISTS charts (
             actual_timestamp integer,
             block_cumulative_size decimal(100,0),
             cumulative_diff_precise decimal(100,0),
-            difficulty decimal,
-            tr_count integer,
+            difficulty  decimal(100,0),,
+            tr_count bigint,
             type integer,
-            difficulty120 bigint,
-            hashrate100 bigint,
-            hashrate400 bigint
+            difficulty120 decimal(100,0),,
+            hashrate100 decimal(100,0),,
+            hashrate400 decimal(100,0),
 );
 
 CREATE INDEX IF NOT EXISTS index_bl_height ON charts(height);
