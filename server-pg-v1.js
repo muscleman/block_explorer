@@ -17,6 +17,7 @@ const api = config.api + '/json_rpc'
 const wallet = `${config.auditable_wallet.api}/json_rpc`
 const server_port = config.server_port
 const frontEnd_api = config.frontEnd_api
+let enabled_during_sync = config.websocket.enabled_during_sync
 let maxCount = 1000
 let lastBlock = {
     height: -1,
@@ -923,6 +924,7 @@ const syncBlocks = async () => {
             await emitSocketInfo()
             if (lastBlock.height >= blockInfo.height - 1) {
                 now_blocks_sync = false
+                enabled_during_sync = true
             } else {
                 await pause(serverTimeout)
                 await syncBlocks()
@@ -1016,10 +1018,12 @@ const getVisibilityInfo = async () => {
 }
 
 const emitSocketInfo = async () => {
-    blockInfo.lastBlock = lastBlock.height
-    io.emit('get_info', JSON.stringify(blockInfo))
+    if (enabled_during_sync) {
+        blockInfo.lastBlock = lastBlock.height
+        io.emit('get_info', JSON.stringify(blockInfo))
 
-    io.emit('get_visibility_info', await getVisibilityInfo())
+        io.emit('get_visibility_info', await getVisibilityInfo())
+    }
 }
 
 const getInfoTimer = async () => {
