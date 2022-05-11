@@ -8,7 +8,7 @@ const BigNumber = require('bignumber.js')
 let config = fs.readFileSync('config.json', 'utf8')
 config = JSON.parse(config)
 const api = config.api + '/json_rpc'
-const front_port = config.front_port
+const server_port = config.server_port
 
 app.use(express.static('dist'))
 app.use(function (req, res, next) {
@@ -1490,32 +1490,12 @@ app.get('/api/get_tx_details/:tx_hash', (req, res) => {
         })
 })
 
-// app.get('/api/get_out_info/:amount/:i', (req, res) => {
-//     let amount = req.params.amount
-//     let i = req.params.i
-//     axios({
-//         method: 'get',
-//         url: api,
-//         data: {
-//             method: 'get_out_info',
-//             params: {'amount': amount, 'i': i},
-//         },
-//         transformResponse: [data => JSON.parse(data)]
-//     })
-//         .then((response) => {
-//             res.send(JSON.stringify(response.data))
-//         })
-//         .catch(function (error) {
-//             log('api get_tx_details failed', error)
-//         })
-// })
-
 app.use(function (req, res) {
     res.sendFile(__dirname + '/dist/index.html')
 })
 
 // Start the server
-const server = app.listen(parseInt(front_port), (req, res, error) => {
+const server = app.listen(parseInt(server_port), (req, res, error) => {
     if (error) return log(`Error: ${error}`)
     log(`Server listening on port ${server.address().port}`)
 })

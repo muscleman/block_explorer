@@ -12,7 +12,7 @@ export const environment = {
 };
 ```
 
-1. `backend` FQDN of your backend with the `front_port`
+1. `backend` FQDN of your backend with the `frontEnd_api`
 2. `documentationApi` Address used to build documentation explanations
 
 #### Run Frontend development Server
@@ -28,11 +28,17 @@ Edit `config.json`
 ```
 {
     "api":"http://10.0.0.13:12111",
-    "front_port":"8008"}
+    "frontEnd_api": "http://127.0.0.1:4200",
+    "server_port": "8008",
+    "auditable_wallet": {
+        "api": "http://10.0.0.13:12233"
+    }
 ```
 
-1. `"api"` The address of your zano node
-2. `"front_port"` Port of backend API
+1. `"api"` The address of your zano node.
+2. `"frontEnd_api"` The address of the angular uses for CORS.
+3. `"server_port"` Port of backend API used by angular to obtain data.
+4. `"auditable_wallet"` FDQN of your auditable wallet running as a service.
 
 #### Run Backend Server
 

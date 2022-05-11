@@ -1,6 +1,7 @@
 {
     "api": "http://10.0.0.13:12111",
-    "front_port": "8008",
+    "frontEnd_api": "http://127.0.0.1:4200",
+    "server_port": "8008",
     "auditable_wallet": {
         "api": "http://10.0.0.13:12233"
     }

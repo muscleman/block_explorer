@@ -5,7 +5,6 @@ const app = express()
 const server = http.createServer(app)
 const { Server } = require('socket.io')
 const io = new Server(server)
-// const { WebSocketServer } = require('ws')
 const { Pool } = require('pg')
 const axios = require('axios')
 const BigNumber = require('bignumber.js')
@@ -16,14 +15,15 @@ let config = fs.readFileSync('config.json', 'utf8')
 config = JSON.parse(config)
 const api = config.api + '/json_rpc'
 const wallet = `${config.auditable_wallet.api}/json_rpc`
-const front_port = config.front_port
+const server_port = config.server_port
+const frontEnd_api = config.frontEnd_api
 
 io.engine.on('initial_headers', (headers, req) => {
-    headers['Access-Control-Allow-Origin'] = 'http://localhost:4200'
+    headers['Access-Control-Allow-Origin'] = frontEnd_api
 })
 
 io.engine.on('headers', (headers, req) => {
-    headers['Access-Control-Allow-Origin'] = 'http://localhost:4200'
+    headers['Access-Control-Allow-Origin'] = frontEnd_api
 })
 
 app.use(express.static('dist'))
@@ -1279,20 +1279,6 @@ app.get(
     })
 )
 
-// app.get('/api/get_out_info/:amount/:i', exceptionHandler(async (req, res) => {
-//     let amount = req.params.amount
-//     let i = req.params.i
-//     const response = axios({
-//         method: 'get',
-//         url: api,
-//         data: {
-//             method: 'get_out_info',
-//             params: {'amount': parseInt(amount), 'i': parseInt(i)},
-//         }
-//     })
-//     res.json(response.data)
-// }))
-
 app.use(function (req, res) {
     res.sendFile(__dirname + '/dist/index.html')
 })
@@ -1302,6 +1288,6 @@ io.on('connection', async (socket) => {
     await emitSocketInfo()
 })
 
-server.listen(8008, () => {
+server.listen(server_port, () => {
     log(`Server listening on port ${server.address().port}`)
 })
