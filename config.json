@@ -1,8 +1,11 @@
 {
     "api": "http://10.0.0.13:12111",
-    "frontEnd_api": "http://127.0.0.1:4200",
+    "frontEnd_api": "http://localhost:4200",
     "server_port": "8008",
     "auditable_wallet": {
         "api": "http://10.0.0.13:12233"
+    },
+    "websocket": {
+        "push_during_sync": false
     }
 }

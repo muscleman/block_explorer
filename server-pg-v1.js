@@ -17,6 +17,35 @@ const api = config.api + '/json_rpc'
 const wallet = `${config.auditable_wallet.api}/json_rpc`
 const server_port = config.server_port
 const frontEnd_api = config.frontEnd_api
+let maxCount = 1000
+let lastBlock = {
+    height: -1,
+    id: '0000000000000000000000000000000000000000000000000000000000000000'
+}
+
+let blockInfo = {}
+let now_blocks_sync = false
+
+// market
+let now_delete_offers = false
+
+// pool
+let countTrPoolServer
+let statusSyncPool = false
+
+// aliases
+let countAliasesDB
+let countAliasesServer
+
+// alt_blocks
+let countAltBlocksDB = 0
+let countAltBlocksServer
+let statusSyncAltBlocks = false
+
+let block_array = []
+let pools_array = []
+
+let serverTimeout = 30
 
 io.engine.on('initial_headers', (headers, req) => {
     headers['Access-Control-Allow-Origin'] = frontEnd_api
@@ -44,24 +73,22 @@ const db = new Pool({
     password: '123456'
 })
 
-let maxCount = 1000
-
-function log(msg) {
-    let t = new Date()
+const log = (msg) => {
+    let now = new Date()
     console.log(
-        t.getFullYear() +
+        now.getFullYear() +
             '-' +
-            t.getMonth() +
+            now.getMonth() +
             '-' +
-            t.getDate() +
+            now.getDate() +
             ' ' +
-            t.getHours() +
+            now.getHours() +
             ':' +
-            t.getMinutes() +
+            now.getMinutes() +
             ':' +
-            t.getSeconds() +
+            now.getSeconds() +
             '.' +
-            t.getMilliseconds() +
+            now.getMilliseconds() +
             ' ' +
             msg
     )
@@ -468,30 +495,6 @@ app.get(
     })
 )
 
-var lastBlock = {
-    height: -1,
-    id: '0000000000000000000000000000000000000000000000000000000000000000'
-}
-
-var blockInfo = {}
-var now_blocks_sync = false
-
-// market
-var now_delete_offers = false
-
-// pool
-var countTrPoolServer
-var statusSyncPool = false
-
-// aliases
-var countAliasesDB
-var countAliasesServer
-
-// alt_blocks
-var countAltBlocksDB = 0
-var countAltBlocksServer
-var statusSyncAltBlocks = false
-
 const start = async () => {
     try {
         await db.query('DELETE FROM alt_blocks;')
@@ -518,12 +521,7 @@ const start = async () => {
 
 start()
 
-var block_array = []
-var pools_array = []
-
-var serverTimeout = 30
-
-async function syncPool() {
+const syncPool = async () => {
     try {
         statusSyncPool = true
         countTrPoolServer = blockInfo.tx_pool_size
@@ -548,10 +546,10 @@ async function syncPool() {
                 }
                 try {
                     let result = await db.query('SELECT id FROM pool')
-                    var new_ids = []
-                    for (var j = 0; j < pools_array.length; j++) {
-                        var find = false
-                        for (var i = 0; i < result.rows[0].length; i++) {
+                    let new_ids = []
+                    for (let j = 0; j < pools_array.length; j++) {
+                        let find = false
+                        for (let i = 0; i < result.rows[0].length; i++) {
                             if (pools_array[j] === result.rows[0][i].id) {
                                 find = true
                                 break
@@ -573,10 +571,10 @@ async function syncPool() {
                             ) {
                                 db.serialize(async function () {
                                     await db.query('begin')
-                                    var stmt = db.prepare(
+                                    let stmt = db.prepare(
                                         'INSERT INTO pool VALUES (?,?,?,?)'
                                     )
-                                    for (var tx of response.data.result.txs) {
+                                    for (let tx of response.data.result.txs) {
                                         stmt.run(
                                             tx.blob_size,
                                             tx.fee,
@@ -610,14 +608,14 @@ async function syncPool() {
     }
 }
 
-function parseComment(comment) {
-    var splitComment = comment.split(/\s*,\s*/).filter((el) => !!el)
-    var splitResult = splitComment[4]
+const parseComment = async (comment) => {
+    let splitComment = comment.split(/\s*,\s*/).filter((el) => !!el)
+    let splitResult = splitComment[4]
     if (splitResult) {
-        var result = splitResult.split(/\s*"\s*/)
-        var input = result[3].toString()
+        let result = splitResult.split(/\s*"\s*/)
+        let input = result[3].toString()
         if (input) {
-            var output = Buffer.from(input, 'hex')
+            let output = Buffer.from(input, 'hex')
             return output.toString()
         } else {
             return ''
@@ -627,12 +625,12 @@ function parseComment(comment) {
     }
 }
 
-function parseTrackingKey(trackingKey) {
-    var splitKey = trackingKey.split(/\s*,\s*/) //.filter((el) => !!el)
-    var resultKey = splitKey[5]
+const parseTrackingKey = async (trackingKey) => {
+    let splitKey = trackingKey.split(/\s*,\s*/) //.filter((el) => !!el)
+    let resultKey = splitKey[5]
     if (resultKey) {
-        var key = resultKey.split(':')
-        var keyValue = key[1].replace(/\[|\]/g, '')
+        let key = resultKey.split(':')
+        let keyValue = key[1].replace(/\[|\]/g, '')
         if (keyValue) {
             return keyValue.toString().replace(/\s+/g, '')
         } else {
@@ -643,7 +641,7 @@ function parseTrackingKey(trackingKey) {
     }
 }
 
-async function syncTransactions() {
+const syncTransactions = async () => {
     if (block_array.length > 0) {
         let blockInserts = []
         let transactionInserts = []
@@ -662,19 +660,19 @@ async function syncTransactions() {
                     ) {
                         let response = await get_tx_details(localTr.id)
                         let tx_info = response.data.result.tx_info
-                        for (var item of tx_info.extra) {
+                        for (let item of tx_info.extra) {
                             if (item.type === 'alias_info') {
-                                var arr = item.short_view.split('-->')
-                                var aliasName = arr[0]
-                                var aliasAddress = arr[1]
-                                var aliasComment = parseComment(
+                                let arr = item.short_view.split('-->')
+                                let aliasName = arr[0]
+                                let aliasAddress = arr[1]
+                                let aliasComment = parseComment(
                                     item.datails_view
                                 )
-                                var aliasTrackingKey = parseTrackingKey(
+                                let aliasTrackingKey = parseTrackingKey(
                                     item.datails_view
                                 )
-                                var aliasBlock = bl.height
-                                var aliasTransaction = localTr.id
+                                let aliasBlock = bl.height
+                                let aliasTransaction = localTr.id
                                 await db.query(
                                     `UPDATE aliases SET enabled=0 WHERE alias = '${aliasName}';`
                                 )
@@ -699,7 +697,7 @@ async function syncTransactions() {
                             }
                         }
 
-                        for (var item of tx_info.ins) {
+                        for (let item of tx_info.ins) {
                             if (item.global_indexes) {
                                 bl.tr_out.push({
                                     amount: item.amount,
@@ -757,7 +755,7 @@ async function syncTransactions() {
             //build out_info inserts
             {
                 if (bl.tr_out && bl.tr_out.length > 0) {
-                    var localOut = bl.tr_out[0]
+                    let localOut = bl.tr_out[0]
                     let localOutAmount = new BigNumber(
                         localOut.amount
                     ).toNumber()
@@ -911,9 +909,9 @@ async function syncTransactions() {
     }
 }
 
-async function syncBlocks() {
+const syncBlocks = async () => {
     try {
-        var count = blockInfo.height - lastBlock.height + 1
+        let count = blockInfo.height - lastBlock.height + 1
         if (count > 100) {
             count = 100
         }
@@ -921,7 +919,7 @@ async function syncBlocks() {
             count = 1
         }
         let response = await get_blocks_details(lastBlock.height + 1, count)
-        var localBlocks =
+        let localBlocks =
             response.data.result && response.data.result.blocks
                 ? response.data.result.blocks
                 : []
@@ -960,13 +958,13 @@ async function syncBlocks() {
     }
 }
 
-async function syncAltBlocks() {
+const syncAltBlocks = async () => {
     try {
         statusSyncAltBlocks = true
         await db.query('BEGIN')
         await db.query('DELETE FROM alt_blocks')
         let response = await get_alt_blocks_details(0, countAltBlocksServer)
-        for (var block of response.data.result.blocks) {
+        for (let block of response.data.result.blocks) {
             let sql =
                 `INSERT INTO alt_blocks(height, timestamp, actual_timestamp, size, hash, type, difficulty, cumulative_diff_adjusted, cumulative_diff_precise,` +
                 ` is_orphan, base_reward, total_fee, penalty, summary_reward, block_cumulative_size, this_block_fee_median, effective_fee_median, total_txs_size, transactions_details, miner_txt_info, pow_seed) VALUES (` +
@@ -1030,7 +1028,7 @@ const emitSocketInfo = async () => {
     io.emit('get_visibility_info', await getVisibilityInfo())
 }
 
-async function getInfoTimer() {
+const getInfoTimer = async () => {
     if (now_delete_offers === false) {
         try {
             let response = await get_info()
