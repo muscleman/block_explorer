@@ -65,13 +65,7 @@ app.use(function (req, res, next) {
     next()
 })
 
-const db = new Pool({
-    user: 'zano',
-    host: '10.0.0.13',
-    port: 5432,
-    database: 'db',
-    password: '123456'
-})
+const db = new Pool(config.database)
 
 const log = (msg) => {
     let now = new Date()

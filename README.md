@@ -32,6 +32,13 @@ Edit `config.json`
     "server_port": "8008",
     "auditable_wallet": {
         "api": "http://10.0.0.13:12233"
+    },
+    "database": {
+        "user": "zano",
+        "host": "10.0.0.13",
+        "port": 5432,
+        "database": "db",
+        "password": "123456"
     }
 ```
 
@@ -39,6 +46,7 @@ Edit `config.json`
 2. `"frontEnd_api"` The address of the angular uses for CORS. seems to not like 127.0.0.1
 3. `"server_port"` Port of backend API used by angular to obtain data.
 4. `"auditable_wallet"` FDQN of your auditable wallet running as a service.
+5. `"database"` credentials and location of a postgresql database
 
 #### Run Backend Server
 

@@ -6,6 +6,13 @@
         "api": "http://10.0.0.13:12233"
     },
     "websocket": {
-        "push_during_sync": false
+        "enabled_during_sync": false
+    },
+    "database": {
+        "user": "zano",
+        "host": "10.0.0.13",
+        "port": 5432,
+        "database": "db",
+        "password": "123456"
     }
 }
