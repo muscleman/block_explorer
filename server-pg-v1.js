@@ -400,7 +400,7 @@ app.get(
             if (chart === 'all') {
                 //convert me into a sp or view[sqllite3] please!!
                 let arrayAll = await db.query(
-                    `SELECT actual_timestamp::real as at, block_cumulative_size as bcs, tr_count as trc, difficulty as d, type as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at, d;`
+                    `SELECT actual_timestamp::real as at, block_cumulative_size::real as bcs, tr_count::real as trc, difficulty::real as d, type::integer as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at, d;`
                 )
                 let rows0 = await db.query(
                     `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, SUM(tr_count)::integer as sum_trc FROM charts GROUP BY at ORDER BY at;`
@@ -663,7 +663,6 @@ const syncTransactions = async () => {
         for (const bl of block_array) {
             //build transaction inserts
             {
-                if (bl.height === 349) console.log('yes')
                 try {
                     if (bl.tr_count === undefined)
                         bl.tr_count = bl.transactions_details.length
@@ -758,7 +757,6 @@ const syncTransactions = async () => {
             // }
 
             //build out_info inserts
-            if (bl.height === 349) console.log('yes')
             if (bl.tr_out && bl.tr_out.length > 0) {
                 for (let localOut of bl.tr_out) {
                     let localOutAmount = new BigNumber(
@@ -925,7 +923,6 @@ const syncBlocks = async () => {
             count = 1
         }
         let response = await get_blocks_details(lastBlock.height + 1, count)
-        if (lastBlock.height > 899) process.exit(1)
         let localBlocks =
             response.data.result && response.data.result.blocks
                 ? response.data.result.blocks
