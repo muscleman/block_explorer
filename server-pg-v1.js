@@ -663,6 +663,7 @@ const syncTransactions = async () => {
         for (const bl of block_array) {
             //build transaction inserts
             {
+                if (bl.height === 349) console.log('yes')
                 try {
                     if (bl.tr_count === undefined)
                         bl.tr_count = bl.transactions_details.length
@@ -742,15 +743,6 @@ const syncTransactions = async () => {
                 }
             }
 
-            // if (bl.tr_out.length === 0) {
-
-            //build chart inserts or use sp after block and trans inserts
-            // if (bl.type === 1) {
-            //     /*calculate chart averages*/
-            // }
-
-            //build chart inserts
-            // if (bl.type !== 1) {
             chartInserts.push(
                 `(${bl.height},` +
                     `${bl.actual_timestamp},` +
@@ -766,9 +758,9 @@ const syncTransactions = async () => {
             // }
 
             //build out_info inserts
-            {
-                if (bl.tr_out && bl.tr_out.length > 0) {
-                    let localOut = bl.tr_out[0]
+            if (bl.height === 349) console.log('yes')
+            if (bl.tr_out && bl.tr_out.length > 0) {
+                for (let localOut of bl.tr_out) {
                     let localOutAmount = new BigNumber(
                         localOut.amount
                     ).toNumber()
@@ -779,12 +771,28 @@ const syncTransactions = async () => {
                     )
 
                     outInfoInserts.push(
-                        `('${localOut.amount.toString()}',` +
+                        `(${localOut.amount},` +
                             `${localOut.i}, ` +
                             `'${response.data.result.tx_id}', ` +
                             `${bl.height})`
                     )
                 }
+                await db.query('begin')
+                //save out_info
+                {
+                    try {
+                        if (outInfoInserts.length > 0) {
+                            let sql =
+                                `INSERT INTO out_info VALUES ` +
+                                outInfoInserts.join(',') +
+                                `ON CONFLICT(amount, i, tx_id) DO NOTHING;`
+                            await db.query(sql)
+                        }
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+                await db.query('end')
             }
 
             //build block inserts
@@ -841,21 +849,6 @@ const syncTransactions = async () => {
                         `INSERT INTO charts VALUES ` +
                         chartInserts.join(',') +
                         ';'
-                    await db.query(sql)
-                }
-            } catch (error) {
-                console.log(error)
-            }
-        }
-
-        //save out_info
-        {
-            try {
-                if (outInfoInserts.length > 0) {
-                    let sql =
-                        `INSERT INTO out_info VALUES ` +
-                        outInfoInserts.join(',') +
-                        ' ON CONFLICT(tx_id) DO NOTHING;'
                     await db.query(sql)
                 }
             } catch (error) {
@@ -932,6 +925,7 @@ const syncBlocks = async () => {
             count = 1
         }
         let response = await get_blocks_details(lastBlock.height + 1, count)
+        if (lastBlock.height > 899) process.exit(1)
         let localBlocks =
             response.data.result && response.data.result.blocks
                 ? response.data.result.blocks

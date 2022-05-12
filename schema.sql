@@ -110,13 +110,13 @@ CREATE TABLE IF NOT EXISTS charts (
 CREATE INDEX IF NOT EXISTS index_bl_height ON charts(height);
 
 CREATE TABLE IF NOT EXISTS out_info (
-            amount text,
+            amount decimal(100,0),
             i integer,
             tx_id text,
-            block integer unique
+            block integer
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS index_out ON out_info(amount, i, tx_id);
+CREATE UNIQUE INDEX IF NOT EXISTS index_out_info ON out_info(amount, i, tx_id);
 
 CREATE OR REPLACE PROCEDURE purgeAboveHeight(IN p_height int) AS $$
 BEGIN
