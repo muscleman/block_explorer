@@ -1,7 +1,7 @@
 # Remaining Todos
 
 1. ~~config.json option to turn off websockets during sync~~
-2. double check no old sqllite stuff in server-pg-v1.js or server-ps.js
+2. ~~double check no old sqllite stuff in server-pg-v1.js or server-ps.js~~
 3. practical way - we calculate how much coins dev fun staked in a last day(or week), let's call it "D"
    also we know how much total coins been staked during this day - 720 coins being staked in a day (or in 7 days), let's call it "T"
    also we know total coins in dev fund, let's call it "C" so the staking coins "S" = C \* (T/D)

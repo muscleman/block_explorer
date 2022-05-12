@@ -233,9 +233,11 @@ app.get(
     exceptionHandler(async (req, res, next) => {
         let id = req.params.id.toLowerCase()
         if (id) {
-            let result = await db.query(
-                `SELECT b2.id as next_id, b1.* FROM blocks as b1 left join blocks as b2 on b2.height > b1.height WHERE b1.id = '${id}' ORDER BY b2.height ASC LIMIT 1;`
-            )
+            const query = {
+                text: `SELECT b2.id as next_id, b1.* FROM blocks as b1 left join blocks as b2 on b2.height > b1.height WHERE b1.id = $1 ORDER BY b2.height ASC LIMIT 1;`,
+                values: [id]
+            }
+            let result = await db.query(query)
             if (result && result.rowCount > 0) {
                 let result2 = await db.query(
                     `SELECT * FROM transactions WHERE keeper_block = ${result.rows[0].height};`
@@ -254,9 +256,11 @@ app.get(
     exceptionHandler(async (req, res, next) => {
         let count = req.params.count
         if (count !== undefined) {
-            let result = await db.query(
-                `SELECT * FROM pool ORDER BY timestamp DESC limit ${count};`
-            )
+            const query = {
+                text: 'SELECT * FROM pool ORDER BY timestamp DESC limit $1;',
+                values: [count]
+            }
+            let result = await db.query(query)
             res.json(result && result.rowCount > 0 ? result.rows : [])
         } else {
             res.send("Error. Need 'count' params")
@@ -274,9 +278,11 @@ app.get(
         if (count > maxCount) {
             count = maxCount
         }
-        let result = await db.query(
-            `SELECT * FROM alt_blocks ORDER BY height DESC limit ${count} offset ${offset};`
-        )
+        const query = {
+            text: 'SELECT * FROM alt_blocks ORDER BY height DESC limit $1 offset $2;',
+            values: [count, offset]
+        }
+        let result = await db.query(query)
         res.json(result && result.rowCount > 0 ? result.rows : [])
     })
 )
@@ -286,13 +292,15 @@ app.get(
     exceptionHandler(async (req, res, next) => {
         let id = req.params.id.toLowerCase()
         if (!!id) {
-            let result = await db.query(
-                `SELECT * FROM alt_blocks WHERE hash = '${id}';`
-            )
+            const query = {
+                text: `SELECT * FROM alt_blocks WHERE hash = $1;`,
+                values: [id]
+            }
+            let result = await db.query(query)
             res.json(result && result.rowCount > 0 ? result.rows[0] : [])
         } else
             res.status({ status: 500 }).json({
-                message: `/get_out_info/:amount/:i ${req.params}, ${error}`
+                message: `/get_out_info/:amount/:i ${req.params}`
             })
     })
 )
@@ -303,9 +311,11 @@ app.get(
     exceptionHandler(async (req, res, next) => {
         let tx_hash = req.params.tx_hash.toLowerCase()
         if (tx_hash) {
-            let result = await db.query(
-                `SELECT transactions.*, blocks.id as block_hash, blocks.timestamp as block_timestamp FROM transactions LEFT JOIN blocks ON transactions.keeper_block = blocks.height WHERE transactions.id = '${tx_hash}';`
-            )
+            const query = {
+                text: 'SELECT transactions.*, blocks.id as block_hash, blocks.timestamp as block_timestamp FROM transactions LEFT JOIN blocks ON transactions.keeper_block = blocks.height WHERE transactions.id = $1;',
+                values: [tx_hash]
+            }
+            let result = await db.query(query)
             if (result && result.rowCount > 0) res.json(result.rows[0])
             else {
                 let response = await get_tx_details(tx_hash)
@@ -314,7 +324,7 @@ app.get(
                     res.json(data.result.tx_info)
                 } else {
                     res.status({ status: 500 }).json({
-                        message: `/get_tx_details/:tx_hash ${req.params}, ${error}`
+                        message: `/get_tx_details/:tx_hash ${req.params}`
                     })
                 }
             }
@@ -328,9 +338,11 @@ app.get(
         let amount = req.params.amount
         let i = parseInt(req.params.i)
         if (!!amount && !!i) {
-            let result = await db.query(
-                `SELECT * FROM out_info WHERE amount = '${amount}' AND i = ${i}`
-            )
+            const query = {
+                text: `SELECT * FROM out_info WHERE amount = $1 AND i = $2`,
+                values: [amount, i]
+            }
+            let result = await db.query(query)
             if (result === undefined || result.rowCount === 0) {
                 let response = await get_out_info(amount, i)
                 res.json({ tx_id: response.data.result.tx_id })
@@ -339,7 +351,7 @@ app.get(
             }
         } else {
             res.status({ status: 500 }).json({
-                message: `/get_out_info/:amount/:i ${req.params}, ${error}`
+                message: `/get_out_info/:amount/:i ${req.params}`
             })
         }
     })
@@ -357,9 +369,11 @@ app.get(
         let search = req.params.search.toLowerCase()
 
         if (search === 'all' && offset !== undefined && count !== undefined) {
-            let result = await db.query(
-                `SELECT * FROM aliases WHERE enabled = 1 ORDER BY block DESC limit ${count} offset ${offset};`
-            )
+            const query = {
+                text: 'SELECT * FROM aliases WHERE enabled = 1 ORDER BY block DESC limit $1 offset $2;',
+                values: [count, offset]
+            }
+            let result = await db.query(query)
             res.json(result && result.rowCount > 0 ? result.rows : [])
         } else if (
             search !== undefined &&
@@ -386,7 +400,7 @@ app.get(
             if (chart === 'all') {
                 //convert me into a sp or view[sqllite3] please!!
                 let arrayAll = await db.query(
-                    `SELECT actual_timestamp::real as at, block_cumulative_size as bcs, tr_count as trc, difficulty as d, type as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at;`
+                    `SELECT actual_timestamp::real as at, block_cumulative_size as bcs, tr_count as trc, difficulty as d, type as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at, d;`
                 )
                 let rows0 = await db.query(
                     `SELECT extract(epoch from to_timestamp(actual_timestamp)::date)::integer as at, SUM(tr_count)::integer as sum_trc FROM charts GROUP BY at ORDER BY at;`
