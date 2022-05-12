@@ -9,4 +9,4 @@
 5. Angular mixins not playing well on transaction and block details
 6. http.service is also a store. refactor out, maybe ngxs store
 7. visibility info panel not initialized until next backend push after leaving main page and returning, probably fix with a store.
-8. `Average Block Size` and `Average Number Of Transactions Per Block` not working on charts page, but works on drill down.
+8. BUGFIX~~`Average Block Size` and `Average Number Of Transactions Per Block` not working on charts page, but works on drill down.~~
