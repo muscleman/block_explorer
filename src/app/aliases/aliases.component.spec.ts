@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { AliasesComponent } from './aliases.component'
-import { HttpService, MobileNavState } from './../http.service'
+import { HttpService, MobileNavState } from './../services/http.service'
 import { DialogComponent } from './../dialog/dialog.component'
 import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { RouterTestingModule } from '@angular/router/testing'

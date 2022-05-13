@@ -2,9 +2,9 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 
 import { MainInfoComponent } from './main-info.component'
 import { RouterTestingModule } from '@angular/router/testing'
-import { HttpService } from './../http.service'
+import { HttpService } from './../services/http.service'
 import { HttpClientTestingModule } from '@angular/common/http/testing'
-import { PipesModule } from 'app/pipes/pipes.module'
+import { PipesModule } from '../pipes/pipes.module'
 
 describe('MainInfoComponent', () => {
     let component: MainInfoComponent

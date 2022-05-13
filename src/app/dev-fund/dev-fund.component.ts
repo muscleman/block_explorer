@@ -1,6 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core'
-import { HttpService } from 'app/http.service'
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
+import { InfoState } from '../states/info-state'
+import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
+import { Observable } from 'rxjs'
+import { Select } from '@ngxs/store'
+import { VisibilityInfo } from '../models/visibility-info'
 
 @Component({
     selector: 'app-dev-fund',
@@ -13,14 +16,19 @@ export class DevFundComponent
 {
     title: string = 'Dev Fund'
     amount: number = 0
-    constructor(private httpService: HttpService) {
+    @Select(InfoState.selectVisibilityInfo) getVisibilityInfo$: Observable<
+        VisibilityInfo[]
+    >
+    constructor() {
         super()
     }
 
     ngOnInit(): void {
         this._track(
-            this.httpService.subscribeVisibilityInfo().subscribe((data) => {
-                this.amount = data.balance
+            this.getVisibilityInfo$.subscribe((data) => {
+                if (data.length === 1) {
+                    this.amount = data[0].balance
+                }
             })
         )
     }

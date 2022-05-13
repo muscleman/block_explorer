@@ -1,6 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core'
-import { HttpService } from 'app/http.service'
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
+import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
+import { Select } from '@ngxs/store'
+import { Observable } from 'rxjs'
+import { InfoState } from '../states/info-state'
+import { VisibilityInfo } from '../models/visibility-info'
 
 @Component({
     selector: 'app-staked-coins',
@@ -14,15 +17,21 @@ export class StakedCoinsComponent
     title: string = 'Staked Coins (est)'
     amount: number = 0
     percentage: number = 0
-    constructor(private httpService: HttpService) {
+    @Select(InfoState.selectVisibilityInfo) getVisibilityInfo$: Observable<
+        VisibilityInfo[]
+    >
+
+    constructor() {
         super()
     }
 
     ngOnInit(): void {
         this._track(
-            this.httpService.subscribeVisibilityInfo().subscribe((data) => {
-                this.amount = data.amount
-                this.percentage = data.percentage
+            this.getVisibilityInfo$.subscribe((data) => {
+                if (data.length === 1) {
+                    this.amount = data[0].amount
+                    this.percentage = data[0].percentage
+                }
             })
         )
     }

@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, NgZone } from '@angular/core'
-import { HttpService, MobileNavState } from '../http.service'
+import { HttpService, MobileNavState } from '../services/http.service'
 import { ActivatedRoute } from '@angular/router'
 import { take } from 'rxjs/operators'
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
+import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
 import { CookieService } from 'ngx-cookie-service'
 
 @Component({

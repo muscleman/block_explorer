@@ -1,8 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core'
-import { HttpService, MobileNavState } from '../http.service'
+import { HttpService, MobileNavState } from '../services/http.service'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
 import { take } from 'rxjs/operators'
+import { Store } from '@ngxs/store'
+import { DaemonInfos } from '../actions/get-info.actions'
 
 @Component({
     selector: 'app-transaction',
@@ -51,6 +53,7 @@ export class TransactionComponent
     constructor(
         private route: ActivatedRoute,
         private httpService: HttpService,
+        private store: Store,
         private router: Router,
         private mobileNavState: MobileNavState
     ) {
@@ -152,10 +155,12 @@ export class TransactionComponent
                     })
                 )
             }),
-
-            this.httpService.subscribeInfo().subscribe((data) => {
+            this.store.dispatch(new DaemonInfos.Get()).subscribe((data) => {
                 this.getInfoPrepare(data)
             }),
+            // this.httpService.subscribeInfo().subscribe((data) => {
+            //     this.getInfoPrepare(data)
+            // }),
             this.mobileNavState.change.subscribe((navIsOpen) => {
                 this.navIsOpen = navIsOpen
             })

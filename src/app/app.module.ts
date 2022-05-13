@@ -16,9 +16,12 @@ import StockModule from 'highcharts/modules/stock'
 StockModule(Highcharts)
 
 // Services
-import { HttpService } from './http.service'
-import { ServiceResolver, ResolveAltBlock } from './http.service'
-import { MobileNavState } from './http.service'
+import {
+    HttpService,
+    ServiceResolver,
+    ResolveAltBlock,
+    MobileNavState
+} from './services/http.service'
 
 // Components
 import { AppComponent } from './app.component'
@@ -47,6 +50,10 @@ import { DevFundComponent } from './dev-fund/dev-fund.component'
 
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io'
 import { environment } from 'environments/environment'
+import { NgxsModule } from '@ngxs/store'
+import { InfoState } from './states/info-state'
+import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin'
+import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin'
 
 const config: SocketIoConfig = { url: environment.backend, options: {} }
 
@@ -84,7 +91,12 @@ const config: SocketIoConfig = { url: environment.backend, options: {} }
         ChartModule,
         AppRoutingModule,
         PipesModule,
-        SocketIoModule.forRoot(config)
+        SocketIoModule.forRoot(config),
+        NgxsModule.forRoot([InfoState], {
+            developmentMode: !environment.production
+        }),
+        NgxsLoggerPluginModule.forRoot({ disabled: environment.production }),
+        NgxsReduxDevtoolsPluginModule.forRoot()
     ],
     providers: [
         HttpService,

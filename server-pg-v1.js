@@ -217,16 +217,16 @@ app.get(
     })
 )
 
-app.get(
-    '/get_visibility_info',
-    exceptionHandler(async (req, res, next) => {
-        const response = await getbalance()
-        let result = response.data.result
-        result.amount = 9123546523000000000
-        result.percentage = 56
-        res.json(result)
-    })
-)
+// app.get(
+//     '/get_visibility_info',
+//     exceptionHandler(async (req, res, next) => {
+//         const response = await getbalance()
+//         let result = response.data.result
+//         result.amount = 9123546523000000000
+//         result.percentage = 56
+//         res.json(result)
+//     })
+// )
 
 app.get(
     '/get_main_block_details/:id',
@@ -1017,6 +1017,7 @@ const getVisibilityInfo = async () => {
         unlocked_balance: 0
     }
     try {
+        // console.log(blockInfo)
         const response = await getbalance()
         result.balance = response.data.result.balance
         result.unlocked_balance = response.data.result.unlocked_balance
@@ -1027,12 +1028,12 @@ const getVisibilityInfo = async () => {
 }
 
 const emitSocketInfo = async () => {
-    if (enabled_during_sync) {
-        blockInfo.lastBlock = lastBlock.height
-        io.emit('get_info', JSON.stringify(blockInfo))
+    // if (enabled_during_sync) {
+    blockInfo.lastBlock = lastBlock.height
+    io.emit('get_info', JSON.stringify(blockInfo))
 
-        io.emit('get_visibility_info', await getVisibilityInfo())
-    }
+    io.emit('get_visibility_info', await getVisibilityInfo())
+    // }
 }
 
 const getInfoTimer = async () => {

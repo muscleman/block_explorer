@@ -1,9 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { HttpService, MobileNavState } from '../http.service'
+import { HttpService, MobileNavState } from '../services/http.service'
 import { CookieService } from 'ngx-cookie-service'
-import { take } from 'rxjs/operators'
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
+import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
 
 @Component({
     selector: 'app-alt-blocks',

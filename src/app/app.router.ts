@@ -22,7 +22,7 @@ import { ApiComponent } from './api/api.component'
 import { ServerErrorComponent } from './server-error/server-error.component'
 
 // Resolve
-import { ServiceResolver, ResolveAltBlock } from './http.service'
+import { ServiceResolver, ResolveAltBlock } from './services/http.service'
 
 export const routes: Routes = [
     {

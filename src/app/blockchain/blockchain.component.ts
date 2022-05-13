@@ -1,9 +1,12 @@
 import { Component, OnInit, OnDestroy, NgZone } from '@angular/core'
-import { HttpService, MobileNavState } from '../http.service'
+import { HttpService, MobileNavState } from '../services/http.service'
 import { ActivatedRoute } from '@angular/router'
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
+import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
 import { take } from 'rxjs/operators'
 import { CookieService } from 'ngx-cookie-service'
+import { Select } from '@ngxs/store'
+import { InfoState } from '../states/info-state'
+import { Observable } from 'rxjs'
 
 @Component({
     selector: 'app-blockchain',
@@ -46,6 +49,8 @@ export class BlockchainComponent
     loader: boolean
     navIsOpen: boolean
     searchIsOpen: boolean = false
+
+    @Select(InfoState.selectDaemonInfo) getInfo$: Observable<Response[]>
 
     onIsVisible($event): void {
         this.searchIsOpen = $event
@@ -122,8 +127,8 @@ export class BlockchainComponent
         this.getInfoPrepare(this.route.snapshot.data['MainInfo'])
 
         this._track(
-            this.httpService.subscribeInfo().subscribe((data) => {
-                this.getInfoPrepare(data)
+            this.getInfo$.subscribe((data) => {
+                this.getInfoPrepare(data[0])
             }),
 
             this.mobileNavState.change.subscribe((navIsOpen) => {
@@ -231,6 +236,7 @@ export class BlockchainComponent
         }
         this.onChange()
     }
+
     searchBlock() {
         this.goToBlock = this.setBlock
         if (
@@ -255,6 +261,7 @@ export class BlockchainComponent
             ) + 2
         this.onChange()
     }
+
     onChange() {
         if (this.setLimit > this.maxCountBlock) {
             this.setLimit = this.maxCountBlock

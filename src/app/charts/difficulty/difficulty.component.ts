@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core'
-import { HttpService, MobileNavState } from '../../http.service'
+import { HttpService, MobileNavState } from '../../services/http.service'
 import { Chart } from 'angular-highcharts'
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
+import { SubscriptionTracker } from '../../subscription-tracker/subscription-tracker'
 import { take } from 'rxjs/operators'
 
 @Component({

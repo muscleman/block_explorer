@@ -6,50 +6,18 @@ import {
     RouterStateSnapshot
 } from '@angular/router'
 import { Observable, Subject } from 'rxjs'
-import { environment } from '../environments/environment'
-import { map } from 'rxjs/operators'
-import { VisibilityInfo } from './models/visibility-info'
-import { Socket } from 'ngx-socket-io'
+import { environment } from '../../environments/environment'
+import { VisibilityInfo } from '../models/visibility-info'
 
 @Injectable()
 export class HttpService {
-    public serverApi = ''
-    private Info = new Subject<any>()
-    private infoObj: any
-    private visibilityInfo = new Subject<VisibilityInfo>()
+    public serverApi = environment.backend
 
-    constructor(protected httpClient: HttpClient, private socket: Socket) {
-        this.serverApi = environment.backend
-        this.socket.on('get_info', (data) => {
-            this.infoObj = JSON.parse(data)
-            this.Info.next(this.infoObj)
-        })
-
-        this.socket.on('get_visibility_info', (data) => {
-            this.visibilityInfo.next(JSON.parse(data))
-        })
-    }
-
-    subscribeVisibilityInfo() {
-        return this.visibilityInfo.asObservable()
-    }
-
-    subscribeInfo() {
-        return this.Info.asObservable()
-    }
+    constructor(protected httpClient: HttpClient) {}
 
     getInfo(): Observable<Response> {
-        if (this.infoObj === undefined) {
-            const URL = `${this.serverApi}/get_info`
-            return this.httpClient.get<Response>(URL).pipe(
-                map((response) => {
-                    this.infoObj = response
-                    return this.infoObj
-                })
-            )
-        } else {
-            return this.infoObj
-        }
+        const URL = `${this.serverApi}/get_info`
+        return this.httpClient.get<Response>(URL)
     }
 
     // BlockChain Page

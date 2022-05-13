@@ -7,7 +7,7 @@ import {
     Output,
     EventEmitter
 } from '@angular/core'
-import { HttpService } from '../http.service'
+import { HttpService } from '../services/http.service'
 import { ActivatedRoute, Router } from '@angular/router'
 import { take } from 'rxjs/operators'
 import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'

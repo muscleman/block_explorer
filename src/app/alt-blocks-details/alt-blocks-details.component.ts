@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
-import { MobileNavState } from '../http.service'
+import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
+import { MobileNavState } from '../services/http.service'
 
 @Component({
     selector: 'app-alt-blocks-details-component',

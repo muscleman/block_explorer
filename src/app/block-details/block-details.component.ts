@@ -1,8 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core'
-import { HttpService, MobileNavState } from '../http.service'
+import { HttpService, MobileNavState } from '../services/http.service'
 import { ActivatedRoute } from '@angular/router'
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
-import { take } from 'rxjs'
+import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
+import { Store, Select } from '@ngxs/store'
+import { InfoState } from '../states/info-state'
+import { Observable } from 'rxjs'
 
 @Component({
     selector: 'app-block-details-component',
@@ -34,13 +36,16 @@ export class BlockDetailsComponent
     navIsOpen: boolean
     searchIsOpen: boolean = false
 
+    @Select(InfoState.selectDaemonInfo) getInfo$: Observable<Response[]>
+
     onIsVisible($event): void {
         this.searchIsOpen = $event
     }
     constructor(
         private route: ActivatedRoute,
         private httpService: HttpService,
-        private mobileNavState: MobileNavState
+        private mobileNavState: MobileNavState,
+        private store: Store
     ) {
         super()
         this.BlockNotFound = false
@@ -70,8 +75,8 @@ export class BlockDetailsComponent
         this.getInfoPrepare(this.route.snapshot.data['MainInfo'])
 
         this._track(
-            this.httpService.subscribeInfo().subscribe((data) => {
-                this.getInfoPrepare(data)
+            this.getInfo$.subscribe((data) => {
+                this.getInfoPrepare(data[0])
             }),
 
             this.route.params.subscribe((params) => {
