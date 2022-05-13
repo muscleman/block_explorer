@@ -147,7 +147,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE PROCEDURE public.update_statistics(p_startheight integer)
+CREATE OR REPLACE PROCEDURE update_statistics(p_startheight integer)
     LANGUAGE plpgsql
     AS $$
 BEGIN
