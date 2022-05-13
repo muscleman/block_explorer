@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
-import { MobileNavState } from '../http.service'
-import JSONbig from 'json-bigint'
+import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
+import { MobileNavState } from '../services/http.service'
 
 @Component({
     selector: 'app-alt-blocks-details-component',
@@ -35,7 +34,7 @@ export class AltBlocksDetailsComponent
         this.altBlocksDetails = this.route.snapshot.data['AltBlock']
 
         try {
-            this.transactList = JSONbig.parse(
+            this.transactList = JSON.parse(
                 this.altBlocksDetails.transactions_details
             )
         } catch (error) {

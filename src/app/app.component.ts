@@ -1,7 +1,10 @@
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core'
+import { Component, OnInit, OnDestroy } from '@angular/core'
 import { Router, Event, NavigationEnd } from '@angular/router'
-import { MobileNavState } from './http.service'
+import { MobileNavState } from './services/http.service'
+import { WebSocketService } from './services/web-socket.service'
 import { SubscriptionTracker } from './subscription-tracker/subscription-tracker'
+import { Store } from '@ngxs/store'
+import { DaemonInfos } from './actions/get-info.actions'
 
 @Component({
     selector: 'app-root',
@@ -17,9 +20,13 @@ export class AppComponent
 
     constructor(
         private router: Router,
-        private mobileNavState: MobileNavState
+        private mobileNavState: MobileNavState,
+        private webSocketService: WebSocketService,
+        private store: Store
     ) {
         super()
+        this.store.dispatch(new DaemonInfos.Get())
+        this.webSocketService.init()
         this.navIsOpen = true
         this.router.events.subscribe((event: Event) => {
             if (event instanceof NavigationEnd) {

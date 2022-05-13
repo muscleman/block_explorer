@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core'
-import { HttpService, MobileNavState } from '../http.service'
+import { HttpService, MobileNavState } from '../services/http.service'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
 import { take } from 'rxjs/operators'
-import JSONbig from 'json-bigint'
+import { Store } from '@ngxs/store'
+import { DaemonInfos } from '../actions/get-info.actions'
 
 @Component({
     selector: 'app-transaction',
@@ -52,6 +53,7 @@ export class TransactionComponent
     constructor(
         private route: ActivatedRoute,
         private httpService: HttpService,
+        private store: Store,
         private router: Router,
         private mobileNavState: MobileNavState
     ) {
@@ -101,14 +103,12 @@ export class TransactionComponent
                                 this.blockTimestamp =
                                     this.Transaction.block_timestamp
 
-                                this.ExtraItem = JSONbig.parse(
+                                this.ExtraItem = JSON.parse(
                                     this.Transaction.extra
                                 )
 
                                 // Inputs
-                                this.Inputs = JSONbig.parse(
-                                    this.Transaction.ins
-                                )
+                                this.Inputs = JSON.parse(this.Transaction.ins)
 
                                 for (let inConn of this.Inputs) {
                                     let amount = inConn.amount.toString()
@@ -129,11 +129,9 @@ export class TransactionComponent
                                 }
 
                                 // Outputs
-                                this.Outputs = JSONbig.parse(
-                                    this.Transaction.outs
-                                )
+                                this.Outputs = JSON.parse(this.Transaction.outs)
                                 if (this.Transaction.attachments) {
-                                    this.attachments = JSONbig.parse(
+                                    this.attachments = JSON.parse(
                                         this.Transaction.attachments
                                     )
                                 }
@@ -157,10 +155,12 @@ export class TransactionComponent
                     })
                 )
             }),
-
-            this.httpService.subscribeInfo().subscribe((data) => {
+            this.store.dispatch(new DaemonInfos.Get()).subscribe((data) => {
                 this.getInfoPrepare(data)
             }),
+            // this.httpService.subscribeInfo().subscribe((data) => {
+            //     this.getInfoPrepare(data)
+            // }),
             this.mobileNavState.change.subscribe((navIsOpen) => {
                 this.navIsOpen = navIsOpen
             })

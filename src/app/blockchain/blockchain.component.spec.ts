@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { BlockchainComponent } from './blockchain.component'
 import { RouterTestingModule } from '@angular/router/testing'
-import { HttpService, MobileNavState } from './../http.service'
+import { HttpService, MobileNavState } from './../services/http.service'
 import { CookieService } from 'ngx-cookie-service'
 import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
-import { PipesModule } from 'app/pipes/pipes.module'
+import { PipesModule } from '../pipes/pipes.module'
 
 describe('BlockchainComponent', () => {
     let component: BlockchainComponent

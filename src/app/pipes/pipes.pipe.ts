@@ -6,6 +6,7 @@ import {
     PipeTransform
 } from '@angular/core'
 import * as moment from 'moment'
+
 import BigNumber from 'bignumber.js'
 
 // array reverse
@@ -89,26 +90,26 @@ export class BitNumberPipe implements PipeTransform {
 })
 export class MoneyParsePipe implements PipeTransform {
     transform(value: any, args?: any): any {
-        if (value === 0 || value === undefined) {
-            return '0'
-        }
-        let maxFraction = 12
-        if (args) {
-            maxFraction = parseInt(args, 10)
-        }
-        const power = Math.pow(10, maxFraction)
-        let str = new BigNumber(value).div(power).toFixed(maxFraction)
-
-        for (let i = str.length - 1; i >= 0; i--) {
-            if (str[i] !== '0') {
-                str = str.substr(0, i + 1)
-                break
+        if (!!value) {
+            let maxFraction = 12
+            if (args) {
+                maxFraction = parseInt(args, 10)
             }
+            const power = Math.pow(10, maxFraction)
+            let str = new BigNumber(value).div(power).toFixed(maxFraction)
+
+            for (let i = str.length - 1; i >= 0; i--) {
+                if (str[i] !== '0') {
+                    str = str.substr(0, i + 1)
+                    break
+                }
+            }
+            if (str[str.length - 1] === '.') {
+                str = str.substr(0, str.length - 1)
+            }
+            return str
         }
-        if (str[str.length - 1] === '.') {
-            str = str.substr(0, str.length - 1)
-        }
-        return str
+        return '0'
     }
 }
 

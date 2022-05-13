@@ -1,5 +1,4 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core'
-import { HttpService } from '../http.service'
 
 @Component({
     selector: 'app-server-error',

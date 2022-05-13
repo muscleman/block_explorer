@@ -6,10 +6,12 @@ import {
     EventEmitter,
     OnDestroy
 } from '@angular/core'
-import { HttpService } from '../http.service'
 import { ActivatedRoute } from '@angular/router'
 import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
-import { take } from 'rxjs/operators'
+import { DaemonInfos } from 'app/actions/get-info.actions'
+import { Store, Select } from '@ngxs/store'
+import { InfoState } from 'app/states/info-state'
+import { Observable } from 'rxjs'
 
 @Component({
     selector: 'app-main-info',
@@ -31,10 +33,9 @@ export class MainInfoComponent
     NetworkHashrate: number
     txCount: number
 
-    constructor(
-        private httpService: HttpService,
-        private route: ActivatedRoute
-    ) {
+    @Select(InfoState.selectDaemonInfo) getInfo$: Observable<Response[]>
+
+    constructor(private route: ActivatedRoute, private store: Store) {
         super()
     }
 
@@ -52,20 +53,11 @@ export class MainInfoComponent
 
     ngOnInit() {
         this.getInfoPrepare(this.route.snapshot.data['MainInfo'])
-        this.httpService
-            .subscribeInfo()
-            .pipe(take(1))
-            .subscribe(
-                (data) => {
-                    this.getInfoPrepare(data)
-                },
-                (err) => {
-                    console.log(err)
-                },
-                () => {
-                    this.letGetInfo.emit(this.info)
-                }
-            )
+        this._track(
+            this.getInfo$.subscribe((data) => {
+                this.getInfoPrepare(data[0])
+            })
+        )
     }
 
     ngOnDestroy() {

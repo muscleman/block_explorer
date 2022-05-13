@@ -1,8 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core'
-import { HttpService, MobileNavState } from '../http.service'
+import { HttpService, MobileNavState } from '../services/http.service'
 import { ActivatedRoute } from '@angular/router'
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
-import { take } from 'rxjs'
+import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
+import { Store, Select } from '@ngxs/store'
+import { InfoState } from '../states/info-state'
+import { Observable } from 'rxjs'
 
 @Component({
     selector: 'app-block-details-component',
@@ -34,13 +36,16 @@ export class BlockDetailsComponent
     navIsOpen: boolean
     searchIsOpen: boolean = false
 
+    @Select(InfoState.selectDaemonInfo) getInfo$: Observable<Response[]>
+
     onIsVisible($event): void {
         this.searchIsOpen = $event
     }
     constructor(
         private route: ActivatedRoute,
         private httpService: HttpService,
-        private mobileNavState: MobileNavState
+        private mobileNavState: MobileNavState,
+        private store: Store
     ) {
         super()
         this.BlockNotFound = false
@@ -69,18 +74,13 @@ export class BlockDetailsComponent
             this.navBlockchainMobile.classList.add('active')
         this.getInfoPrepare(this.route.snapshot.data['MainInfo'])
 
-        this.httpService
-            .subscribeInfo()
-            .pipe(take(1))
-            .subscribe((data) => {
-                this.getInfoPrepare(data)
-            })
+        this._track(
+            this.getInfo$.subscribe((data) => {
+                this.getInfoPrepare(data[0])
+            }),
 
-        this.route.params.subscribe((params) => {
-            this.httpService
-                .getMainBlockDetails(params.id)
-                .pipe(take(1))
-                .subscribe({
+            this.route.params.subscribe((params) => {
+                this.httpService.getMainBlockDetails(params.id).subscribe({
                     next: (data) => {
                         this.Block = data
                         this.prevBlockId = this.Block.prev_id
@@ -102,10 +102,12 @@ export class BlockDetailsComponent
                         this.BlockNotFound = true
                     }
                 })
-        })
-        this.mobileNavState.change.subscribe((navIsOpen) => {
-            this.navIsOpen = navIsOpen
-        })
+            }),
+
+            this.mobileNavState.change.subscribe((navIsOpen) => {
+                this.navIsOpen = navIsOpen
+            })
+        )
     }
 
     ngOnDestroy() {

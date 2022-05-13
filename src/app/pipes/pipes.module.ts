@@ -12,7 +12,7 @@ import {
     TimeAgoPipe2,
     TruncatePipe,
     UtcPipe
-} from 'app/pipes.pipe'
+} from 'app/pipes/pipes.pipe'
 
 @NgModule({
     declarations: [

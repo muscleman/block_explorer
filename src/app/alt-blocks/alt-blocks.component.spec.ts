@@ -1,8 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
-
 import { AltBlocksComponent } from './alt-blocks.component'
 import { RouterTestingModule } from '@angular/router/testing'
-import { HttpService, MobileNavState } from './../http.service'
+import { HttpService, MobileNavState } from './../services/http.service'
 import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 

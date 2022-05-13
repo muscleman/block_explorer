@@ -1,7 +1,7 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { RouterTestingModule } from '@angular/router/testing'
-import { HttpService } from 'app/http.service'
+import { HttpService } from '../services/http.service'
 
 import { SearchComponent } from './search.component'
 

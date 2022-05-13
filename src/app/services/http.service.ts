@@ -1,65 +1,23 @@
 import { Injectable, Output, EventEmitter, Directive } from '@angular/core'
-import { HttpClient, HttpErrorResponse } from '@angular/common/http'
+import { HttpClient } from '@angular/common/http'
 import {
     Resolve,
     ActivatedRouteSnapshot,
-    RouterStateSnapshot,
-    Router
+    RouterStateSnapshot
 } from '@angular/router'
 import { Observable, Subject } from 'rxjs'
-import { environment } from '../environments/environment'
-import { map } from 'rxjs/operators'
+import { environment } from '../../environments/environment'
+import { VisibilityInfo } from '../models/visibility-info'
 
 @Injectable()
 export class HttpService {
-    private serverApi = ''
-    private Info = new Subject<any>()
-    private infoObj: any
+    public serverApi = environment.backend
 
-    constructor(protected httpClient: HttpClient, private router: Router) {
-        if (!environment.production) {
-            this.serverApi = environment.backend
-        }
-
-        function getTimeOut() {
-            setTimeout(function () {
-                this.httpClient.get(this.serverApi + '/get_info').subscribe(
-                    (response) => {
-                        this.infoObj = response
-                        this.Info.next(this.infoObj)
-                        if (this.router.url === '/server-error') {
-                            this.router.navigate(['/'])
-                        }
-                        getTimeOut()
-                    },
-                    (err: HttpErrorResponse) => {
-                        console.log('error', err)
-                        this.router.navigate(['/server-error'])
-                        getTimeOut()
-                    }
-                )
-            }, 6000)
-        }
-
-        getTimeOut()
-    }
-
-    subscribeInfo() {
-        return this.Info.asObservable()
-    }
+    constructor(protected httpClient: HttpClient) {}
 
     getInfo(): Observable<Response> {
-        if (this.infoObj === undefined) {
-            const URL = `${this.serverApi}/get_info`
-            return this.httpClient.get(URL).pipe(
-                map((response) => {
-                    this.infoObj = response
-                    return this.infoObj
-                })
-            )
-        } else {
-            return this.infoObj
-        }
+        const URL = `${this.serverApi}/get_info`
+        return this.httpClient.get<Response>(URL)
     }
 
     // BlockChain Page

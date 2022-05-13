@@ -1,1 +1,18 @@
-{ "api": "http://10.0.0.13:12111", "front_port": "8008" }
+{
+    "api": "http://10.0.0.13:12111",
+    "frontEnd_api": "*",
+    "server_port": "8008",
+    "auditable_wallet": {
+        "api": "http://10.0.0.13:12233"
+    },
+    "websocket": {
+        "enabled_during_sync": false
+    },
+    "database": {
+        "user": "zano",
+        "host": "10.0.0.13",
+        "port": 5432,
+        "database": "db",
+        "password": "123456"
+    }
+}

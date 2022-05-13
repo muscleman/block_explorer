@@ -1,9 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { HttpService, MobileNavState } from '../http.service'
+import { HttpService, MobileNavState } from '../services/http.service'
 import { CookieService } from 'ngx-cookie-service'
-import { take } from 'rxjs/operators'
-import { SubscriptionTracker } from 'app/subscription-tracker/subscription-tracker'
+import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
 
 @Component({
     selector: 'app-alt-blocks',
@@ -70,10 +69,8 @@ export class AltBlocksComponent
         this.limitList = +this.count
         this.cookieService.set('setCountAltBlocksCookie', this.limitList)
         this.offset = (this.currentPage - 1) * this.count
-        this.httpService
-            .getAltBlocks(this.offset, this.count)
-            .pipe(take(1))
-            .subscribe({
+        this._track(
+            this.httpService.getAltBlocks(this.offset, this.count).subscribe({
                 next: (data) => {
                     this.altBlocks = data
                     for (let i = 0; i < this.altBlocks.length; i++) {
@@ -90,6 +87,7 @@ export class AltBlocksComponent
                     this.visiblePagination = true
                 }
             })
+        )
     }
 
     nextPage() {
