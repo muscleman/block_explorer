@@ -5,7 +5,7 @@ import {
     ActivatedRouteSnapshot,
     RouterStateSnapshot
 } from '@angular/router'
-import { Observable, Subject } from 'rxjs'
+import { Observable } from 'rxjs'
 import { environment } from '../../environments/environment'
 import { VisibilityInfo } from '../models/visibility-info'
 
@@ -18,6 +18,11 @@ export class HttpService {
     getInfo(): Observable<Response> {
         const URL = `${this.serverApi}/get_info`
         return this.httpClient.get<Response>(URL)
+    }
+
+    getVisibilityInfo(): Observable<VisibilityInfo> {
+        const URL = `${this.serverApi}/get_visibility_info`
+        return this.httpClient.get<VisibilityInfo>(URL)
     }
 
     // BlockChain Page

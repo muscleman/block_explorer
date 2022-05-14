@@ -55,15 +55,15 @@ export class InfoState {
 
     @Action(VisibilityInfos.Get)
     getVisibilityDataFromState(ctx: StateContext<InfoModel>) {
-        // return this.httpService.getInfo().pipe(
-        //     tap((returnData) => {
-        //         const state = ctx.getState()
-        //         ctx.setState({
-        //             ...state,
-        //             VisibilityInfos: [returnData]
-        //         })
-        //     })
-        // )
+        return this.httpService.getVisibilityInfo().pipe(
+            tap((returnData) => {
+                const state = ctx.getState()
+                ctx.setState({
+                    ...state,
+                    VisibilityInfos: [returnData]
+                })
+            })
+        )
     }
 
     @Action(VisibilityInfos.Add)

@@ -9,7 +9,6 @@ const { Pool } = require('pg')
 const axios = require('axios')
 const BigNumber = require('bignumber.js')
 const exceptionHandler = require('./exceptionHandler')
-const cors = require('cors')
 
 let config = fs.readFileSync('config.json', 'utf8')
 config = JSON.parse(config)
@@ -191,6 +190,21 @@ const getbalance = () => {
     })
 }
 
+const get_mining_history = (howManyDays = 7) => {
+    let now = new Date()
+    let date = now.getDate() - howManyDays
+    let timestamp = now.setDate(date)
+    return axios({
+        method: 'post',
+        url: wallet,
+        data: {
+            method: 'get_mining_history',
+            params: {"v": timestamp}
+        },
+        transformResponse: [(data) => JSON.parse(data)]
+    })
+}
+
 app.get(
     '/get_info',
     exceptionHandler((req, res, next) => {
@@ -217,16 +231,13 @@ app.get(
     })
 )
 
-// app.get(
-//     '/get_visibility_info',
-//     exceptionHandler(async (req, res, next) => {
-//         const response = await getbalance()
-//         let result = response.data.result
-//         result.amount = 9123546523000000000
-//         result.percentage = 56
-//         res.json(result)
-//     })
-// )
+app.get(
+    '/get_visibility_info',
+    exceptionHandler(async (req, res, next) => {
+        const result = await getVisibilityInfo()
+        res.send(result)
+    })
+)
 
 app.get(
     '/get_main_block_details/:id',
@@ -694,7 +705,7 @@ const syncTransactions = async () => {
                                     `'${aliasAddress}',` +
                                     `'${aliasComment}',` +
                                     `'${aliasTrackingKey}',` +
-                                    `'${aliasBlock}',` +
+                                    `${aliasBlock},` +
                                     `'${aliasTransaction}',` +
                                     `${1}` +
                                     `) ON CONFLICT (address) ` +
@@ -1010,6 +1021,8 @@ const syncAltBlocks = async () => {
 }
 
 const getVisibilityInfo = async () => {
+    
+    
     let result = {
         amount: 0,
         percentage: 0,
@@ -1017,23 +1030,36 @@ const getVisibilityInfo = async () => {
         unlocked_balance: 0
     }
     try {
-        // console.log(blockInfo)
-        const response = await getbalance()
-        result.balance = response.data.result.balance
-        result.unlocked_balance = response.data.result.unlocked_balance
-        result.amount = 9123546523000000000
-        result.percentage = 56
-    } catch (error) {}
-    return JSON.stringify(result)
+            const [res1, res2, res3] = await axios.all([getbalance(), get_mining_history(), get_mining_history(1)])
+            // console.log(res1.data.result.balance)
+            // console.log(res1.data.result.unlocked_balance)
+            result.balance = res1.data.result.balance
+            result.unlocked_balance = res1.data.result.unlocked_balance
+
+            let stakedCoinsLast7Days = new BigNumber(0)
+            let stakedCoins24hrs = new BigNumber(0)
+            for (const item in res2.data.result)
+            {
+                stakedCoinsLast7Days = stakedCoinsLast7Days.plus(item.a)
+            }
+            for (const item in res3.data.result)
+            {
+                stakedCoins24hrs = stakedCoins24hrs.plus(item.a)
+            }
+
+            result.amount = stakedCoinsLast7Days.toNumber()
+            result.percentage = (stakedCoins24hrs.isEqualTo(0) && stakedCoinsLast7Days.isEqualTo(0)) ? 0 : new BigNumber(result.balance).multiply(stakedCoins24hrs.dividedBy(stakedCoinsLast7Days)).toNumber()
+            
+        } catch (error) {}
+        return JSON.stringify(result)
 }
 
 const emitSocketInfo = async () => {
-    // if (enabled_during_sync) {
+    if (enabled_during_sync) {
     blockInfo.lastBlock = lastBlock.height
     io.emit('get_info', JSON.stringify(blockInfo))
-
     io.emit('get_visibility_info', await getVisibilityInfo())
-    // }
+    }
 }
 
 const getInfoTimer = async () => {

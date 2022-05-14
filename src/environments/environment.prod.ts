@@ -1,5 +1,5 @@
 export const environment = {
     production: true,
-    backend: 'http://10.0.0.13:8008',
+    backend: 'https://zano.smartcoinpool.net',
     documentionApi: 'https://docs.zano.org'
 }

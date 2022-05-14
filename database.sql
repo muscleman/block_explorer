@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS aliases (
         address text unique,
         comment text,
         tracking_key text,
-        block integer primary key,
+        block integer,
         transact text,
         enabled integer
 );
