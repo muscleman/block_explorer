@@ -1,26 +1,23 @@
-DROP DATABASE IF EXISTS db;
-CREATE DATABASE db;
-
 CREATE TABLE IF NOT EXISTS  blocks (
-        height  integer unique,
+        height  integer primary key,
         actual_timestamp integer,
-        base_reward decimal(100,0),
+        base_reward numeric(100,0),
         blob text,
-        block_cumulative_size decimal(100,0),
-        block_tself_size decimal(100,0),
-        cumulative_diff_adjusted decimal(100,0),
-        cumulative_diff_precise decimal(100,0),
-        difficulty  decimal(100,0),
-        effective_fee_median decimal(100,0),
+        block_cumulative_size numeric(100,0),
+        block_tself_size numeric(100,0),
+        cumulative_diff_adjusted numeric(100,0),
+        cumulative_diff_precise numeric(100,0),
+        difficulty  numeric(100,0),
+        effective_fee_median numeric(100,0),
         id text,
         is_orphan boolean,
         penalty integer,
         prev_id text,
-        summary_reward decimal(100,0),
-        this_block_fee_median decimal(100,0),
-        timestamp integer,
-        total_fee decimal(100,0),
-        total_txs_size decimal(100,0),
+        summary_reward numeric(100,0),
+        this_block_fee_median numeric(100,0),
+        "timestamp" integer,
+        total_fee numeric(100,0),
+        total_txs_size numeric(100,0),
         tr_count bigint,
         type integer,
         miner_text_info text,
@@ -33,15 +30,16 @@ CREATE INDEX IF NOT EXISTS  index_block_id ON blocks(id);
 CREATE TABLE IF NOT EXISTS transactions (
         keeper_block integer,
         id  text unique,
-        amount text,
+        amount numeric(100,0),
         blob_size integer,
         extra text,
-        fee text,
+        fee numeric(100,0),
         ins  text,
         outs text,
         pub_key text,
         timestamp integer,
-        attachments text
+        attachments text,
+        primary key(keeper_block, id)
 );
 
 CREATE INDEX IF NOT EXISTS index_transaction_keeper ON transactions(keeper_block);
@@ -52,7 +50,7 @@ CREATE TABLE IF NOT EXISTS aliases (
         address text unique,
         comment text,
         tracking_key text,
-        block integer,
+        block integer primary key,
         transact text,
         enabled integer
 );
@@ -61,26 +59,27 @@ CREATE INDEX IF NOT EXISTS index_aliases_block ON aliases(block);
 
 CREATE TABLE IF NOT EXISTS alt_blocks (
         height integer,
-        timestamp integer,
+        "timestamp" integer,
         actual_timestamp integer,
         size integer,
         hash text,
         type integer,
-        difficulty text,
-        cumulative_diff_adjusted text,
-        cumulative_diff_precise text,
+        difficulty numeric(100,0),
+        cumulative_diff_adjusted numeric(100,0),
+        cumulative_diff_precise numeric(100,0),
         is_orphan boolean,
-        base_reward text,
-        total_fee text,
-        penalty text,
-        summary_reward text,
-        block_cumulative_size integer,
-        this_block_fee_median text,
-        effective_fee_median text,
-        total_txs_size integer,
+        base_reward numeric(100,0),
+        total_fee numeric(100,0),
+        penalty integer,
+        summary_reward numeric(100,0),
+        block_cumulative_size numeric(100,0),
+        this_block_fee_median numeric(100,0),
+        effective_fee_median numeric(100,0),
+        total_txs_size numeric(100,0),
         transactions_details text,
         miner_txt_info text,
-        pow_seed text
+        pow_seed text,
+        primary key (height, timestamp)
 );
 
 CREATE INDEX IF NOT EXISTS index_altblocks_hash ON alt_blocks(hash);
@@ -95,7 +94,7 @@ CREATE TABLE IF NOT EXISTS pool (
 CREATE INDEX IF NOT EXISTS index_pool_id ON pool(id);
 
 CREATE TABLE IF NOT EXISTS charts (
-            height integer,
+            height integer primary key,
             actual_timestamp integer,
             block_cumulative_size decimal(100,0),
             cumulative_diff_precise decimal(100,0),
@@ -113,7 +112,8 @@ CREATE TABLE IF NOT EXISTS out_info (
             amount decimal(100,0),
             i integer,
             tx_id text,
-            block integer
+            block integer,
+            primary key (amount, i, tx_id)
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS index_out_info ON out_info(amount, i, tx_id);

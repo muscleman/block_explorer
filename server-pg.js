@@ -725,7 +725,7 @@ const syncTransactions = async () => {
                                 `'${tx_info.amount.toString()}',` +
                                 `${tx_info.blob_size},` +
                                 `'${JSON.stringify(tx_info.extra)}',` +
-                                `'${tx_info.fee.toString()}',` +
+                                `${tx_info.fee},` +
                                 `'${JSON.stringify(tx_info.ins)}',` +
                                 `'${JSON.stringify(tx_info.outs)}',` +
                                 `'${tx_info.pub_key}',` +
@@ -979,17 +979,17 @@ const syncAltBlocks = async () => {
                 `${block.block_cumulative_size},` +
                 `'${block.id}',` +
                 `${block.type},` +
-                `'${block.difficulty}',` +
-                `'${block.cumulative_diff_adjusted}',` +
-                `'${block.cumulative_diff_precise}',` +
+                `${block.difficulty},` +
+                `${block.cumulative_diff_adjusted},` +
+                `${block.cumulative_diff_precise},` +
                 `${block.is_orphan},` +
-                `'${block.base_reward}',` +
-                `'${block.total_fee}',` +
-                `'${block.penalty}',` +
-                `'${block.summary_reward}',` +
+                `${block.base_reward},` +
+                `${block.total_fee},` +
+                `${block.penalty},` +
+                `${block.summary_reward},` +
                 `${block.block_cumulative_size},` +
-                `'${block.this_block_fee_median}',` +
-                `'${block.effective_fee_median}',` +
+                `${block.this_block_fee_median},` +
+                `${block.effective_fee_median},` +
                 `${block.total_txs_size},` +
                 `'${JSON.stringify(block.transactions_details)}',` +
                 `'${block.miner_text_info}',` +
