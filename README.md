@@ -61,3 +61,108 @@ Following command will produce a `dist` folder that you can copy to your a web s
 ```
 ng build --configuration production
 ```
+
+# Postgresql 
+
+## Update system and install packages
+
+```
+sudo apt update && sudo apt install postgresql postgresql-contrib \
+sudo system start postgresql-13
+```
+
+## Add a New Role
+1. Connect as postgres user and enter psql prompt
+```
+sudo postgres psql
+```
+2. Create a new role
+```
+createuser --interactive
+```
+
+``
+Output
+``
+
+``Enter name of role to add: zano``
+
+``Shall the new role be a superuser? (y/n) y``
+
+
+## Configure postgresql for remote access
+1. Edit postgresql.conf
+```
+sudo nano /etc/postgresql/13/main/postgresql.config
+
+change `list_address = 'localhost' to `listen_address = '*'
+```
+
+2. Edit pg_hba.conf and add a new line 
+NOTE: ***For Security reasons you should never use 0.0.0.0/0, limit to an IP address or to a Subnet.***
+```
+# TYPE  DATABASE    USER    ADDRESS       METHOD
+host    all         all     0.0.0.0/0     md5
+```
+
+3. Open firewall port
+```
+sudo ufw allow 5432/tcp
+```
+4. Restart Postgresql Service
+```
+sudo system restart postgresql-13
+```
+
+# Install pgAdmin4 postgresql tool on client machine
+## Update Ubuntu repositories
+```
+$ curl https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo apt-key add
+$ sudo sh -c 'echo "deb https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$(lsb_release -cs) pgadmin4 main" > /etc/apt/sources.list.d/pgadmin4.list && apt update'
+```
+## Install pgAdmin4
+```
+sudo apt install pgadmin4
+```
+
+## Start pgAdmin4
+1. create a connection to your server, provide a master password
+2. connect to your server with the role created previously 
+
+``username: zano``
+
+``password: 123456``
+
+3. Right click `Database` and select create Database
+4. From the toolbar select `query tool`
+5. In the query editor open file and select `database.sql`
+6. Run the query to create the `db` schema and tables necessary to run block_explorer
+
+# Nginx Setup
+## Instal nginx and certbot 
+```
+sudo apt update && sudo apt install nginx certbot
+```
+2. Start Nginx
+```
+sudo system nginx start
+```
+## Create site configuration
+
+```
+sudo nano /etc/nginx/sites-available/zano.smartcoinpool.net
+```
+
+```
+server {
+    root /home/ubuntu/public_html;
+
+    location /application1 {  }
+
+    location /images {		
+        root /home/ubuntu/data;	
+    }
+} 
+```
+
+

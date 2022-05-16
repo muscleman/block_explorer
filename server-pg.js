@@ -10,6 +10,7 @@ const axios = require('axios')
 const BigNumber = require('bignumber.js')
 const exceptionHandler = require('./exceptionHandler')
 
+
 let config = fs.readFileSync('config.json', 'utf8')
 config = JSON.parse(config)
 const api = config.api + '/json_rpc'
@@ -193,7 +194,7 @@ const getbalance = () => {
 const get_mining_history = (howManyDays = 7) => {
     let now = new Date()
     let date = now.getDate() - howManyDays
-    let timestamp = now.setDate(date)
+    let timestamp = Math.round(now.setDate(date) / 1000)
     return axios({
         method: 'post',
         url: wallet,
@@ -552,7 +553,6 @@ const syncPool = async () => {
             statusSyncPool = false
         } else {
             let response = await get_all_pool_tx_list()
-            // const data = response.data
             if (response.data.result.ids) {
                 pools_array = response.data.result.ids
                     ? response.data.result.ids
@@ -632,7 +632,7 @@ const syncPool = async () => {
     }
 }
 
-const parseComment = async (comment) => {
+const parseComment = (comment) => {
     let splitComment = comment.split(/\s*,\s*/).filter((el) => !!el)
     let splitResult = splitComment[4]
     if (splitResult) {
@@ -649,7 +649,7 @@ const parseComment = async (comment) => {
     }
 }
 
-const parseTrackingKey = async (trackingKey) => {
+const parseTrackingKey = (trackingKey) => {
     let splitKey = trackingKey.split(/\s*,\s*/) //.filter((el) => !!el)
     let resultKey = splitKey[5]
     if (resultKey) {
@@ -663,6 +663,22 @@ const parseTrackingKey = async (trackingKey) => {
     } else {
         return ''
     }
+}
+
+const decodeString = (str) => {
+    // str = str.replace("'", "''")
+    if (!!str) {
+        str = str.replace(/'/g, "''")
+        return str.replace(/\u0000/g, '', (unicode) => {
+                return String.fromCharCode(parseInt(unicode.replace(/\\u/g, ""), 16));
+            });
+        }
+    return str
+    // str = str.replace("'", "''")
+    // if (/str/.unicode)
+    //     return str.replace(/str/.source)
+    // return str
+    //return str.replace("\u0000", "").replace("0x00", "").replace("'","''")
 }
 
 const syncTransactions = async () => {
@@ -700,24 +716,29 @@ const syncTransactions = async () => {
                                 await db.query(
                                     `UPDATE aliases SET enabled=0 WHERE alias = '${aliasName}';`
                                 )
-                                let sql =
-                                    `INSERT INTO aliases VALUES ('${aliasName}',` +
+                                let sql = ""
+                                try {
+                                    sql =
+                                    `INSERT INTO aliases VALUES ('${decodeString(aliasName)}',` +
                                     `'${aliasAddress}',` +
-                                    `'${aliasComment}',` +
-                                    `'${aliasTrackingKey}',` +
+                                    `'${decodeString(aliasComment)}',` +
+                                    `'${decodeString(aliasTrackingKey)}',` +
                                     `${aliasBlock},` +
                                     `'${aliasTransaction}',` +
                                     `${1}` +
                                     `) ON CONFLICT (address) ` +
                                     `DO UPDATE SET ` +
-                                    `alias='${aliasName}',` +
+                                    `alias='${decodeString(aliasName)}',` +
                                     `address='${aliasAddress}',` +
-                                    `comment='${aliasComment}',` +
-                                    `tracking_key='${aliasTrackingKey}',` +
+                                    `comment='${decodeString(aliasComment)}',` +
+                                    `tracking_key='${decodeString(aliasTrackingKey)}',` +
                                     `block='${aliasBlock}',` +
                                     `transact='${aliasTransaction}',` +
                                     `enabled=${1};`
                                 await db.query(sql)
+                                } catch (error) {
+                                 console.log(error, sql)   
+                                }
                             }
                         }
 
@@ -735,17 +756,17 @@ const syncTransactions = async () => {
                                 `'${tx_info.id}',` +
                                 `'${tx_info.amount.toString()}',` +
                                 `${tx_info.blob_size},` +
-                                `'${JSON.stringify(tx_info.extra)}',` +
+                                `'${decodeString(JSON.stringify(tx_info.extra))}',` +
                                 `${tx_info.fee},` +
-                                `'${JSON.stringify(tx_info.ins)}',` +
-                                `'${JSON.stringify(tx_info.outs)}',` +
+                                `'${decodeString(JSON.stringify(tx_info.ins))}',` +
+                                `'${decodeString(JSON.stringify(tx_info.outs))}',` +
                                 `'${tx_info.pub_key}',` +
                                 `${tx_info.timestamp},` +
-                                `'${JSON.stringify(
+                                `'${decodeString(JSON.stringify(
                                     !!tx_info.attachments
                                         ? tx_info.attachments
                                         : {}
-                                )}')`
+                                ))}')`
                         )
                     }
                 } catch (error) {
@@ -806,30 +827,60 @@ const syncTransactions = async () => {
 
             //build block inserts
             {
+                if (bl.height === 45243)
+                console.log('yes')
                 blockInserts.push(
-                    `(${bl.height},` +
-                        `${bl.actual_timestamp},` +
-                        `${bl.base_reward},` +
-                        `'${bl.blob}',` +
-                        `${bl.block_cumulative_size},` +
-                        `${bl.block_tself_size},` +
-                        `${bl.cumulative_diff_adjusted},` +
-                        `${bl.cumulative_diff_precise},` +
-                        `${bl.difficulty},` +
-                        `${bl.effective_fee_median},` +
-                        `'${bl.id}',` +
-                        `${bl.is_orphan},` +
-                        `${bl.penalty},` +
-                        `'${bl.prev_id}',` +
-                        `${bl.summary_reward},` +
-                        `${bl.this_block_fee_median},` +
-                        `${bl.timestamp},` +
-                        `${bl.total_fee},` +
-                        `${bl.total_txs_size},` +
-                        `${bl.tr_count ? bl.tr_count : 0},` +
-                        `${bl.type},` +
-                        `'${bl.miner_text_info}',` +
-                        `'${bl.pow_seed}')`
+
+                    [bl.height, 
+                    bl.actual_timestamp,
+                    bl.base_reward,
+                    bl.blob,
+                    bl.block_cumulative_size,
+                    bl.block_tself_size,
+                    bl.cumulative_diff_adjusted,
+                    bl.cumulative_diff_precise,
+                    bl.difficulty,
+                    bl.effective_fee_median,
+                    bl.id,
+                    bl.is_orphan,
+                    bl.penalty,
+                    bl.prev_id,
+                    bl.summary_reward,
+                    bl.this_block_fee_median,
+                    bl.timestamp,
+                    bl.total_fee,
+                    bl.total_txs_size,
+                    bl.tr_count ? bl.tr_count : 0,
+                    bl.type,
+                    decodeString(bl.miner_text_info), 
+                    bl.pow_seed]
+
+
+
+                    // `(${bl.height},` +
+                    //     `${bl.actual_timestamp},` +
+                    //     `${bl.base_reward},` +
+                    //     `'${bl.blob}',` +
+                    //     `${bl.block_cumulative_size},` +
+                    //     `${bl.block_tself_size},` +
+                    //     `${bl.cumulative_diff_adjusted},` +
+                    //     `${bl.cumulative_diff_precise},` +
+                    //     `${bl.difficulty},` +
+                    //     `${bl.effective_fee_median},` +
+                    //     `'${bl.id}',` +
+                    //     `${bl.is_orphan},` +
+                    //     `${bl.penalty},` +
+                    //     `'${bl.prev_id}',` +
+                    //     `${bl.summary_reward},` +
+                    //     `${bl.this_block_fee_median},` +
+                    //     `${bl.timestamp},` +
+                    //     `${bl.total_fee},` +
+                    //     `${bl.total_txs_size},` +
+                    //     `${bl.tr_count ? bl.tr_count : 0},` +
+                    //     `${bl.type},` +
+                    //     //`'',` + 
+                    //     "'" + bl.miner_text_info.toString().replace("'","''") + "'," +
+                    //     `'${bl.pow_seed}')`
                 )
             }
         }
@@ -867,9 +918,12 @@ const syncTransactions = async () => {
 
         //save blocks
         {
-            try {
+            let sql = ''
+            let i = null
                 if (blockInserts.length > 0) {
-                    let sql =
+                    for (const item of blockInserts) {
+                        
+                        sql =
                         'INSERT INTO blocks (height,' +
                         'actual_timestamp,' +
                         'base_reward,' +
@@ -892,14 +946,45 @@ const syncTransactions = async () => {
                         'tr_count,' +
                         'type,' +
                         'miner_text_info,' +
-                        'pow_seed) VALUES ' +
-                        blockInserts.join(',') +
-                        ';'
-                    await db.query(sql)
+                        'pow_seed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23);'
+                        // item.split(',') +
+                        // ';'
+                        try {
+                            await db.query(sql, item)
+                        }
+                        catch (error) {
+                            fs.appendFile('log.json', item + "\r\n", (err) => {})
+                            console.log(i, error)
+                        }
+                    }
+                    // sql =
+                    //     'INSERT INTO blocks (height,' +
+                    //     'actual_timestamp,' +
+                    //     'base_reward,' +
+                    //     'blob,' +
+                    //     'block_cumulative_size,' +
+                    //     'block_tself_size,' +
+                    //     'cumulative_diff_adjusted,' +
+                    //     'cumulative_diff_precise,' +
+                    //     'difficulty,' +
+                    //     'effective_fee_median,' +
+                    //     'id,' +
+                    //     'is_orphan,' +
+                    //     'penalty,' +
+                    //     'prev_id,' +
+                    //     'summary_reward,' +
+                    //     'this_block_fee_median,' +
+                    //     'timestamp,' +
+                    //     'total_fee,' +
+                    //     'total_txs_size,' +
+                    //     'tr_count,' +
+                    //     'type,' +
+                    //     'miner_text_info,' +
+                    //     'pow_seed) VALUES ' +
+                    //     blockInserts.join(',') +
+                    //     ';'
+                    // await db.query(sql)
                 }
-            } catch (error) {
-                console.log(error)
-            }
         }
         try {
             await db.query('commit')
@@ -1003,7 +1088,7 @@ const syncAltBlocks = async () => {
                 `${block.effective_fee_median},` +
                 `${block.total_txs_size},` +
                 `'${JSON.stringify(block.transactions_details)}',` +
-                `'${block.miner_text_info}',` +
+                `'${block.miner_text_info.replace("\u0000", "").replace("'","''")}',` +
                 `''` +
                 `);`
             await db.query(sql)
@@ -1021,8 +1106,6 @@ const syncAltBlocks = async () => {
 }
 
 const getVisibilityInfo = async () => {
-    
-    
     let result = {
         amount: 0,
         percentage: 0,
@@ -1031,26 +1114,35 @@ const getVisibilityInfo = async () => {
     }
     try {
             const [res1, res2, res3] = await axios.all([getbalance(), get_mining_history(), get_mining_history(1)])
-            // console.log(res1.data.result.balance)
-            // console.log(res1.data.result.unlocked_balance)
             result.balance = res1.data.result.balance
             result.unlocked_balance = res1.data.result.unlocked_balance
 
             let stakedCoinsLast7Days = new BigNumber(0)
             let stakedCoins24hrs = new BigNumber(0)
-            for (const item in res2.data.result)
-            {
-                stakedCoinsLast7Days = stakedCoinsLast7Days.plus(item.a)
+            if ('mined_entries' in res2.data.result) {
+                for (const item of res2.data.result.mined_entries)
+                {
+                    stakedCoinsLast7Days = stakedCoinsLast7Days.plus(item.a)
+                }
             }
-            for (const item in res3.data.result)
-            {
-                stakedCoins24hrs = stakedCoins24hrs.plus(item.a)
+            if ('mined_entries' in res3.data.result) {
+                for (const item of res3.data.result.mined_entries)
+                {
+                    stakedCoins24hrs = stakedCoins24hrs.plus(item.a)
+                }
             }
 
             result.amount = stakedCoinsLast7Days.toNumber()
-            result.percentage = (stakedCoins24hrs.isEqualTo(0) && stakedCoinsLast7Days.isEqualTo(0)) ? 0 : new BigNumber(result.balance).multiply(stakedCoins24hrs.dividedBy(stakedCoinsLast7Days)).toNumber()
+            // console.log('wallet balance ', result.balance)
+            // console.log('staked coins 24hrs ', stakedCoins24hrs)
+            // console.log('staked coins 7 days ', stakedCoinsLast7Days)
+            // console.log('result ', new BigNumber(result.balance).multipliedBy(stakedCoins24hrs.dividedBy(stakedCoinsLast7Days)))
+
+            result.percentage = (stakedCoins24hrs.isEqualTo(0) && stakedCoinsLast7Days.isEqualTo(0)) ? 0 : new BigNumber(result.balance).multipliedBy(stakedCoins24hrs.dividedBy(stakedCoinsLast7Days)).toNumber()
             
-        } catch (error) {}
+        } catch (error) {
+            log('getVisibilityInfo() ERROR', error)
+        }
         return JSON.stringify(result)
 }
 

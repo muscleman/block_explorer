@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS  blocks (
         height  integer primary key,
-        actual_timestamp integer,
+        actual_timestamp bigint,
         base_reward numeric(100,0),
         blob text,
         block_cumulative_size numeric(100,0),
@@ -11,15 +11,15 @@ CREATE TABLE IF NOT EXISTS  blocks (
         effective_fee_median numeric(100,0),
         id text,
         is_orphan boolean,
-        penalty integer,
+        penalty bigint,
         prev_id text,
         summary_reward numeric(100,0),
         this_block_fee_median numeric(100,0),
-        "timestamp" integer,
+        "timestamp" bigint,
         total_fee numeric(100,0),
         total_txs_size numeric(100,0),
         tr_count bigint,
-        type integer,
+        type bigint,
         miner_text_info text,
         pow_seed text
 );
@@ -28,16 +28,16 @@ CREATE INDEX IF NOT EXISTS  index_block_height ON blocks(height);
 CREATE INDEX IF NOT EXISTS  index_block_id ON blocks(id);
 
 CREATE TABLE IF NOT EXISTS transactions (
-        keeper_block integer,
+        keeper_block bigint,
         id  text unique,
         amount numeric(100,0),
-        blob_size integer,
+        blob_size bigint,
         extra text,
         fee numeric(100,0),
         ins  text,
         outs text,
         pub_key text,
-        timestamp integer,
+        timestamp bigint,
         attachments text,
         primary key(keeper_block, id)
 );
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS aliases (
         address text unique,
         comment text,
         tracking_key text,
-        block integer,
+        block bigint,
         transact text,
         enabled integer
 );
@@ -59,9 +59,9 @@ CREATE INDEX IF NOT EXISTS index_aliases_block ON aliases(block);
 
 CREATE TABLE IF NOT EXISTS alt_blocks (
         height integer,
-        "timestamp" integer,
-        actual_timestamp integer,
-        size integer,
+        "timestamp" bigint,
+        actual_timestamp bigint,
+        size bigint,
         hash text,
         type integer,
         difficulty numeric(100,0),
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS alt_blocks (
         is_orphan boolean,
         base_reward numeric(100,0),
         total_fee numeric(100,0),
-        penalty integer,
+        penalty bigint,
         summary_reward numeric(100,0),
         block_cumulative_size numeric(100,0),
         this_block_fee_median numeric(100,0),
@@ -94,8 +94,8 @@ CREATE TABLE IF NOT EXISTS pool (
 CREATE INDEX IF NOT EXISTS index_pool_id ON pool(id);
 
 CREATE TABLE IF NOT EXISTS charts (
-            height integer primary key,
-            actual_timestamp integer,
+            height bigint primary key,
+            actual_timestamp bigint,
             block_cumulative_size decimal(100,0),
             cumulative_diff_precise decimal(100,0),
             difficulty  decimal(100,0),
@@ -110,15 +110,15 @@ CREATE INDEX IF NOT EXISTS index_charts_height ON charts(height);
 
 CREATE TABLE IF NOT EXISTS out_info (
             amount decimal(100,0),
-            i integer,
+            i bigint,
             tx_id text,
-            block integer,
+            block bigint,
             primary key (amount, i, tx_id)
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS index_out_info ON out_info(amount, i, tx_id);
 
-CREATE OR REPLACE PROCEDURE purgeAboveHeight(IN p_height int) AS $$
+CREATE OR REPLACE PROCEDURE purgeAboveHeight(IN p_height integer) AS $$
 BEGIN
     DELETE FROM blocks WHERE height > p_height;
 	DELETE FROM charts WHERE height > p_height;
@@ -178,17 +178,17 @@ BEGIN
 			   ), 0) actual_timestamp_c
 		  FROM cte
 	)
-	update charts
-	   set difficulty120 = sub.difficulty120, 
-		   hashrate100 = sub.hashrate100,
-		   hashrate400 = sub.hashrate400 from ( SELECT height,
-													   (difficulty / 120)::integer as difficulty120,
-													   case when cumulative_diff_precise_b = 0 then 0 else ((cumulative_diff_precise_a - cumulative_diff_precise_b) / (actual_timestamp_a - actual_timestamp_b))::decimal(100,11) end as hashrate100,
-		   											   case when cumulative_diff_precise_c = 0 then 0 else ((cumulative_diff_precise_a - cumulative_diff_precise_c) / (actual_timestamp_a - actual_timestamp_c))::decimal(100,11) end as hashrate400
-												  FROM cte2
-												 where height >= p_startHeight
-											) as sub
-	where charts.height = sub.height;
+ 	update charts
+ 	   set difficulty120 = sub.difficulty120, 
+ 		   hashrate100 = sub.hashrate100,
+ 		   hashrate400 = sub.hashrate400 from ( SELECT height,
+ 													   (difficulty / 120) as difficulty120,
+ 													   case when cumulative_diff_precise_b = 0 then 0 else ((cumulative_diff_precise_a - cumulative_diff_precise_b) / (actual_timestamp_a - actual_timestamp_b))::decimal(100,11) end as hashrate100,
+ 		   											   case when cumulative_diff_precise_c = 0 then 0 else ((cumulative_diff_precise_a - cumulative_diff_precise_c) / (actual_timestamp_a - actual_timestamp_c))::decimal(100,11) end as hashrate400
+ 												  FROM cte2
+ 												 where height >= p_startHeight
+ 											) as sub
+ 	where charts.height = sub.height;
 END;
 $$;
 
