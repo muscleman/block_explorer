@@ -192,7 +192,10 @@ export class ChartsComponent
                     ) {
                         previewConfirmTransactPerDay.push([
                             this.ArrayConfirmTransactPerDay[i].at * 1000,
-                            this.ArrayConfirmTransactPerDay[i].sum_trc
+                            parseInt(
+                                this.ArrayConfirmTransactPerDay[i].sum_trc,
+                                10
+                            )
                         ])
                     }
 
@@ -201,13 +204,14 @@ export class ChartsComponent
                         if (this.InputArray[i].t === 0) {
                             previewDifficultyPoS.push([
                                 this.InputArray[i].at * 1000,
-                                this.InputArray[i].d
+                                this.InputArray[i].d,
+                                10
                             ])
                         }
                         if (this.InputArray[i].t === 1) {
                             previewDifficultyPoW.push([
                                 this.InputArray[i].at * 1000,
-                                this.InputArray[i].d
+                                parseInt(this.InputArray[i].d, 10)
                             ])
                         }
                     }
@@ -219,18 +223,15 @@ export class ChartsComponent
                         // const hashrate400 = this.ArrayHashrate[i]['hashrate400'] = (i > 399) ? ((this.ArrayHashrate[i]['cumulative_diff_precise'] - this.ArrayHashrate[i - 400]['cumulative_diff_precise']) / (this.ArrayHashrate[i]['actual_timestamp'] - this.ArrayHashrate[i - 400]['actual_timestamp'])) : 0;
                         previewHashrate100.push([
                             this.ArrayHashrate[i].at * 1000,
-                            this.ArrayHashrate[i].h100,
-                            10
+                            parseInt(this.ArrayHashrate[i].h100, 10)
                         ])
                         previewHashrate400.push([
                             this.ArrayHashrate[i].at * 1000,
-                            this.ArrayHashrate[i].h400,
-                            10
+                            parseInt(this.ArrayHashrate[i].h400, 10)
                         ])
                         previewDifficulty120.push([
                             this.ArrayHashrate[i].at * 1000,
-                            this.ArrayHashrate[i].d120,
-                            10
+                            parseInt(this.ArrayHashrate[i].d120, 10)
                         ])
                     }
 
