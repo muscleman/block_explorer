@@ -8,12 +8,14 @@ Edit source/environments.ts and source/environments.prod.ts
 export const environment = {
   production: false,
   backend: 'http://10.0.0.13:8008',
-  documentionApi: 'https://docs.zano.org'
+  documentionApi: 'https://docs.zano.org',
+  decimalPlaces: 2
 };
 ```
 
 1. `backend` FQDN of your backend with the `frontEnd_api`
 2. `documentationApi` Address used to build documentation explanations
+3. `decimalPlaces` how many decimal places to use when displaying currency
 
 #### Run Frontend development Server
 
@@ -62,7 +64,7 @@ Following command will produce a `dist` folder that you can copy to your a web s
 ng build --configuration production
 ```
 
-# Postgresql 
+# Postgresql
 
 ## Update system and install packages
 
@@ -72,66 +74,78 @@ sudo system start postgresql-13
 ```
 
 ## Add a New Role
+
 1. Connect as postgres user and enter psql prompt
+
 ```
 sudo postgres psql
 ```
+
 2. Create a new role
+
 ```
 createuser --interactive
 ```
 
-``
-Output
-``
+`Output`
 
-``Enter name of role to add: zano``
+`Enter name of role to add: zano`
 
-``Shall the new role be a superuser? (y/n) y``
-
+`Shall the new role be a superuser? (y/n) y`
 
 ## Configure postgresql for remote access
+
 1. Edit postgresql.conf
+
 ```
 sudo nano /etc/postgresql/13/main/postgresql.config
 
 change `list_address = 'localhost' to `listen_address = '*'
 ```
 
-2. Edit pg_hba.conf and add a new line 
-NOTE: ***For Security reasons you should never use 0.0.0.0/0, limit to an IP address or to a Subnet.***
+2. Edit pg_hba.conf and add a new line
+   NOTE: **_For Security reasons you should never use 0.0.0.0/0, limit to an IP address or to a Subnet._**
+
 ```
 # TYPE  DATABASE    USER    ADDRESS       METHOD
 host    all         all     0.0.0.0/0     md5
 ```
 
 3. Open firewall port
+
 ```
 sudo ufw allow 5432/tcp
 ```
+
 4. Restart Postgresql Service
+
 ```
 sudo system restart postgresql-13
 ```
 
 # Install pgAdmin4 postgresql tool on client machine
+
 ## Update Ubuntu repositories
+
 ```
 $ curl https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo apt-key add
 $ sudo sh -c 'echo "deb https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$(lsb_release -cs) pgadmin4 main" > /etc/apt/sources.list.d/pgadmin4.list && apt update'
 ```
+
 ## Install pgAdmin4
+
 ```
 sudo apt install pgadmin4
 ```
 
 ## Start pgAdmin4
+
 1. create a connection to your server, provide a master password
-2. connect to your server with the role created previously 
+2. connect to your server with the role created previously
 
-``username: zano``
+`username: zano`
 
-``password: 123456``
+`password: 123456`
 
 3. Right click `Database` and select create Database
 4. From the toolbar select `query tool`
@@ -139,14 +153,19 @@ sudo apt install pgadmin4
 6. Run the query to create the `db` schema and tables necessary to run block_explorer
 
 # Nginx Setup
-## Instal nginx and certbot 
+
+## Instal nginx and certbot
+
 ```
 sudo apt update && sudo apt install nginx certbot
 ```
+
 2. Start Nginx
+
 ```
 sudo system nginx start
 ```
+
 ## Create site configuration
 
 ```
@@ -155,14 +174,38 @@ sudo nano /etc/nginx/sites-available/zano.smartcoinpool.net
 
 ```
 server {
-    root /home/ubuntu/public_html;
+    server_name zano.smartcoinpool.net;
 
-    location /application1 {  }
+    # Set files location
+    root /var/www/block-explorer/dist/;
+    index index.html;
 
-    location /images {		
-        root /home/ubuntu/data;	
+    location ~ ^/(.*) {
+        proxy_pass http://127.0.0.1:8008/$1$is_args$args;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
-} 
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/zano.smartcoinpool.net/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/zano.smartcoinpool.net/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+server {
+    if ($host = zano.smartcoinpool.net) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    server_name zano.smartcoinpool.net;
+    return 404; # managed by Certbot
+
+
+}
 ```
-
-

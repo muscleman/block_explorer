@@ -8,6 +8,7 @@ import {
 import * as moment from 'moment'
 
 import BigNumber from 'bignumber.js'
+import { environment } from 'environments/environment'
 
 // array reverse
 @Pipe({
@@ -89,24 +90,15 @@ export class BitNumberPipe implements PipeTransform {
     pure: false
 })
 export class MoneyParsePipe implements PipeTransform {
-    transform(value: any, args?: any): any {
+    transform(
+        value: any,
+        decimalPlaces: number = environment.decimalPlaces,
+        atomicUnits: number = 12
+    ) {
         if (!!value) {
-            let maxFraction = 12
-            if (args) {
-                maxFraction = parseInt(args, 10)
-            }
-            const power = Math.pow(10, maxFraction)
-            let str = new BigNumber(value).div(power).toFixed(maxFraction)
-
-            for (let i = str.length - 1; i >= 0; i--) {
-                if (str[i] !== '0') {
-                    str = str.substr(0, i + 1)
-                    break
-                }
-            }
-            if (str[str.length - 1] === '.') {
-                str = str.substr(0, str.length - 1)
-            }
+            value = value.toString().replace(/[^0-9]/g, '')
+            const power = Math.pow(10, atomicUnits)
+            let str = new BigNumber(value).div(power).toFixed(decimalPlaces)
             return str
         }
         return '0'

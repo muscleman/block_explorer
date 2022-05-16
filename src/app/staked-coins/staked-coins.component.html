@@ -5,8 +5,10 @@
     <div class="details">
         <div class="amount">{{ amount | moneyParse | bitNumber }} ZANO</div>
         <div class="distribution">
-            <span class="supply_percentage">{{ percentage }}%</span> from total
-            supply</div
+            <span class="supply_percentage"
+                >{{ percentage | moneyParse | bitNumber }}%</span
+            >
+            from total supply</div
         >
     </div>
 </div>

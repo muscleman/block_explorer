@@ -1,5 +1,6 @@
 export const environment = {
     production: true,
     backend: 'https://zano.smartcoinpool.net',
-    documentionApi: 'https://docs.zano.org'
+    documentionApi: 'https://docs.zano.org',
+    decimalPlaces: 2
 }

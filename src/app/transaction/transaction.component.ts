@@ -3,8 +3,9 @@ import { HttpService, MobileNavState } from '../services/http.service'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
 import { take } from 'rxjs/operators'
-import { Store } from '@ngxs/store'
-import { DaemonInfos } from '../actions/get-info.actions'
+import { Select, Store } from '@ngxs/store'
+import { Observable } from 'rxjs'
+import { InfoState } from 'app/states/info-state'
 
 @Component({
     selector: 'app-transaction',
@@ -50,6 +51,8 @@ export class TransactionComponent
     searchIsOpen: boolean = false
     ImageMultisig: number
 
+    @Select(InfoState.selectDaemonInfo) getInfo$: Observable<Response[]>
+
     constructor(
         private route: ActivatedRoute,
         private httpService: HttpService,
@@ -87,6 +90,9 @@ export class TransactionComponent
         this.navBlockchainMobile.classList.add('active')
         this.getInfoPrepare(this.route.snapshot.data['MainInfo'])
         this._track(
+            this.getInfo$.subscribe((data) => {
+                this.getInfoPrepare(data[0])
+            }),
             this.route.params.subscribe((params) => {
                 this.tx_hash = params['tx_hash']
                 this._track(
@@ -131,15 +137,19 @@ export class TransactionComponent
                                 // Outputs
                                 this.Outputs = JSON.parse(this.Transaction.outs)
                                 if (this.Transaction.attachments) {
-                                    this.attachments = JSON.parse(
+                                    let attachments = JSON.parse(
                                         this.Transaction.attachments
                                     )
+                                    if (
+                                        !!attachments &&
+                                        Array.isArray(attachments)
+                                    )
+                                        this.attachments = attachments
                                 }
                             } else if (this.keeperBlock === -1) {
                                 // transaction unconfirmed
                                 this.unconfirmed = true
                                 this.confirmations = 0
-
                                 this.ExtraItem = this.Transaction.extra
                                 this.Inputs = this.Transaction.ins
                                 this.Outputs = this.Transaction.outs
@@ -155,12 +165,6 @@ export class TransactionComponent
                     })
                 )
             }),
-            this.store.dispatch(new DaemonInfos.Get()).subscribe((data) => {
-                this.getInfoPrepare(data)
-            }),
-            // this.httpService.subscribeInfo().subscribe((data) => {
-            //     this.getInfoPrepare(data)
-            // }),
             this.mobileNavState.change.subscribe((navIsOpen) => {
                 this.navIsOpen = navIsOpen
             })
