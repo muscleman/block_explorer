@@ -254,8 +254,13 @@
     overflow: hidden;
     height: 70px;
     margin-bottom: 25px;
-    // background-color: purple;
+    column-gap: 24px;
+    font-weight: 300;
     @include max991 {
         flex-direction: column;
+        height: 110px;
+        font-size: 14px;
+        text-transform: uppercase;
+        font-weight: 500;
     }
 }
