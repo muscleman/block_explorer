@@ -10,7 +10,6 @@ const axios = require('axios')
 const BigNumber = require('bignumber.js')
 const exceptionHandler = require('./exceptionHandler')
 
-
 let config = fs.readFileSync('config.json', 'utf8')
 config = JSON.parse(config)
 const api = config.api + '/json_rpc'
@@ -200,7 +199,7 @@ const get_mining_history = (howManyDays = 7) => {
         url: wallet,
         data: {
             method: 'get_mining_history',
-            params: {"v": timestamp}
+            params: { v: timestamp }
         },
         transformResponse: [(data) => JSON.parse(data)]
     })
@@ -412,35 +411,35 @@ app.get(
             if (chart === 'all') {
                 //convert me into a sp or view[sqllite3] please!!
                 let arrayAll = await db.query(
-                    `SELECT actual_timestamp::real as at, block_cumulative_size::real as bcs, tr_count::real as trc, difficulty::real as d, type::integer as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at, d;`
+                    `SELECT actual_timestamp::bigint as at, block_cumulative_size::real as bcs, tr_count::real  as trc, difficulty::real as d, type as t FROM charts WHERE actual_timestamp > ${period} ORDER BY at;`
                 )
                 let rows0 = await db.query(
-                    `SELECT extract(epoch from date_trunc('day', to_timestamp(actual_timestamp)))::integer as at, SUM(tr_count)::integer as sum_trc FROM charts GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from date_trunc('day', to_timestamp(actual_timestamp))) as at, SUM(tr_count)::real as sum_trc FROM charts GROUP BY at ORDER BY at;`
                 )
                 let rows1 = await db.query(
-                    `SELECT actual_timestamp as at, difficulty120 as d120, hashrate100 as h100, hashrate400 as h400 FROM charts WHERE type=1 AND actual_timestamp > ${period2} ORDER BY at;`
+                    `SELECT actual_timestamp as at, difficulty120::real as d120, hashrate100::real as h100, hashrate400::real as h400 FROM charts WHERE type=1 AND actual_timestamp > ${period2} ORDER BY at;`
                 )
                 arrayAll.rows[0] = rows0.rows
                 arrayAll.rows[1] = rows1.rows
                 res.json(arrayAll.rows)
             } else if (chart === 'AvgBlockSize') {
                 result = await db.query(
-                    `SELECT extract(epoch from date_trunc('hour', to_timestamp(actual_timestamp)))::integer as at, avg(block_cumulative_size)::real as bcs FROM charts GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from date_trunc('hour', to_timestamp(actual_timestamp))) as at, avg(block_cumulative_size)::real as bcs FROM charts GROUP BY at ORDER BY at;`
                 )
                 res.json(result && result.rowCount > 0 ? result.rows : [])
             } else if (chart === 'AvgTransPerBlock') {
                 result = await db.query(
-                    `SELECT extract(epoch from date_trunc('hour', to_timestamp(actual_timestamp)))::integer as at, avg(tr_count)::real as trc FROM charts GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from date_trunc('hour', to_timestamp(actual_timestamp))) as at, avg(tr_count)::real as trc FROM charts GROUP BY at ORDER BY at;`
                 )
                 res.json(result && result.rowCount > 0 ? result.rows : [])
             } else if (chart === 'hashRate') {
                 result = await db.query(
-                    `SELECT extract(epoch from date_trunc('hour', to_timestamp(actual_timestamp)))::integer as at, avg(difficulty120)::real as d120, avg(hashrate100)::real as h100, avg(hashrate400)::real as h400 FROM charts WHERE type=1 GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from date_trunc('hour', to_timestamp(actual_timestamp))) as at, avg(difficulty120) as d120, avg(hashrate100) as h100, avg(hashrate400) as h400 FROM charts WHERE type=1 GROUP BY at ORDER BY at;`
                 )
                 res.json(result && result.rowCount > 0 ? result.rows : [])
             } else if (chart === 'pos-difficulty') {
                 let result = await db.query(
-                    `SELECT extract(epoch from date_trunc('hour', to_timestamp(actual_timestamp)))::integer as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty)::real else min(difficulty)::real end as d FROM charts WHERE type=0 GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from date_trunc('hour', to_timestamp(actual_timestamp))) as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty) else min(difficulty) end as d FROM charts WHERE type=0 GROUP BY at ORDER BY at;`
                 )
                 let result1 = await db.query(
                     'SELECT actual_timestamp as at, difficulty as d FROM charts WHERE type=0 ORDER BY at;'
@@ -451,7 +450,7 @@ app.get(
                 })
             } else if (chart === 'pow-difficulty') {
                 let result = await db.query(
-                    `SELECT extract(epoch from date_trunc('hour', to_timestamp(actual_timestamp)))::integer as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty)::real else min(difficulty)::real end as d FROM charts WHERE type=1 GROUP BY at ORDER BY at;`
+                    `SELECT extract(epoch from date_trunc('hour', to_timestamp(actual_timestamp))) as at, case when (max(difficulty)-avg(difficulty))>(avg(difficulty)-min(difficulty)) then max(difficulty) else min(difficulty) end as d FROM charts WHERE type=1 GROUP BY at ORDER BY at;`
                 )
                 let result1 = await db.query(
                     'SELECT actual_timestamp as at, difficulty as d FROM charts WHERE type=1 ORDER BY at;'
@@ -670,9 +669,11 @@ const decodeString = (str) => {
     if (!!str) {
         str = str.replace(/'/g, "''")
         return str.replace(/\u0000/g, '', (unicode) => {
-                return String.fromCharCode(parseInt(unicode.replace(/\\u/g, ""), 16));
-            });
-        }
+            return String.fromCharCode(
+                parseInt(unicode.replace(/\\u/g, ''), 16)
+            )
+        })
+    }
     return str
     // str = str.replace("'", "''")
     // if (/str/.unicode)
@@ -716,28 +717,34 @@ const syncTransactions = async () => {
                                 await db.query(
                                     `UPDATE aliases SET enabled=0 WHERE alias = '${aliasName}';`
                                 )
-                                let sql = ""
+                                let sql = ''
                                 try {
                                     sql =
-                                    `INSERT INTO aliases VALUES ('${decodeString(aliasName)}',` +
-                                    `'${aliasAddress}',` +
-                                    `'${decodeString(aliasComment)}',` +
-                                    `'${decodeString(aliasTrackingKey)}',` +
-                                    `${aliasBlock},` +
-                                    `'${aliasTransaction}',` +
-                                    `${1}` +
-                                    `) ON CONFLICT (address) ` +
-                                    `DO UPDATE SET ` +
-                                    `alias='${decodeString(aliasName)}',` +
-                                    `address='${aliasAddress}',` +
-                                    `comment='${decodeString(aliasComment)}',` +
-                                    `tracking_key='${decodeString(aliasTrackingKey)}',` +
-                                    `block='${aliasBlock}',` +
-                                    `transact='${aliasTransaction}',` +
-                                    `enabled=${1};`
-                                await db.query(sql)
+                                        `INSERT INTO aliases VALUES ('${decodeString(
+                                            aliasName
+                                        )}',` +
+                                        `'${aliasAddress}',` +
+                                        `'${decodeString(aliasComment)}',` +
+                                        `'${decodeString(aliasTrackingKey)}',` +
+                                        `${aliasBlock},` +
+                                        `'${aliasTransaction}',` +
+                                        `${1}` +
+                                        `) ON CONFLICT (address) ` +
+                                        `DO UPDATE SET ` +
+                                        `alias='${decodeString(aliasName)}',` +
+                                        `address='${aliasAddress}',` +
+                                        `comment='${decodeString(
+                                            aliasComment
+                                        )}',` +
+                                        `tracking_key='${decodeString(
+                                            aliasTrackingKey
+                                        )}',` +
+                                        `block='${aliasBlock}',` +
+                                        `transact='${aliasTransaction}',` +
+                                        `enabled=${1};`
+                                    await db.query(sql)
                                 } catch (error) {
-                                 console.log(error, sql)   
+                                    console.log(error, sql)
                                 }
                             }
                         }
@@ -756,17 +763,25 @@ const syncTransactions = async () => {
                                 `'${tx_info.id}',` +
                                 `'${tx_info.amount.toString()}',` +
                                 `${tx_info.blob_size},` +
-                                `'${decodeString(JSON.stringify(tx_info.extra))}',` +
+                                `'${decodeString(
+                                    JSON.stringify(tx_info.extra)
+                                )}',` +
                                 `${tx_info.fee},` +
-                                `'${decodeString(JSON.stringify(tx_info.ins))}',` +
-                                `'${decodeString(JSON.stringify(tx_info.outs))}',` +
+                                `'${decodeString(
+                                    JSON.stringify(tx_info.ins)
+                                )}',` +
+                                `'${decodeString(
+                                    JSON.stringify(tx_info.outs)
+                                )}',` +
                                 `'${tx_info.pub_key}',` +
                                 `${tx_info.timestamp},` +
-                                `'${decodeString(JSON.stringify(
-                                    !!tx_info.attachments
-                                        ? tx_info.attachments
-                                        : {}
-                                ))}')`
+                                `'${decodeString(
+                                    JSON.stringify(
+                                        !!tx_info.attachments
+                                            ? tx_info.attachments
+                                            : {}
+                                    )
+                                )}')`
                         )
                     }
                 } catch (error) {
@@ -827,35 +842,33 @@ const syncTransactions = async () => {
 
             //build block inserts
             {
-                if (bl.height === 45243)
-                console.log('yes')
+                if (bl.height === 45243) console.log('yes')
                 blockInserts.push(
-
-                    [bl.height, 
-                    bl.actual_timestamp,
-                    bl.base_reward,
-                    bl.blob,
-                    bl.block_cumulative_size,
-                    bl.block_tself_size,
-                    bl.cumulative_diff_adjusted,
-                    bl.cumulative_diff_precise,
-                    bl.difficulty,
-                    bl.effective_fee_median,
-                    bl.id,
-                    bl.is_orphan,
-                    bl.penalty,
-                    bl.prev_id,
-                    bl.summary_reward,
-                    bl.this_block_fee_median,
-                    bl.timestamp,
-                    bl.total_fee,
-                    bl.total_txs_size,
-                    bl.tr_count ? bl.tr_count : 0,
-                    bl.type,
-                    decodeString(bl.miner_text_info), 
-                    bl.pow_seed]
-
-
+                    [
+                        bl.height,
+                        bl.actual_timestamp,
+                        bl.base_reward,
+                        bl.blob,
+                        bl.block_cumulative_size,
+                        bl.block_tself_size,
+                        bl.cumulative_diff_adjusted,
+                        bl.cumulative_diff_precise,
+                        bl.difficulty,
+                        bl.effective_fee_median,
+                        bl.id,
+                        bl.is_orphan,
+                        bl.penalty,
+                        bl.prev_id,
+                        bl.summary_reward,
+                        bl.this_block_fee_median,
+                        bl.timestamp,
+                        bl.total_fee,
+                        bl.total_txs_size,
+                        bl.tr_count ? bl.tr_count : 0,
+                        bl.type,
+                        decodeString(bl.miner_text_info),
+                        bl.pow_seed
+                    ]
 
                     // `(${bl.height},` +
                     //     `${bl.actual_timestamp},` +
@@ -878,7 +891,7 @@ const syncTransactions = async () => {
                     //     `${bl.total_txs_size},` +
                     //     `${bl.tr_count ? bl.tr_count : 0},` +
                     //     `${bl.type},` +
-                    //     //`'',` + 
+                    //     //`'',` +
                     //     "'" + bl.miner_text_info.toString().replace("'","''") + "'," +
                     //     `'${bl.pow_seed}')`
                 )
@@ -920,10 +933,9 @@ const syncTransactions = async () => {
         {
             let sql = ''
             let i = null
-                if (blockInserts.length > 0) {
-                    for (const item of blockInserts) {
-                        
-                        sql =
+            if (blockInserts.length > 0) {
+                for (const item of blockInserts) {
+                    sql =
                         'INSERT INTO blocks (height,' +
                         'actual_timestamp,' +
                         'base_reward,' +
@@ -947,44 +959,43 @@ const syncTransactions = async () => {
                         'type,' +
                         'miner_text_info,' +
                         'pow_seed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23);'
-                        // item.split(',') +
-                        // ';'
-                        try {
-                            await db.query(sql, item)
-                        }
-                        catch (error) {
-                            fs.appendFile('log.json', item + "\r\n", (err) => {})
-                            console.log(i, error)
-                        }
+                    // item.split(',') +
+                    // ';'
+                    try {
+                        await db.query(sql, item)
+                    } catch (error) {
+                        fs.appendFile('log.json', item + '\r\n', (err) => {})
+                        console.log(i, error)
                     }
-                    // sql =
-                    //     'INSERT INTO blocks (height,' +
-                    //     'actual_timestamp,' +
-                    //     'base_reward,' +
-                    //     'blob,' +
-                    //     'block_cumulative_size,' +
-                    //     'block_tself_size,' +
-                    //     'cumulative_diff_adjusted,' +
-                    //     'cumulative_diff_precise,' +
-                    //     'difficulty,' +
-                    //     'effective_fee_median,' +
-                    //     'id,' +
-                    //     'is_orphan,' +
-                    //     'penalty,' +
-                    //     'prev_id,' +
-                    //     'summary_reward,' +
-                    //     'this_block_fee_median,' +
-                    //     'timestamp,' +
-                    //     'total_fee,' +
-                    //     'total_txs_size,' +
-                    //     'tr_count,' +
-                    //     'type,' +
-                    //     'miner_text_info,' +
-                    //     'pow_seed) VALUES ' +
-                    //     blockInserts.join(',') +
-                    //     ';'
-                    // await db.query(sql)
                 }
+                // sql =
+                //     'INSERT INTO blocks (height,' +
+                //     'actual_timestamp,' +
+                //     'base_reward,' +
+                //     'blob,' +
+                //     'block_cumulative_size,' +
+                //     'block_tself_size,' +
+                //     'cumulative_diff_adjusted,' +
+                //     'cumulative_diff_precise,' +
+                //     'difficulty,' +
+                //     'effective_fee_median,' +
+                //     'id,' +
+                //     'is_orphan,' +
+                //     'penalty,' +
+                //     'prev_id,' +
+                //     'summary_reward,' +
+                //     'this_block_fee_median,' +
+                //     'timestamp,' +
+                //     'total_fee,' +
+                //     'total_txs_size,' +
+                //     'tr_count,' +
+                //     'type,' +
+                //     'miner_text_info,' +
+                //     'pow_seed) VALUES ' +
+                //     blockInserts.join(',') +
+                //     ';'
+                // await db.query(sql)
+            }
         }
         try {
             await db.query('commit')
@@ -1088,7 +1099,9 @@ const syncAltBlocks = async () => {
                 `${block.effective_fee_median},` +
                 `${block.total_txs_size},` +
                 `'${JSON.stringify(block.transactions_details)}',` +
-                `'${block.miner_text_info.replace("\u0000", "").replace("'","''")}',` +
+                `'${block.miner_text_info
+                    .replace('\u0000', '')
+                    .replace("'", "''")}',` +
                 `''` +
                 `);`
             await db.query(sql)
@@ -1113,44 +1126,52 @@ const getVisibilityInfo = async () => {
         unlocked_balance: 0
     }
     try {
-            const [res1, res2, res3] = await axios.all([getbalance(), get_mining_history(), get_mining_history(1)])
-            result.balance = res1.data.result.balance
-            result.unlocked_balance = res1.data.result.unlocked_balance
+        const [res1, res2, res3] = await axios.all([
+            getbalance(),
+            get_mining_history(),
+            get_mining_history(1)
+        ])
+        result.balance = res1.data.result.balance
+        result.unlocked_balance = res1.data.result.unlocked_balance
 
-            let stakedCoinsLast7Days = new BigNumber(0)
-            let stakedCoins24hrs = new BigNumber(0)
-            if ('mined_entries' in res2.data.result) {
-                for (const item of res2.data.result.mined_entries)
-                {
-                    stakedCoinsLast7Days = stakedCoinsLast7Days.plus(item.a)
-                }
+        let stakedCoinsLast7Days = new BigNumber(0)
+        let stakedCoins24hrs = new BigNumber(0)
+        if ('mined_entries' in res2.data.result) {
+            for (const item of res2.data.result.mined_entries) {
+                stakedCoinsLast7Days = stakedCoinsLast7Days.plus(item.a)
             }
-            if ('mined_entries' in res3.data.result) {
-                for (const item of res3.data.result.mined_entries)
-                {
-                    stakedCoins24hrs = stakedCoins24hrs.plus(item.a)
-                }
-            }
-
-            result.amount = stakedCoinsLast7Days.toNumber()
-            // console.log('wallet balance ', result.balance)
-            // console.log('staked coins 24hrs ', stakedCoins24hrs)
-            // console.log('staked coins 7 days ', stakedCoinsLast7Days)
-            // console.log('result ', new BigNumber(result.balance).multipliedBy(stakedCoins24hrs.dividedBy(stakedCoinsLast7Days)))
-
-            result.percentage = (stakedCoins24hrs.isEqualTo(0) && stakedCoinsLast7Days.isEqualTo(0)) ? 0 : new BigNumber(result.balance).multipliedBy(stakedCoins24hrs.dividedBy(stakedCoinsLast7Days)).toNumber()
-            
-        } catch (error) {
-            log('getVisibilityInfo() ERROR', error)
         }
-        return JSON.stringify(result)
+        if ('mined_entries' in res3.data.result) {
+            for (const item of res3.data.result.mined_entries) {
+                stakedCoins24hrs = stakedCoins24hrs.plus(item.a)
+            }
+        }
+
+        result.amount = stakedCoinsLast7Days.toNumber()
+        // console.log('wallet balance ', result.balance)
+        // console.log('staked coins 24hrs ', stakedCoins24hrs)
+        // console.log('staked coins 7 days ', stakedCoinsLast7Days)
+        // console.log('result ', new BigNumber(result.balance).multipliedBy(stakedCoins24hrs.dividedBy(stakedCoinsLast7Days)))
+
+        result.percentage =
+            stakedCoins24hrs.isEqualTo(0) && stakedCoinsLast7Days.isEqualTo(0)
+                ? 0
+                : new BigNumber(result.balance)
+                      .multipliedBy(
+                          stakedCoins24hrs.dividedBy(stakedCoinsLast7Days)
+                      )
+                      .toNumber()
+    } catch (error) {
+        log('getVisibilityInfo() ERROR', error)
+    }
+    return JSON.stringify(result)
 }
 
 const emitSocketInfo = async () => {
     if (enabled_during_sync) {
-    blockInfo.lastBlock = lastBlock.height
-    io.emit('get_info', JSON.stringify(blockInfo))
-    io.emit('get_visibility_info', await getVisibilityInfo())
+        blockInfo.lastBlock = lastBlock.height
+        io.emit('get_info', JSON.stringify(blockInfo))
+        io.emit('get_visibility_info', await getVisibilityInfo())
     }
 }
 
