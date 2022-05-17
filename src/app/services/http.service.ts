@@ -83,7 +83,6 @@ export class HttpService {
 
     public getChart(chart: any, period: string): Observable<any> {
         const URL = `${this.serverApi}/get_chart/${chart}/${period}`
-        console.log(URL)
         return this.httpClient.get<any>(URL)
     }
 }

@@ -842,7 +842,6 @@ const syncTransactions = async () => {
 
             //build block inserts
             {
-                if (bl.height === 45243) console.log('yes')
                 blockInserts.push(
                     [
                         bl.height,

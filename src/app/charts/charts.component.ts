@@ -215,7 +215,6 @@ export class ChartsComponent
                             ])
                         }
                     }
-                    console.log(previewDifficultyPoW)
 
                     // hashRate
                     for (let i = 0; i < this.ArrayHashrate.length; i++) {
