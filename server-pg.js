@@ -250,11 +250,18 @@ app.get(
             }
             let result = await db.query(query)
             if (result && result.rowCount > 0) {
-                let result2 = await db.query(
-                    `SELECT * FROM transactions WHERE keeper_block = ${result.rows[0].height};`
+                let row = result.rows[0]
+                let rows = await db.query(
+                    `SELECT * FROM transactions WHERE keeper_block = ${row.height};`
                 )
-                result.rows[0].transactions_details = result2.rows
-                res.json(result.rows[0])
+                for (let i = 0; i < rows.length; i++) {
+                    rows[i].extra = JSON.parse(rows[i].extra)
+                    rows[i].ins = JSON.parse(rows[i].ins)
+                    rows[i].outs = JSON.parse(rows[i].outs)
+                    rows[i].attachments = JSON.parse(rows[i].attachments)
+                }
+                row.transactions_details = rows
+                res.json(row)
             } else {
                 res.send('block not found')
             }
