@@ -1,8 +1,11 @@
 @import '../../assets/styles/base/mixins';
 .transaction_details {
     margin-bottom: 25px;
+    color: #fff;
+    font-size: 13px;
     table {
         tr {
+            height: 38px;
             &:nth-child(2n + 1) {
                 background-color: rgba(#263163, 1);
             }
@@ -46,6 +49,10 @@
                         }
                     }
                 }
+            }
+            td {
+                padding: 12px 20px;
+                white-space: nowrap;
             }
         }
     }

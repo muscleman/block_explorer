@@ -50,12 +50,15 @@
 .wrapper_table_block_details {
     display: flex;
     justify-content: space-between;
+    color: #fff;
+    font-size: 13px;
     @include max761 {
         flex-direction: column;
     }
     table {
         width: 50%;
         table-layout: fixed;
+
         @include max761 {
             width: 100%;
         }
@@ -84,6 +87,7 @@
             }
             td {
                 white-space: nowrap;
+                padding: 12px 20px;
             }
             &.tr_empty {
                 @include max761 {

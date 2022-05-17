@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS  blocks (
         total_fee numeric(100,0),
         total_txs_size numeric(100,0),
         tr_count bigint,
-        type bigint,
+        type integer,
         miner_text_info text,
         pow_seed text
 );
