@@ -5,9 +5,10 @@ import { VisibilityInfos } from '../actions/get-visibility-info.actions'
 import { HttpService } from '../services/http.service'
 import { tap } from 'rxjs'
 import { VisibilityInfo } from '../models/visibility-info'
+import { GetInfo } from 'app/models/get-info'
 
 export class InfoModel {
-    GetInfos: any[]
+    GetInfos: GetInfo[]
     VisibilityInfos: VisibilityInfo[]
 }
 

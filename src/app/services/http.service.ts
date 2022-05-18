@@ -8,6 +8,8 @@ import {
 import { Observable } from 'rxjs'
 import { environment } from '../../environments/environment'
 import { VisibilityInfo } from '../models/visibility-info'
+import { GetInfo } from 'app/models/get-info'
+import { Transaction_Pool } from 'app/models/transaction_pool'
 
 @Injectable()
 export class HttpService {
@@ -15,9 +17,9 @@ export class HttpService {
 
     constructor(protected httpClient: HttpClient) {}
 
-    getInfo(): Observable<Response> {
+    getInfo(): Observable<GetInfo> {
         const URL = `${this.serverApi}/get_info`
-        return this.httpClient.get<Response>(URL)
+        return this.httpClient.get<GetInfo>(URL)
     }
 
     getVisibilityInfo(): Observable<VisibilityInfo> {
@@ -36,9 +38,9 @@ export class HttpService {
         return this.httpClient.get(URL)
     }
 
-    public getTxPoolDetails(limit: number): Observable<any> {
+    public getTxPoolDetails(limit: number): Observable<Transaction_Pool[]> {
         const URL = `${this.serverApi}/get_tx_pool_details/${limit}`
-        return this.httpClient.get(URL)
+        return this.httpClient.get<Transaction_Pool[]>(URL)
     }
 
     // Alt-blocks Page
