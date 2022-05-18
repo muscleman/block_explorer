@@ -3,7 +3,7 @@ import { Socket } from 'ngx-socket-io'
 import { Store } from '@ngxs/store'
 import { DaemonInfos } from 'app/actions/get-info.actions'
 import { VisibilityInfos } from 'app/actions/get-visibility-info.actions'
-import { TransactionPoolInfos } from 'app/actions/get-transaction-pool-info.actions copy'
+import { TransactionPoolInfos } from 'app/actions/get-transaction-pool-info.actions'
 
 @Injectable({
     providedIn: 'root'

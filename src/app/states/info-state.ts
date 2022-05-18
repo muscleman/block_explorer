@@ -7,7 +7,7 @@ import { tap } from 'rxjs'
 import { VisibilityInfo } from '../models/visibility-info'
 import { GetInfo } from 'app/models/get-info'
 import { Transaction_Pool } from 'app/models/transaction_pool'
-import { TransactionPoolInfos } from 'app/actions/get-transaction-pool-info.actions copy'
+import { TransactionPoolInfos } from 'app/actions/get-transaction-pool-info.actions'
 
 export class InfoModel {
     GetInfos: GetInfo[]
