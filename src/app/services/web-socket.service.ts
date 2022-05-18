@@ -3,6 +3,7 @@ import { Socket } from 'ngx-socket-io'
 import { Store } from '@ngxs/store'
 import { DaemonInfos } from 'app/actions/get-info.actions'
 import { VisibilityInfos } from 'app/actions/get-visibility-info.actions'
+import { TransactionPoolInfos } from 'app/actions/get-transaction-pool-info.actions copy'
 
 @Injectable({
     providedIn: 'root'
@@ -16,6 +17,9 @@ export class WebSocketService {
         })
         this.socket.on('get_visibility_info', (data) => {
             this.store.dispatch(new VisibilityInfos.Add(JSON.parse(data)))
+        })
+        this.socket.on('get_transaction_pool_info', (data) => {
+            this.store.dispatch(new TransactionPoolInfos.Add(JSON.parse(data)))
         })
     }
 }

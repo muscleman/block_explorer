@@ -6,17 +6,21 @@ import { HttpService } from '../services/http.service'
 import { tap } from 'rxjs'
 import { VisibilityInfo } from '../models/visibility-info'
 import { GetInfo } from 'app/models/get-info'
+import { Transaction_Pool } from 'app/models/transaction_pool'
+import { TransactionPoolInfos } from 'app/actions/get-transaction-pool-info.actions copy'
 
 export class InfoModel {
     GetInfos: GetInfo[]
     VisibilityInfos: VisibilityInfo[]
+    TransactionPoolInfos: Transaction_Pool[]
 }
 
 @State<InfoModel>({
     name: 'appstate',
     defaults: {
         GetInfos: [],
-        VisibilityInfos: []
+        VisibilityInfos: [],
+        TransactionPoolInfos: []
     }
 })
 @Injectable()
@@ -31,6 +35,11 @@ export class InfoState {
     @Selector()
     static selectVisibilityInfo(state: InfoModel) {
         return state.VisibilityInfos
+    }
+
+    @Selector()
+    static selectTransactionPoolInfo(state: InfoModel) {
+        return state.TransactionPoolInfos
     }
 
     @Action(DaemonInfos.Get)
@@ -75,5 +84,28 @@ export class InfoState {
         const state = ctx.getState()
 
         ctx.setState({ ...state, VisibilityInfos: [payload] })
+    }
+
+    @Action(TransactionPoolInfos.Get)
+    getTransactionPoolDataFromState(ctx: StateContext<InfoModel>, { limit }: TransactionPoolInfos.Get) {
+        return this.httpService.getTxPoolDetails(limit).pipe(
+            tap((returnData) => {
+                const state = ctx.getState()
+                ctx.setState({
+                    ...state,
+                    TransactionPoolInfos: returnData
+                })
+            })
+        )
+    }
+
+    @Action(TransactionPoolInfos.Add)
+    addTransactionPoolDataToState(
+        ctx: StateContext<InfoModel>,
+        { payload }: TransactionPoolInfos.Add
+    ) {
+        const state = ctx.getState()
+
+        ctx.setState({ ...state, TransactionPoolInfos: [payload] })
     }
 }

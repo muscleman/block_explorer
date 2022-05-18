@@ -6,6 +6,7 @@ import { SubscriptionTracker } from './subscription-tracker/subscription-tracker
 import { Store } from '@ngxs/store'
 import { DaemonInfos } from './actions/get-info.actions'
 import { VisibilityInfos } from './actions/get-visibility-info.actions'
+import { TransactionPoolInfos } from './actions/get-transaction-pool-info.actions copy'
 
 @Component({
     selector: 'app-root',
@@ -28,6 +29,7 @@ export class AppComponent
         super()
         this.store.dispatch(new DaemonInfos.Get())
         this.store.dispatch(new VisibilityInfos.Get())
+        this.store.dispatch(new TransactionPoolInfos.Get(5))
         this.webSocketService.init()
         this.navIsOpen = true
         this.router.events.subscribe((event: Event) => {
