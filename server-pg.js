@@ -603,8 +603,8 @@ const syncPool = async () => {
                                         txInserts.join(',')
                                     await db.query(sql)
                                     await db.query('COMMIT')
-                                    io.emit('get_transaction_pool_info', await getTxPoolDetails(5))
                                 }
+                                io.emit('get_transaction_pool_info', await getTxPoolDetails(5))
                                 statusSyncPool = false
                             } else {
                                 statusSyncPool = false
