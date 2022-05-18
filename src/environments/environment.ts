@@ -7,5 +7,6 @@ export const environment = {
     production: false,
     backend: 'https://zano.smartcoinpool.net',
     documentionApi: 'https://docs.zano.org',
-    decimalPlaces: 2
+    decimalPlaces: 2,
+    transactionPoolLimit: 5
 }

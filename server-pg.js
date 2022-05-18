@@ -268,12 +268,7 @@ app.get(
     exceptionHandler(async (req, res, next) => {
         let count = req.params.count
         if (count !== undefined) {
-            const query = {
-                text: 'SELECT * FROM pool ORDER BY timestamp DESC limit $1;',
-                values: [count]
-            }
-            let result = await db.query(query)
-            res.json(result && result.rowCount > 0 ? result.rows : [])
+            res.json(await getTxPoolDetails(count))
         } else {
             res.send("Error. Need 'count' params")
         }
@@ -608,6 +603,7 @@ const syncPool = async () => {
                                         txInserts.join(',')
                                     await db.query(sql)
                                     await db.query('COMMIT')
+                                    io.emit('get_transaction_pool_info', await getTxPoolDetails(5))
                                 }
                                 statusSyncPool = false
                             } else {
@@ -1118,6 +1114,14 @@ const syncAltBlocks = async () => {
     statusSyncAltBlocks = false
 }
 
+const getTxPoolDetails = async (count) => {
+    const query = {
+        text: 'SELECT * FROM pool ORDER BY timestamp DESC limit $1;',
+        values: [count]
+    }
+    let result = await db.query(query)
+    return result && result.rowCount > 0 ? result.rows : []
+}
 const getVisibilityInfo = async () => {
     let result = {
         amount: 0,

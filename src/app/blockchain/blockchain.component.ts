@@ -7,6 +7,9 @@ import { CookieService } from 'ngx-cookie-service'
 import { Select } from '@ngxs/store'
 import { InfoState } from '../states/info-state'
 import { Observable } from 'rxjs'
+import { environment } from 'environments/environment'
+import { GetInfo } from 'app/models/get-info'
+import { Transaction_Pool } from 'app/models/transaction_pool'
 
 @Component({
     selector: 'app-blockchain',
@@ -37,7 +40,6 @@ export class BlockchainComponent
     maxViewedPoolTimestamp: number
     poolsOn: boolean
     poolLimit: number
-    setPoolLimit: number
     setBlockValid: boolean
     listBlockStart: number
     maxCountBlock: number
@@ -50,7 +52,8 @@ export class BlockchainComponent
     navIsOpen: boolean
     searchIsOpen: boolean = false
 
-    @Select(InfoState.selectDaemonInfo) getInfo$: Observable<Response[]>
+    @Select(InfoState.selectDaemonInfo) getInfo$: Observable<GetInfo[]>
+    @Select(InfoState.selectTransactionPoolInfo) getTransactionPoolInfo$: Observable<Transaction_Pool[]>
 
     onIsVisible($event): void {
         this.searchIsOpen = $event
@@ -76,7 +79,6 @@ export class BlockchainComponent
         this.poolsOn = true
         this.setBlockValid = true
         this.setLimit = 10
-        this.setPoolLimit = 5
         this.loader = false
         this.navIsOpen = false
     }
@@ -96,14 +98,13 @@ export class BlockchainComponent
             if (lastHeight !== this.info.height) {
                 this.onChange()
             }
-            if (lastTransaction !== this.info.tx_pool_size) {
-                this.refreshPool()
-            }
+            // if (lastTransaction !== this.info.tx_pool_size) {
+            //     this.refreshPool()
+            // }
         }
     }
 
     ngOnInit() {
-        this.poolLimit = this.setPoolLimit
         if (this.cookieService.get('OnOffButtonCookie')) {
             if (this.cookieService.get('OnOffButtonCookie') === 'true') {
                 this.poolsOn = true
@@ -115,9 +116,9 @@ export class BlockchainComponent
         } else {
             this.poolsOn = true
         }
-        if (this.poolsOn === true) {
-            this.refreshPool()
-        }
+        // if (this.poolsOn === true) {
+        //     this.refreshPool()
+        // }
         if (this.cookieService.get('setLimitCookie')) {
             this.setLimit = parseInt(
                 this.cookieService.get('setLimitCookie'),
@@ -133,41 +134,7 @@ export class BlockchainComponent
             this.getInfo$.subscribe((data) => {
                 this.getInfoPrepare(data[0])
             }),
-
-            this.mobileNavState.change.subscribe((navIsOpen) => {
-                this.navIsOpen = navIsOpen
-            })
-        )
-        this.onChange()
-    }
-
-    ngOnDestroy() {
-        super.ngOnDestroy()
-    }
-
-    onChangePoolLimit() {
-        this.poolLimit = this.setPoolLimit
-        this.refreshPool()
-    }
-
-    toggleBtn() {
-        this.poolsOn = !this.poolsOn
-        const exp = new Date()
-        exp.setMonth(exp.getMonth() + 3)
-        this.cookieService.set('OnOffButtonCookie', String(this.poolsOn), {
-            expires: exp
-        })
-        if (this.poolsOn === true) {
-            this.refreshPool()
-        }
-    }
-
-    refreshPool() {
-        this.httpService
-            .getTxPoolDetails(this.poolLimit)
-            .pipe(take(1))
-            .subscribe({
-                next: (data) => {
+            this.getTransactionPoolInfo$.subscribe((data) => {
                     this.TxPoolDetails = data
                     if (this.TxPoolDetails.length) {
                         const self = this
@@ -198,10 +165,75 @@ export class BlockchainComponent
                                 this.TxPoolDetails[0].timestamp
                         }
                     }
-                },
-                error: (err) => console.error(err)
+            }),
+            this.mobileNavState.change.subscribe((navIsOpen) => {
+                this.navIsOpen = navIsOpen
             })
+        )
+        this.onChange()
     }
+
+    ngOnDestroy() {
+        super.ngOnDestroy()
+    }
+
+    onChangePoolLimit() {
+        // this.poolLimit = this.setPoolLimit
+        // this.refreshPool()
+    }
+
+    toggleBtn() {
+        this.poolsOn = !this.poolsOn
+        const exp = new Date()
+        exp.setMonth(exp.getMonth() + 3)
+        this.cookieService.set('OnOffButtonCookie', String(this.poolsOn), {
+            expires: exp
+        })
+        // if (this.poolsOn === true) {
+        //     this.refreshPool()
+        // }
+    }
+
+    // refreshPool() {
+    //     this.httpService
+    //         .getTxPoolDetails(environment.transactionPoolLimit)
+    //         .pipe(take(1))
+    //         .subscribe({
+    //             next: (data) => {
+    //                 this.TxPoolDetails = data
+    //                 if (this.TxPoolDetails.length) {
+    //                     const self = this
+    //                     if (this.maxViewedPoolTimestamp) {
+    //                         for (const item of this.TxPoolDetails) {
+    //                             item.isNew =
+    //                                 +item.timestamp >
+    //                                 +this.maxViewedPoolTimestamp
+    //                         }
+    //                         this.ngZone.runOutsideAngular(() => {
+    //                             setTimeout(() => {
+    //                                 this.ngZone.run(() => {
+    //                                     for (const item of self.TxPoolDetails) {
+    //                                         item.isNew = false
+    //                                     }
+    //                                 })
+    //                             }, 2000)
+    //                         })
+    //                         if (
+    //                             +this.maxViewedPoolTimestamp <
+    //                             +this.TxPoolDetails[0].timestamp
+    //                         ) {
+    //                             this.maxViewedPoolTimestamp =
+    //                                 this.TxPoolDetails[0].timestamp
+    //                         }
+    //                     } else {
+    //                         this.maxViewedPoolTimestamp =
+    //                             this.TxPoolDetails[0].timestamp
+    //                     }
+    //                 }
+    //             },
+    //             error: (err) => console.error(err)
+    //         })
+    // }
 
     prevPage() {
         if (this.currentPage - 1 > 0) {
