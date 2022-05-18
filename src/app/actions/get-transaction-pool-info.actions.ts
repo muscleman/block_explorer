@@ -3,7 +3,7 @@ import { Transaction_Pool } from "app/models/transaction_pool"
 export namespace TransactionPoolInfos {
     export class Add {
         static readonly type = '[TransactionPoolInfos] Add'
-        constructor(public payload: Transaction_Pool) {}
+        constructor(public payload: Transaction_Pool[]) {}
     }
 
     export class Get {

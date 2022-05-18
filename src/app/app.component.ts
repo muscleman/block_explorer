@@ -6,7 +6,7 @@ import { SubscriptionTracker } from './subscription-tracker/subscription-tracker
 import { Store } from '@ngxs/store'
 import { DaemonInfos } from './actions/get-info.actions'
 import { VisibilityInfos } from './actions/get-visibility-info.actions'
-import { TransactionPoolInfos } from './actions/get-transaction-pool-info.actions copy'
+import { TransactionPoolInfos } from './actions/get-transaction-pool-info.actions'
 
 @Component({
     selector: 'app-root',

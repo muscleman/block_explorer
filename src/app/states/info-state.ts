@@ -106,6 +106,8 @@ export class InfoState {
     ) {
         const state = ctx.getState()
 
-        ctx.setState({ ...state, TransactionPoolInfos: [payload] })
+        console.log(payload)
+
+        ctx.setState({ ...state, TransactionPoolInfos: payload })
     }
 }
