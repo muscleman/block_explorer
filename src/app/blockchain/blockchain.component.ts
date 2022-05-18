@@ -96,6 +96,9 @@ export class BlockchainComponent
             if (lastHeight !== this.info.height) {
                 this.onChange()
             }
+            if (lastTransaction !== this.info.tx_pool_size) {
+                this.refreshPool()
+            }
         }
     }
 
