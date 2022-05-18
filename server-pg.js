@@ -595,8 +595,8 @@ const syncPool = async () => {
                                 for (let tx of response.data.result.txs) {
                                     txInserts.push(
                                         `(${tx.blob_size},` +
-                                            `${tx.fee}` +
-                                            `'${tx.id}'` +
+                                            `${tx.fee},` +
+                                            `'${tx.id}',` +
                                             `${tx.timestamp}` +
                                             ` )`
                                     )
@@ -1037,10 +1037,10 @@ const syncBlocks = async () => {
         if (localBlocks.length && lastBlock.id === localBlocks[0].prev_id) {
             block_array = localBlocks
             await syncTransactions()
-            await emitSocketInfo()
             if (lastBlock.height >= blockInfo.height - 1) {
                 now_blocks_sync = false
                 enabled_during_sync = true
+                await emitSocketInfo()
             } else {
                 await pause(serverTimeout)
                 await syncBlocks()
