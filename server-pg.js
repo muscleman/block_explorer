@@ -546,6 +546,7 @@ const syncPool = async () => {
         if (countTrPoolServer === 0) {
             await db.query('DELETE FROM pool;')
             statusSyncPool = false
+            io.emit('get_transaction_pool_info', JSON.stringify([]))
         } else {
             let response = await get_all_pool_tx_list()
             if (response.data.result.ids) {
@@ -608,6 +609,7 @@ const syncPool = async () => {
                             } else {
                                 statusSyncPool = false
                             }
+                            io.emit('get_transaction_pool_info', JSON.stringify(await getTxPoolDetails(0)))
                         } catch (error) {
                             statusSyncPool = false
                         }
@@ -1137,6 +1139,7 @@ const getTxPoolDetails = async (count) => {
     return result && result.rowCount > 0 ? result.rows : []
     // return a
 }
+
 const getVisibilityInfo = async () => {
     let result = {
         amount: 0,
@@ -1191,7 +1194,7 @@ const emitSocketInfo = async () => {
         blockInfo.lastBlock = lastBlock.height
         io.emit('get_info', JSON.stringify(blockInfo))
         io.emit('get_visibility_info', await getVisibilityInfo())
-        io.emit('get_transaction_pool_info', JSON.stringify(await getTxPoolDetails(0)))
+        
     }
 }
 
@@ -1207,16 +1210,17 @@ const getInfoTimer = async () => {
                 let result = await db.query(
                     'SELECT COUNT(*)::integer AS transactions FROM pool'
                 )
-                if (result && result.rowCount > 0) {
-                    if (result.rows[0].transactions !== countTrPoolServer) {
-                        log(
-                            'need update pool transactions db=' +
-                                result.rows[0].transactions +
-                                ' server=' +
-                                countTrPoolServer
-                        )
-                        await syncPool()
-                    }
+                let countTrPoolDB = 0
+                if (result && result.rowCount > 0)
+                    countTrPoolDB = result.rows[0].transactions
+                if (countTrPoolDB !== countTrPoolServer) {
+                    log(
+                        'need update pool transactions db=' +
+                            countTrPoolDB +
+                            ' server=' +
+                            countTrPoolServer
+                    )
+                    await syncPool()
                 }
             }
 

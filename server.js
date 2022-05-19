@@ -264,10 +264,7 @@ app.get(
     exceptionHandler(async (req, res) => {
         let count = req.params.count
         if (count !== undefined) {
-            let rows = db
-                .prepare('SELECT * FROM pool ORDER BY timestamp DESC limit ?')
-                .all(count)
-            res.json(rows && rows.length > 0 ? rows : [])
+            res.json(await getTxPoolDetails(count))
         } else {
             res.send("Error. Need 'count' params")
         }
@@ -732,6 +729,7 @@ const syncPool = async () => {
         if (countTrPoolServer === 0) {
             db.prepare('DELETE FROM alt_blocks;').run()
             statusSyncPool = false
+            io.emit('get_transaction_pool_info', JSON.stringify([]))
         } else {
             let response = await get_all_pool_tx_list()
             if (response.data.result.ids) {
@@ -794,6 +792,7 @@ const syncPool = async () => {
                             } else {
                                 statusSyncPool = false
                             }
+                            io.emit('get_transaction_pool_info', JSON.stringify(await getTxPoolDetails(0)))
                         } catch (error) {
                             statusSyncPool = false
                         }
@@ -1177,6 +1176,31 @@ async function syncAltBlocks() {
     }
 }
 
+const getTxPoolDetails = async (count) => {
+    if (count === 0) {
+        let result = await db.query('SELECT blob_size, fee, id, timestamp, false as "isNew" FROM pool ORDER BY timestamp DESC;')
+        return result && result.rowCount > 0 ? result.rows : []  
+    }
+
+    const query = {
+        text: 'SELECT blob_size, fee, id, timestamp, false as "isNew" FROM pool ORDER BY timestamp DESC limit $1;',
+        values: [count ? count : 500]
+    }
+    let result = await db.query(query)
+    // let a = [{blob_size: 10, fee: 10000000000, id:"734e0acf588a051abe774e766f611606096d401a7cd4623bdfad7ad57bc2542a", timestamp: "1652919533"},
+    // {blob_size: 11, fee: 10000000000, id:"734e0acf588a051abe774e766f611606096d401a7cd4623bdfad7ad57bc2542a", timestamp: "1652919533"},
+    // {blob_size: 12, fee: 10000000000, id:"734e0acf588a051abe774e766f611606096d401a7cd4623bdfad7ad57bc2542b", timestamp: "1652919533"},
+    // {blob_size: 13, fee: 10000000000, id:"734e0acf588a051abe774e766f611606096d401a7cd4623bdfad7ad57bc2542c", timestamp: "1652919533"},
+    // {blob_size: 14, fee: 10000000000, id:"734e0acf588a051abe774e766f611606096d401a7cd4623bdfad7ad57bc2542d", timestamp: "1652919533"},
+    // {blob_size: 15, fee: 10000000000, id:"734e0acf588a051abe774e766f611606096d401a7cd4623bdfad7ad57bc2542e", timestamp: "1652919533"},
+    // {blob_size: 16, fee: 10000000000, id:"734e0acf588a051abe774e766f611606096d401a7cd4623bdfad7ad57bc2542f", timestamp: "1652919533"},
+    // {blob_size: 17, fee: 10000000000, id:"734e0acf588a051abe774e766f611606096d401a7cd4623bdfad7ad57bc2543a", timestamp: "1652919533"},
+    // {blob_size: 18, fee: 10000000000, id:"734e0acf588a051abe774e766f611606096d401a7cd4623bdfad7ad57bc2543b", timestamp: "1652919533"},
+    // {blob_size: 19, fee: 10000000000, id:"734e0acf588a051abe774e766f611606096d401a7cd4623bdfad7ad57bc2543c", timestamp: "1652919533"}]
+    return result && result.rowCount > 0 ? result.rows : []
+    // return a
+}
+
 const getVisibilityInfo = async () => {
     let result = {
         amount: 0,
@@ -1247,16 +1271,17 @@ async function getInfoTimer() {
                 let rows = db
                     .prepare('SELECT COUNT(*) AS transactions FROM pool')
                     .get()
-                if (rows) {
-                    if (rows.transactions !== countTrPoolServer) {
-                        log(
-                            'need update pool transactions db=' +
-                                rows.transactions +
-                                ' server=' +
-                                countTrPoolServer
-                        )
-                        await syncPool()
-                    }
+                let countTrPoolDB = 0
+                if (rows) 
+                    countTrPoolDB = rows.transactions
+                if (countTrPoolDB !== countTrPoolServer) {
+                    log(
+                        'need update pool transactions db=' +
+                            countTrPoolDB +
+                            ' server=' +
+                            countTrPoolServer
+                    )
+                    await syncPool()
                 }
             }
 
