@@ -604,7 +604,6 @@ const syncPool = async () => {
                                     await db.query(sql)
                                     await db.query('COMMIT')
                                 }
-                                io.emit('get_transaction_pool_info', JSON.stringify(await getTxPoolDetails(5)))
                                 statusSyncPool = false
                             } else {
                                 statusSyncPool = false
@@ -1192,6 +1191,7 @@ const emitSocketInfo = async () => {
         blockInfo.lastBlock = lastBlock.height
         io.emit('get_info', JSON.stringify(blockInfo))
         io.emit('get_visibility_info', await getVisibilityInfo())
+        io.emit('get_transaction_pool_info', JSON.stringify(await getTxPoolDetails(0)))
     }
 }
 

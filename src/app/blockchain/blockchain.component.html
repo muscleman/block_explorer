@@ -197,7 +197,7 @@
     </div>
 
     <!-- IF transaction pool > 0 -->
-    <table class="full_table" *ngIf="poolsOn === true && info?.tx_pool_size > 0">
+    <table class="full_table" *ngIf="poolsOn === true && transactionCount > 0">
         <thead>
             <tr>
                 <th class="timestamp">Timestamp (UTC)</th>
@@ -240,22 +240,20 @@
         class="short_info_pool"
         *ngIf="
             poolsOn === false &&
-            info &&
-            info?.tx_pool_size &&
-            info?.tx_pool_size !== 0
+            transactionCount > 0
         ">
         {{ info.tx_pool_size }} transactions in pool
     </div>
 
     <div
         class="pool_is_empty"
-        *ngIf="!info?.tx_pool_size || info?.tx_pool_size === 0">
+        *ngIf="transactionCount === 0">
         Pool is empty
     </div>
 
     <div
         class="pagination trans_pool"
-        *ngIf="poolsOn === true && info?.tx_pool_size >= 5">
+        *ngIf="poolsOn === true && transactionCount >= 5">
         <div class="left_position"></div>
         <div class="right_position">
             <span>Items on page:</span>

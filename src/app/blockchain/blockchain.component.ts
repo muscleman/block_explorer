@@ -54,6 +54,7 @@ export class BlockchainComponent
     loader: boolean
     navIsOpen: boolean
     searchIsOpen: boolean = false
+    transactionCount: number = 0
 
     @Select(InfoState.selectDaemonInfo) getInfo$: Observable<GetInfo[]>
     @Select(TransactionPoolState.selectLimitedTransactionPoolInfo) getLimitedTransactionPoolInfo$: Observable<Transaction_Pool[]>
@@ -138,6 +139,7 @@ export class BlockchainComponent
             this.getInfo$.subscribe((data) => {
                 this.getInfoPrepare(data[0])
             }),
+            this.getLimitedTransactionPoolInfo$.subscribe(transactions => this.transactionCount = transactions.length),
             this.mobileNavState.change.subscribe((navIsOpen) => {
                 this.navIsOpen = navIsOpen
             })
