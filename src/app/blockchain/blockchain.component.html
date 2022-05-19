@@ -22,11 +22,11 @@
             <div class="network_info">
                 <div>
                     Default network fee:
-                    <span>{{ info.default_fee | moneyParse | bitNumber }}</span>
+                    <span>{{ info?.default_fee | moneyParse | bitNumber }}</span>
                 </div>
                 <div>
                     Minimum network fee:
-                    <span>{{ info.minimum_fee | moneyParse | bitNumber }}</span>
+                    <span>{{ info?.minimum_fee | moneyParse | bitNumber }}</span>
                 </div>
             </div>
         </div>
@@ -197,7 +197,7 @@
     </div>
 
     <!-- IF transaction pool > 0 -->
-    <table class="full_table" *ngIf="poolsOn === true && info.tx_pool_size > 0">
+    <table class="full_table" *ngIf="poolsOn === true && info?.tx_pool_size > 0">
         <thead>
             <tr>
                 <th class="timestamp">Timestamp (UTC)</th>
@@ -208,12 +208,12 @@
             </tr>
         </thead>
         <tbody>
+            <!-- [ngClass]="{
+                'new-block': pools.isNew,
+                'old-block': pools.isOld
+            }" -->
             <tr
-                [ngClass]="{
-                    'new-block': pools.isNew,
-                    'old-block': pools.isOld
-                }"
-                *ngFor="let pools of TxPoolDetails">
+                *ngFor="let pools of getLimitedTransactionPoolInfo$ | async">
                 <td class="timestamp">
                     <span *ngIf="pools.timestamp > 0">{{
                         pools.timestamp * 1000
@@ -236,7 +236,6 @@
         </tbody>
     </table>
 
-    <!-- IF TRANSACT. POOL !== 0 && BUTTON == FALSE -->
     <div
         class="short_info_pool"
         *ngIf="
@@ -248,7 +247,6 @@
         {{ info.tx_pool_size }} transactions in pool
     </div>
 
-    <!-- IF POOL IS EMPTY -->
     <div
         class="pool_is_empty"
         *ngIf="!info?.tx_pool_size || info?.tx_pool_size === 0">
@@ -257,7 +255,7 @@
 
     <div
         class="pagination trans_pool"
-        *ngIf="poolsOn === true && info.tx_pool_size >= 5">
+        *ngIf="poolsOn === true && info?.tx_pool_size >= 5">
         <div class="left_position"></div>
         <div class="right_position">
             <span>Items on page:</span>

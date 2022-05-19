@@ -29,7 +29,7 @@ export class AppComponent
         super()
         this.store.dispatch(new DaemonInfos.Get())
         this.store.dispatch(new VisibilityInfos.Get())
-        this.store.dispatch(new TransactionPoolInfos.Get(5))
+        this.store.dispatch(new TransactionPoolInfos.Get())
         this.webSocketService.init()
         this.navIsOpen = true
         this.router.events.subscribe((event: Event) => {

@@ -4,12 +4,14 @@ import { ActivatedRoute } from '@angular/router'
 import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
 import { take } from 'rxjs/operators'
 import { CookieService } from 'ngx-cookie-service'
-import { Select } from '@ngxs/store'
+import { Select, Store } from '@ngxs/store'
 import { InfoState } from '../states/info-state'
 import { Observable } from 'rxjs'
 import { environment } from 'environments/environment'
 import { GetInfo } from 'app/models/get-info'
 import { Transaction_Pool } from 'app/models/transaction_pool'
+import { TransactionPoolState } from 'app/states/transaction-pool-state'
+import { TransactionPoolInfos } from 'app/actions/get-transaction-pool-info.actions'
 
 @Component({
     selector: 'app-blockchain',
@@ -44,6 +46,7 @@ export class BlockchainComponent
     listBlockStart: number
     maxCountBlock: number
     txCount: number
+    setPoolLimit: number = environment.transactionPoolLimit
     lastSendBlockDetail = {
         start: 0,
         limit: 0
@@ -53,7 +56,7 @@ export class BlockchainComponent
     searchIsOpen: boolean = false
 
     @Select(InfoState.selectDaemonInfo) getInfo$: Observable<GetInfo[]>
-    @Select(InfoState.selectTransactionPoolInfo) getTransactionPoolInfo$: Observable<Transaction_Pool[]>
+    @Select(TransactionPoolState.selectLimitedTransactionPoolInfo) getLimitedTransactionPoolInfo$: Observable<Transaction_Pool[]>
 
     onIsVisible($event): void {
         this.searchIsOpen = $event
@@ -64,7 +67,8 @@ export class BlockchainComponent
         private route: ActivatedRoute,
         private cookieService: CookieService,
         private ngZone: NgZone,
-        private mobileNavState: MobileNavState
+        private mobileNavState: MobileNavState,
+        private store: Store
     ) {
         super()
         this.daemon_network_state = {
@@ -85,7 +89,7 @@ export class BlockchainComponent
 
     getInfoPrepare(data) {
         const lastHeight = this.info ? this.info.lastBlock : 0
-        const lastTransaction = this.info ? this.info.tx_pool_size : 0
+        // const lastTransaction = this.info ? this.info.tx_pool_size : 0
         this.info = data
         if (this.info) {
             this.height = this.info.lastBlock
@@ -134,38 +138,6 @@ export class BlockchainComponent
             this.getInfo$.subscribe((data) => {
                 this.getInfoPrepare(data[0])
             }),
-            this.getTransactionPoolInfo$.subscribe((data) => {
-                    this.TxPoolDetails = data
-                    if (this.TxPoolDetails.length) {
-                        const self = this
-                        if (this.maxViewedPoolTimestamp) {
-                            for (const item of this.TxPoolDetails) {
-                                item.isNew =
-                                    +item.timestamp >
-                                    +this.maxViewedPoolTimestamp
-                            }
-                            this.ngZone.runOutsideAngular(() => {
-                                setTimeout(() => {
-                                    this.ngZone.run(() => {
-                                        for (const item of self.TxPoolDetails) {
-                                            item.isNew = false
-                                        }
-                                    })
-                                }, 2000)
-                            })
-                            if (
-                                +this.maxViewedPoolTimestamp <
-                                +this.TxPoolDetails[0].timestamp
-                            ) {
-                                this.maxViewedPoolTimestamp =
-                                    this.TxPoolDetails[0].timestamp
-                            }
-                        } else {
-                            this.maxViewedPoolTimestamp =
-                                this.TxPoolDetails[0].timestamp
-                        }
-                    }
-            }),
             this.mobileNavState.change.subscribe((navIsOpen) => {
                 this.navIsOpen = navIsOpen
             })
@@ -178,8 +150,7 @@ export class BlockchainComponent
     }
 
     onChangePoolLimit() {
-        // this.poolLimit = this.setPoolLimit
-        // this.refreshPool()
+        this.store.dispatch(new TransactionPoolInfos.SetLimit(this.setPoolLimit))
     }
 
     toggleBtn() {

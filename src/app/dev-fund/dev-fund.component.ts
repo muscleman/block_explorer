@@ -1,9 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core'
-import { InfoState } from '../states/info-state'
 import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
 import { Observable } from 'rxjs'
 import { Select } from '@ngxs/store'
 import { VisibilityInfo } from '../models/visibility-info'
+import { VisibilityState } from 'app/states/visibility-state'
 
 @Component({
     selector: 'app-dev-fund',
@@ -16,7 +16,7 @@ export class DevFundComponent
 {
     title: string = 'Dev Fund'
     amount: number = 0
-    @Select(InfoState.selectVisibilityInfo) getVisibilityInfo$: Observable<
+    @Select(VisibilityState.selectVisibilityInfo) getVisibilityInfo$: Observable<
         VisibilityInfo[]
     >
     constructor() {

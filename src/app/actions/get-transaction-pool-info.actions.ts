@@ -8,6 +8,11 @@ export namespace TransactionPoolInfos {
 
     export class Get {
         static readonly type = '[TransactionPoolInfos] Get'
+        constructor() {}
+    }
+
+    export class SetLimit {
+        static readonly type = '[TransactionPoolInfos] SetLimit'
         constructor(public limit: number) {}
     }
 }

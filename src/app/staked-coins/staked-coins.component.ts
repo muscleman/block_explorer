@@ -2,8 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core'
 import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
 import { Select } from '@ngxs/store'
 import { Observable } from 'rxjs'
-import { InfoState } from '../states/info-state'
 import { VisibilityInfo } from '../models/visibility-info'
+import { VisibilityState } from 'app/states/visibility-state'
 
 @Component({
     selector: 'app-staked-coins',
@@ -17,7 +17,7 @@ export class StakedCoinsComponent
     title: string = 'Staked Coins (est)'
     amount: number = 0
     percentage: number = 0
-    @Select(InfoState.selectVisibilityInfo) getVisibilityInfo$: Observable<
+    @Select(VisibilityState.selectVisibilityInfo) getVisibilityInfo$: Observable<
         VisibilityInfo[]
     >
 
