@@ -84,6 +84,7 @@ export class BlockchainComponent
 
     getInfoPrepare(data) {
         this.info = data
+        this.onChange()
     }
 
     ngOnInit() {
