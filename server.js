@@ -1209,41 +1209,49 @@ const getVisibilityInfo = async () => {
         unlocked_balance: 0
     }
     try {
-        const [res1, res2, res3] = await axios.all([
+        const [res1, res2] = await axios.all([
             getbalance(),
-            get_mining_history(),
-            get_mining_history(1)
+            get_mining_history()
+            // get_mining_history(1)
         ])
         result.balance = res1.data.result.balance
         result.unlocked_balance = res1.data.result.unlocked_balance
 
+        let totalStakedCoins7Days = new BigNumber(720 * 7 * 1000000000000)
         let stakedCoinsLast7Days = new BigNumber(0)
-        let stakedCoins24hrs = new BigNumber(0)
         if ('mined_entries' in res2.data.result) {
             for (const item of res2.data.result.mined_entries) {
                 stakedCoinsLast7Days = stakedCoinsLast7Days.plus(item.a)
             }
         }
-        if ('mined_entries' in res3.data.result) {
-            for (const item of res3.data.result.mined_entries) {
-                stakedCoins24hrs = stakedCoins24hrs.plus(item.a)
-            }
-        }
+        // if ('mined_entries' in res3.data.result) {
+        //     for (const item of res3.data.result.mined_entries) {
+        //         stakedCoins24hrs = stakedCoins24hrs.plus(item.a)
+        //     }
+        // }
 
         result.amount = stakedCoinsLast7Days.toNumber()
-        // console.log('wallet balance ', result.balance)
-        // console.log('staked coins 24hrs ', stakedCoins24hrs)
-        // console.log('staked coins 7 days ', stakedCoinsLast7Days)
-        // console.log('result ', new BigNumber(result.balance).multipliedBy(stakedCoins24hrs.dividedBy(stakedCoinsLast7Days)))
+        
+        let totalCoinsInvolvedInStaking =
+        stakedCoins24hrs.isEqualTo(0) && stakedCoinsLast7Days.isEqualTo(0)
+        ? new BigNumber(0)
+        : new BigNumber(result.balance)
+        .multipliedBy(
+            totalStakedCoins7Days.dividedBy(stakedCoinsLast7Days)
+            )
 
-        result.percentage =
-            stakedCoins24hrs.isEqualTo(0) && stakedCoinsLast7Days.isEqualTo(0)
-                ? 0
-                : new BigNumber(result.balance)
-                      .multipliedBy(
-                          stakedCoins24hrs.dividedBy(stakedCoinsLast7Days)
-                      )
-                      .toNumber()
+        let totalSupply = new BigNumber(blockInfo.totalCoins)
+
+        log('wallet balance ', result.balance)
+        log('staked coins 24hrs ', stakedCoins24hrs)
+        log('staked coins 7 days ', stakedCoinsLast7Days)
+        log('totalCoinsInvolvedInStaking ', new BigNumber(result.balance)
+                  .multipliedBy(
+                    totalStakedCoins7Days.dividedBy(stakedCoinsLast7Days)
+                  ))
+        log('totalSupply ', totalSupply)
+
+        result.percentage = totalCoinsInvolvedInStaking.dividedBy(totalSupply).multipliedBy(100)
     } catch (error) {
         log('getVisibilityInfo() ERROR', error)
     }
