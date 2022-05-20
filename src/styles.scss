@@ -12,7 +12,7 @@
 }
 
 // $variables
-$background: url('assets/img/background.jpg');
+$background: url('assets/img/background.svg');
 $logo: url('assets/img/logo.svg');
 $font: 'Open Sans', sans-serif;
 $mobileMenuIco: url('assets/img/menu.svg');
@@ -55,7 +55,6 @@ $searchSecond: url('./assets/img/search-second.svg');
 @import 'assets/styles/modules/block-details';
 
 .fixed_background {
-
     position: fixed;
     top: 0;
     left: 0;
