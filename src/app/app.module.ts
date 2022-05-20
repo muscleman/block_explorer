@@ -56,6 +56,7 @@ import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin'
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin'
 import { VisibilityState } from './states/visibility-state'
 import { TransactionPoolState } from './states/transaction-pool-state'
+import { BlockDetailsState } from './states/block-details-state'
 
 const config: SocketIoConfig = { url: environment.backend, options: {} }
 
@@ -94,7 +95,7 @@ const config: SocketIoConfig = { url: environment.backend, options: {} }
         AppRoutingModule,
         PipesModule,
         SocketIoModule.forRoot(config),
-        NgxsModule.forRoot([InfoState, VisibilityState, TransactionPoolState], {
+        NgxsModule.forRoot([InfoState, VisibilityState, TransactionPoolState, BlockDetailsState], {
             developmentMode: !environment.production
         }),
         NgxsLoggerPluginModule.forRoot({ disabled: environment.production }),

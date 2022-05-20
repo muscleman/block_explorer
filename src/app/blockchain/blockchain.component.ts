@@ -1,8 +1,7 @@
-import { Component, OnInit, OnDestroy, NgZone } from '@angular/core'
-import { HttpService, MobileNavState } from '../services/http.service'
+import { Component, OnInit, OnDestroy } from '@angular/core'
+import { MobileNavState } from '../services/http.service'
 import { ActivatedRoute } from '@angular/router'
 import { SubscriptionTracker } from '../subscription-tracker/subscription-tracker'
-import { take } from 'rxjs/operators'
 import { CookieService } from 'ngx-cookie-service'
 import { Select, Store } from '@ngxs/store'
 import { InfoState } from '../states/info-state'
@@ -12,6 +11,9 @@ import { GetInfo } from 'app/models/get-info'
 import { Transaction_Pool } from 'app/models/transaction_pool'
 import { TransactionPoolState } from 'app/states/transaction-pool-state'
 import { TransactionPoolInfos } from 'app/actions/get-transaction-pool-info.actions'
+import { BlockDetailsState } from 'app/states/block-details-state'
+import { BlockDetail } from 'app/models/block_detail'
+import { BlockDetails } from 'app/actions/get-block-details.actions'
 
 @Component({
     selector: 'app-blockchain',
@@ -23,23 +25,15 @@ export class BlockchainComponent
     extends SubscriptionTracker
     implements OnInit, OnDestroy
 {
-    info: any
-    height: number
-    infoHeight: number
-    posDifficulty: number
-    powDifficulty: number
-    totalCoins: number
-    NetworkHashrate: number
-    TxPoolDetails: any
-    BlockDetails: any
+    info: GetInfo
     daemon_network_state: any
     setLimit: any
     limit: any
     currentPage: number
     goToBlock: number
     setBlock: number
-    maxViewedBlockHeight: number
-    maxViewedPoolTimestamp: number
+    // maxViewedBlockHeight: number
+    // maxViewedPoolTimestamp: number
     poolsOn: boolean
     poolLimit: number
     setBlockValid: boolean
@@ -55,19 +49,19 @@ export class BlockchainComponent
     navIsOpen: boolean
     searchIsOpen: boolean = false
     transactionCount: number = 0
+    blockCount: number = 0
 
     @Select(InfoState.selectDaemonInfo) getInfo$: Observable<GetInfo[]>
     @Select(TransactionPoolState.selectLimitedTransactionPoolInfo) getLimitedTransactionPoolInfo$: Observable<Transaction_Pool[]>
+    @Select(BlockDetailsState.selectRangeOfBlockDetails) selectRangeOfBlockDetails$: Observable<BlockDetail[]>
 
     onIsVisible($event): void {
         this.searchIsOpen = $event
     }
 
     constructor(
-        private httpService: HttpService,
         private route: ActivatedRoute,
         private cookieService: CookieService,
-        private ngZone: NgZone,
         private mobileNavState: MobileNavState,
         private store: Store
     ) {
@@ -89,24 +83,7 @@ export class BlockchainComponent
     }
 
     getInfoPrepare(data) {
-        const lastHeight = this.info ? this.info.lastBlock : 0
-        // const lastTransaction = this.info ? this.info.tx_pool_size : 0
         this.info = data
-        if (this.info) {
-            this.height = this.info.lastBlock
-            this.infoHeight = this.info.height
-            this.posDifficulty = this.info.pos_difficulty
-            this.powDifficulty = this.info.pow_difficulty
-            this.totalCoins = this.info.total_coins
-            this.txCount = this.info.tx_count
-            this.NetworkHashrate = this.info.current_network_hashrate_350
-            if (lastHeight !== this.info.height) {
-                this.onChange()
-            }
-            // if (lastTransaction !== this.info.tx_pool_size) {
-            //     this.refreshPool()
-            // }
-        }
     }
 
     ngOnInit() {
@@ -121,9 +98,6 @@ export class BlockchainComponent
         } else {
             this.poolsOn = true
         }
-        // if (this.poolsOn === true) {
-        //     this.refreshPool()
-        // }
         if (this.cookieService.get('setLimitCookie')) {
             this.setLimit = parseInt(
                 this.cookieService.get('setLimitCookie'),
@@ -140,6 +114,11 @@ export class BlockchainComponent
                 this.getInfoPrepare(data[0])
             }),
             this.getLimitedTransactionPoolInfo$.subscribe(transactions => this.transactionCount = transactions.length),
+            this.selectRangeOfBlockDetails$.subscribe(blocks => {
+                this.blockCount = blocks.length
+                // this.maxViewedBlockHeight = blocks.length > 0 ? blocks[0].height : 0
+                this.loader = false
+            }),
             this.mobileNavState.change.subscribe((navIsOpen) => {
                 this.navIsOpen = navIsOpen
             })
@@ -162,9 +141,6 @@ export class BlockchainComponent
         this.cookieService.set('OnOffButtonCookie', String(this.poolsOn), {
             expires: exp
         })
-        // if (this.poolsOn === true) {
-        //     this.refreshPool()
-        // }
     }
 
     // refreshPool() {
@@ -216,7 +192,7 @@ export class BlockchainComponent
     }
 
     nextPage() {
-        if (this.currentPage !== Math.ceil(this.height / this.limit)) {
+        if (this.currentPage !== Math.ceil(this.info.lastBlock / this.limit)) {
             this.currentPage++
             this.onChange()
         } else {
@@ -229,16 +205,16 @@ export class BlockchainComponent
             isNaN(+this.goToBlock) === false &&
             this.goToBlock !== undefined &&
             +this.goToBlock >= 0 &&
-            +this.goToBlock < this.height
+            +this.goToBlock < this.info.lastBlock
         ) {
             this.listBlockStart =
                 +this.goToBlock -
                 +this.setLimit +
                 1 +
-                ((this.height - 1 - +this.goToBlock) % +this.setLimit)
+                ((this.info.lastBlock - 1 - +this.goToBlock) % +this.setLimit)
             this.currentPage =
                 Math.floor(
-                    (this.height - +this.setLimit - (this.listBlockStart + 1)) /
+                    (this.info.lastBlock - +this.setLimit - (this.listBlockStart + 1)) /
                         +this.setLimit
                 ) + 2
         }
@@ -250,10 +226,9 @@ export class BlockchainComponent
         if (
             isNaN(+this.goToBlock) ||
             +this.goToBlock < 0 ||
-            +this.goToBlock >= this.height
+            +this.goToBlock >= this.info.lastBlock
         ) {
             this.setBlockValid = false
-            this.BlockDetails = []
             return
         }
         this.setBlockValid = true
@@ -261,10 +236,10 @@ export class BlockchainComponent
             +this.goToBlock -
             +this.setLimit +
             1 +
-            ((this.height - 1 - +this.goToBlock) % +this.setLimit)
+            ((this.info.lastBlock - 1 - +this.goToBlock) % +this.setLimit)
         this.currentPage =
             Math.floor(
-                (this.height - +this.setLimit - (this.listBlockStart + 1)) /
+                (this.info.lastBlock - +this.setLimit - (this.listBlockStart + 1)) /
                     +this.setLimit
             ) + 2
         this.onChange()
@@ -278,7 +253,7 @@ export class BlockchainComponent
             this.setLimit = 10
         }
         this.listBlockStart =
-            this.height +
+        this.info.lastBlock +
             1 -
             +this.setLimit -
             (this.currentPage - 1) * +this.setLimit
@@ -287,11 +262,9 @@ export class BlockchainComponent
         this.cookieService.set('setLimitCookie', this.limit)
 
         if (this.info) {
-            this.height = this.info.lastBlock
             if (this.listBlockStart < 0 || this.listBlockStart === null) {
                 this.limit = this.limit + this.listBlockStart
                 if (this.limit < 0) {
-                    this.BlockDetails = []
                     return
                 }
                 this.listBlockStart = 0
@@ -303,70 +276,71 @@ export class BlockchainComponent
                 this.lastSendBlockDetail.start = this.listBlockStart
                 this.lastSendBlockDetail.limit = this.limit
                 this.loader = true
-                this._track(
-                    this.httpService
-                        .getBlockDetails(this.listBlockStart, this.limit)
-                        .subscribe({
-                            next: (data) => {
-                                this.BlockDetails = data
-                                if (this.BlockDetails.length) {
-                                    const self = this
-                                    if (this.maxViewedBlockHeight) {
-                                        for (const item of this.BlockDetails) {
-                                            item.isNew =
-                                                item.height >
-                                                this.maxViewedBlockHeight
-                                        }
-                                        this.ngZone.runOutsideAngular(() => {
-                                            setTimeout(() => {
-                                                this.ngZone.run(() => {
-                                                    for (const item of self.BlockDetails) {
-                                                        item.isNew = false
-                                                    }
-                                                })
-                                            }, 2000)
-                                        })
-                                        if (
-                                            this.maxViewedBlockHeight <
-                                            this.BlockDetails[
-                                                this.BlockDetails.length - 1
-                                            ].height
-                                        ) {
-                                            this.maxViewedBlockHeight =
-                                                this.BlockDetails[
-                                                    this.BlockDetails.length - 1
-                                                ].height
-                                        }
-                                    } else {
-                                        this.maxViewedBlockHeight =
-                                            this.BlockDetails[
-                                                this.BlockDetails.length - 1
-                                            ].height
-                                    }
-                                    if (
-                                        this.goToBlock &&
-                                        this.setBlockValid === true
-                                    ) {
-                                        for (const row of this.BlockDetails) {
-                                            row.select =
-                                                row.height === +this.goToBlock
-                                        }
-                                        this.ngZone.runOutsideAngular(() => {
-                                            setTimeout(() => {
-                                                this.ngZone.run(() => {
-                                                    for (const row of self.BlockDetails) {
-                                                        row.select = false
-                                                    }
-                                                })
-                                            }, 2000)
-                                        })
-                                    }
-                                }
-                            },
-                            error: (err) => (this.BlockDetails = []),
-                            complete: () => (this.loader = false)
-                        })
-                )
+                this.store.dispatch(new BlockDetails.SetRange(this.listBlockStart, this.limit))
+
+                    // this.httpService
+                    //     .getBlockDetails(this.listBlockStart, this.limit)
+                    //     .subscribe({
+                    //         next: (data) => {
+                    //             this.BlockDetails = data
+                    //             if (this.BlockDetails.length) {
+                    //                 const self = this
+                    //                 if (this.maxViewedBlockHeight) {
+                    //                     for (const item of this.BlockDetails) {
+                    //                         item.isNew =
+                    //                             item.height >
+                    //                             this.maxViewedBlockHeight
+                    //                     }
+                    //                     this.ngZone.runOutsideAngular(() => {
+                    //                         setTimeout(() => {
+                    //                             this.ngZone.run(() => {
+                    //                                 for (const item of self.BlockDetails) {
+                    //                                     item.isNew = false
+                    //                                 }
+                    //                             })
+                    //                         }, 2000)
+                    //                     })
+                    //                     if (
+                    //                         this.maxViewedBlockHeight <
+                    //                         this.BlockDetails[
+                    //                             this.BlockDetails.length - 1
+                    //                         ].height
+                    //                     ) {
+                    //                         this.maxViewedBlockHeight =
+                    //                             this.BlockDetails[
+                    //                                 this.BlockDetails.length - 1
+                    //                             ].height
+                    //                     }
+                    //                 } else {
+                    //                     this.maxViewedBlockHeight =
+                    //                         this.BlockDetails[
+                    //                             this.BlockDetails.length - 1
+                    //                         ].height
+                    //                 }
+                    //                 if (
+                    //                     this.goToBlock &&
+                    //                     this.setBlockValid === true
+                    //                 ) {
+                    //                     for (const row of this.BlockDetails) {
+                    //                         row.select =
+                    //                             row.height === +this.goToBlock
+                    //                     }
+                    //                     this.ngZone.runOutsideAngular(() => {
+                    //                         setTimeout(() => {
+                    //                             this.ngZone.run(() => {
+                    //                                 for (const row of self.BlockDetails) {
+                    //                                     row.select = false
+                    //                                 }
+                    //                             })
+                    //                         }, 2000)
+                    //                     })
+                    //                 }
+                    //             }
+                    //         },
+                    //         error: (err) => (this.BlockDetails = []),
+                    //         complete: () => (this.loader = false)
+                    //     })
+                // )
             }
         }
     }

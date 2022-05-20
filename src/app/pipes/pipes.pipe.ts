@@ -158,107 +158,107 @@ export class TimeAgoPipe implements PipeTransform {
     }
 }
 
-@Pipe({
-    name: 'Order',
-    pure: false
-})
-export class OrderPipe implements PipeTransform {
-    static _OrderPipeComparator(a: any, b: any): number {
-        if (
-            isNaN(parseFloat(a)) ||
-            !isFinite(a) ||
-            isNaN(parseFloat(b)) ||
-            !isFinite(b)
-        ) {
-            // Isn't a number so lowercase the string to properly compare
-            if (a.toLowerCase() < b.toLowerCase()) {
-                return -1
-            }
-            if (a.toLowerCase() > b.toLowerCase()) {
-                return 1
-            }
-        } else {
-            // Parse strings as numbers to compare properly
-            if (parseFloat(a) < parseFloat(b)) {
-                return -1
-            }
-            if (parseFloat(a) > parseFloat(b)) {
-                return 1
-            }
-        }
+// @Pipe({
+//     name: 'Order',
+//     pure: false
+// })
+// export class OrderPipe implements PipeTransform {
+//     static _OrderPipeComparator(a: any, b: any): number {
+//         if (
+//             isNaN(parseFloat(a)) ||
+//             !isFinite(a) ||
+//             isNaN(parseFloat(b)) ||
+//             !isFinite(b)
+//         ) {
+//             // Isn't a number so lowercase the string to properly compare
+//             if (a.toLowerCase() < b.toLowerCase()) {
+//                 return -1
+//             }
+//             if (a.toLowerCase() > b.toLowerCase()) {
+//                 return 1
+//             }
+//         } else {
+//             // Parse strings as numbers to compare properly
+//             if (parseFloat(a) < parseFloat(b)) {
+//                 return -1
+//             }
+//             if (parseFloat(a) > parseFloat(b)) {
+//                 return 1
+//             }
+//         }
 
-        return 0
-    }
+//         return 0
+//     }
 
-    transform(input: any, [config = '+']): any {
-        if (!Array.isArray(input)) {
-            return input
-        }
+//     transform(input: any, [config = '+']): any {
+//         if (!Array.isArray(input)) {
+//             return input
+//         }
 
-        if (
-            !Array.isArray(config) ||
-            (Array.isArray(config) && config.length === 1)
-        ) {
-            const propertyToCheck: string = !Array.isArray(config)
-                ? config
-                : config[0]
-            const desc = propertyToCheck.substr(0, 1) === '-'
+//         if (
+//             !Array.isArray(config) ||
+//             (Array.isArray(config) && config.length === 1)
+//         ) {
+//             const propertyToCheck: string = !Array.isArray(config)
+//                 ? config
+//                 : config[0]
+//             const desc = propertyToCheck.substr(0, 1) === '-'
 
-            if (
-                !propertyToCheck ||
-                propertyToCheck === '-' ||
-                propertyToCheck === '+'
-            ) {
-                return !desc ? input.sort() : input.sort().reverse()
-            } else {
-                const property: string =
-                    propertyToCheck.substr(0, 1) === '+' ||
-                    propertyToCheck.substr(0, 1) === '-'
-                        ? propertyToCheck.substr(1)
-                        : propertyToCheck
+//             if (
+//                 !propertyToCheck ||
+//                 propertyToCheck === '-' ||
+//                 propertyToCheck === '+'
+//             ) {
+//                 return !desc ? input.sort() : input.sort().reverse()
+//             } else {
+//                 const property: string =
+//                     propertyToCheck.substr(0, 1) === '+' ||
+//                     propertyToCheck.substr(0, 1) === '-'
+//                         ? propertyToCheck.substr(1)
+//                         : propertyToCheck
 
-                return input.sort(function (a: any, b: any) {
-                    return !desc
-                        ? OrderPipe._OrderPipeComparator(
-                              a[property],
-                              b[property]
-                          )
-                        : -OrderPipe._OrderPipeComparator(
-                              a[property],
-                              b[property]
-                          )
-                })
-            }
-        } else {
-            return input.sort(function (a: any, b: any) {
-                for (let i: any = 0; i < config.length; i++) {
-                    const desc = config[i].substr(0, 1) === '-'
-                    const property =
-                        config[i].substr(0, 1) === '+' ||
-                        config[i].substr(0, 1) === '-'
-                            ? config[i].substr(1)
-                            : config[i]
+//                 return input.sort(function (a: any, b: any) {
+//                     return !desc
+//                         ? OrderPipe._OrderPipeComparator(
+//                               a[property],
+//                               b[property]
+//                           )
+//                         : -OrderPipe._OrderPipeComparator(
+//                               a[property],
+//                               b[property]
+//                           )
+//                 })
+//             }
+//         } else {
+//             return input.sort(function (a: any, b: any) {
+//                 for (let i: any = 0; i < config.length; i++) {
+//                     const desc = config[i].substr(0, 1) === '-'
+//                     const property =
+//                         config[i].substr(0, 1) === '+' ||
+//                         config[i].substr(0, 1) === '-'
+//                             ? config[i].substr(1)
+//                             : config[i]
 
-                    const comparison = !desc
-                        ? OrderPipe._OrderPipeComparator(
-                              a[property],
-                              b[property]
-                          )
-                        : -OrderPipe._OrderPipeComparator(
-                              a[property],
-                              b[property]
-                          )
+//                     const comparison = !desc
+//                         ? OrderPipe._OrderPipeComparator(
+//                               a[property],
+//                               b[property]
+//                           )
+//                         : -OrderPipe._OrderPipeComparator(
+//                               a[property],
+//                               b[property]
+//                           )
 
-                    if (comparison !== 0) {
-                        return comparison
-                    }
-                }
+//                     if (comparison !== 0) {
+//                         return comparison
+//                     }
+//                 }
 
-                return 0
-            })
-        }
-    }
-}
+//                 return 0
+//             })
+//         }
+//     }
+// }
 
 @Pipe({
     name: 'hashPowerConverter'

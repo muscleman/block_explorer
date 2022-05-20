@@ -5,7 +5,7 @@ import {
     HashPowerConverterPipe,
     MoneyParsePipe,
     OrderByPipe,
-    OrderPipe,
+    // OrderPipe,
     SortByAlphabetPipe,
     SortGridPipe,
     TimeAgoPipe,
@@ -16,7 +16,7 @@ import {
 
 @NgModule({
     declarations: [
-        OrderPipe,
+        // OrderPipe,
         OrderByPipe,
         SortGridPipe,
         BitNumberPipe,
@@ -30,7 +30,7 @@ import {
         TimeAgoPipe2
     ],
     exports: [
-        OrderPipe,
+        // OrderPipe,
         OrderByPipe,
         SortGridPipe,
         BitNumberPipe,

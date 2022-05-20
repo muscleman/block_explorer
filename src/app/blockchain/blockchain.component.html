@@ -42,31 +42,31 @@
 <div class="main_info">
     <div class="height">
         <div class="title">Height</div>
-        <div class="value">{{ infoHeight | bitNumber }}</div>
+        <div class="value">{{ info.height | bitNumber }}</div>
     </div>
     <div class="difficulty">
         <div class="title">Difficulty</div>
         <div class="value">
             <div class="pos"
-                ><span>PoS:</span>{{ posDifficulty | bitNumber }}</div
+                ><span>PoS:</span>{{ info.pos_difficulty | bitNumber }}</div
             >
             <div class="pow"
-                ><span>PoW:</span>{{ powDifficulty | bitNumber }}</div
+                ><span>PoW:</span>{{ info.pow_difficulty | bitNumber }}</div
             >
         </div>
     </div>
     <div class="coins_emitted">
         <div class="title">Coins Emitted</div>
-        <div class="value">{{ totalCoins | moneyParse | bitNumber }}</div>
+        <div class="value">{{ info.total_coins | moneyParse | bitNumber }}</div>
     </div>
     <div class="transactions">
         <div class="title">Transactions</div>
-        <div class="value">{{ txCount + infoHeight | bitNumber }}</div>
+        <div class="value">{{ this.info.tx_count + this.info.height | bitNumber }}</div>
     </div>
     <div class="hash_rate">
         <div class="title">Hash Rate (aprox):</div>
         <div class="value">{{
-            NetworkHashrate | hashPowerConverter: 'speed'
+            info.current_network_hashrate_350 | hashPowerConverter: 'speed'
         }}</div>
     </div>
 </div>
@@ -76,7 +76,7 @@
     <div *ngIf="loader === true" class="wrap_loader">
         <div class="loader"></div>
     </div>
-    <table *ngIf="BlockDetails && BlockDetails.length">
+    <table *ngIf="blockCount">
         <thead>
             <tr>
                 <th class="height">Height</th>
@@ -88,6 +88,7 @@
             </tr>
         </thead>
         <tbody>
+            <!-- *ngFor="let block of BlockDetails | Order: ['-height']"> -->
             <tr
                 [ngClass]="{
                     'new-block': block.isNew,
@@ -95,7 +96,7 @@
                     pow: block.type == '1',
                     select: block.select
                 }"
-                *ngFor="let block of BlockDetails | Order: ['-height']">
+                *ngFor="let block of selectRangeOfBlockDetails$ | async">
                 <td class="height">
                     <a [routerLink]="['/block', block.id]">{{
                         block.height
@@ -128,7 +129,7 @@
         </tbody>
     </table>
 
-    <div class="pagination" *ngIf="BlockDetails && BlockDetails.length">
+    <div class="pagination" *ngIf="blockCount">
         <div class="left_position">
             <span>Pages:</span>
             <button
@@ -147,7 +148,7 @@
             <button
                 type="button"
                 class="next_btn"
-                [disabled]="BlockDetails.length < setLimit"
+                [disabled]="blockCount < setLimit"
                 (click)="nextPage()">
                 <svg x="0px" y="0px" viewBox="0 0 477.175 477.175">
                     <g>
@@ -242,7 +243,7 @@
             poolsOn === false &&
             transactionCount > 0
         ">
-        {{ info.tx_pool_size }} transactions in pool
+        {{ transactionCount }} transactions in pool
     </div>
 
     <div
@@ -263,7 +264,7 @@
                 (input)="setPoolLimit = $event.target.value"
                 [(ngModel)]="setPoolLimit"
                 (change)="onChangePoolLimit()" />
-            <span class="of">of {{ info.tx_pool_size }}</span>
+            <span class="of">of {{ transactionCount }}</span>
         </div>
     </div>
 </div>

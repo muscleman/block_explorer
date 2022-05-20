@@ -10,6 +10,7 @@ import { environment } from '../../environments/environment'
 import { VisibilityInfo } from '../models/visibility-info'
 import { GetInfo } from 'app/models/get-info'
 import { Transaction_Pool } from 'app/models/transaction_pool'
+import { BlockDetail } from 'app/models/block_detail'
 
 @Injectable()
 export class HttpService {
@@ -28,9 +29,9 @@ export class HttpService {
     }
 
     // BlockChain Page
-    public getBlockDetails(start: number, limit: number): Observable<any> {
+    public getBlockDetails(start: number, limit: number): Observable<BlockDetail[]> {
         const URL = `${this.serverApi}/get_blocks_details/${start}/${limit}`
-        return this.httpClient.get(URL)
+        return this.httpClient.get<BlockDetail[]>(URL)
     }
 
     public getMainBlockDetails(id: any): Observable<any> {
