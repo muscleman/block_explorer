@@ -42,31 +42,31 @@
 <div class="main_info">
     <div class="height">
         <div class="title">Height</div>
-        <div class="value">{{ info.height | bitNumber }}</div>
+        <div class="value">{{ info?.height | bitNumber }}</div>
     </div>
     <div class="difficulty">
         <div class="title">Difficulty</div>
         <div class="value">
             <div class="pos"
-                ><span>PoS:</span>{{ info.pos_difficulty | bitNumber }}</div
+                ><span>PoS:</span>{{ info?.pos_difficulty | bitNumber }}</div
             >
             <div class="pow"
-                ><span>PoW:</span>{{ info.pow_difficulty | bitNumber }}</div
+                ><span>PoW:</span>{{ info?.pow_difficulty | bitNumber }}</div
             >
         </div>
     </div>
     <div class="coins_emitted">
         <div class="title">Coins Emitted</div>
-        <div class="value">{{ info.total_coins | moneyParse | bitNumber }}</div>
+        <div class="value">{{ info?.total_coins | moneyParse | bitNumber }}</div>
     </div>
     <div class="transactions">
         <div class="title">Transactions</div>
-        <div class="value">{{ this.info.tx_count + this.info.height | bitNumber }}</div>
+        <div class="value">{{ this?.info.tx_count + this.info.height | bitNumber }}</div>
     </div>
     <div class="hash_rate">
         <div class="title">Hash Rate (aprox):</div>
         <div class="value">{{
-            info.current_network_hashrate_350 | hashPowerConverter: 'speed'
+            info?.current_network_hashrate_350 | hashPowerConverter: 'speed'
         }}</div>
     </div>
 </div>
@@ -88,9 +88,8 @@
             </tr>
         </thead>
         <tbody>
-            <tr [@highlightNewBlocks]="block.height > maxViewedBlockHeight ? 'new': 'old'"
+            <tr [@highlightNewItems]="block?.height > maxViewedBlockHeight ? 'new': 'old'"
                 [ngClass]="{
-                    'new-block': block.isNew,
                     pos: block.type == '0',
                     pow: block.type == '1',
                     select: block.select
@@ -98,7 +97,7 @@
                 *ngFor="let block of selectRangeOfBlockDetails$ | async">
                 <td class="height">
                     <a [routerLink]="['/block', block.id]">{{
-                        block.height
+                        block?.height
                     }}</a>
                     <span *ngIf="block.type == 0">(PoS)</span>
                     <span *ngIf="block.type == 1">(PoW)</span>
@@ -208,11 +207,7 @@
             </tr>
         </thead>
         <tbody>
-            <!-- [ngClass]="{
-                'new-block': pools.isNew,
-                'old-block': pools.isOld
-            }" -->
-            <tr
+            <tr [@highlightNewItems]="pools.timestamp > maxViewedPoolTimestamp ? 'new': 'old'"
                 *ngFor="let pools of getLimitedTransactionPoolInfo$ | async">
                 <td class="timestamp">
                     <span *ngIf="pools.timestamp > 0">{{

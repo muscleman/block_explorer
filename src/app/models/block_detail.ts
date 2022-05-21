@@ -1,7 +1,7 @@
 export interface BlockDetail
 {
     height: number
-    actual_timestamp : string
+    actual_timestamp : number
     base_reward: string
     blob: string
     block_cumulative_size: string
@@ -16,7 +16,7 @@ export interface BlockDetail
     prev_id: string
     summary_reward: string
     this_block_fee_median: string
-    timestamp: string
+    timestamp: number
     total_fee: string
     total_txs_size: string
     tr_count: string,

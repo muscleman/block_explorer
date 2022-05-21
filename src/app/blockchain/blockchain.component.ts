@@ -22,14 +22,12 @@ import { trigger, state, style, animate, transition, keyframes } from '@angular/
     styleUrls: ['./blockchain.component.scss'],
     providers: [],
     animations: [
-        trigger('highlightNewBlocks', [
-            state('new', style({backgroundColor: '#e06a6a'})),
-            state('old', style({})),
-            transition('new => old', animate('2000ms', keyframes([
+        trigger('highlightNewItems', [
+            state('new', style({})),
+            state('old', style({})),            
+            transition('void => new', animate('2000ms', keyframes([
                 style({backgroundColor: '#e06a6a', offset: 0}),
-                style({backgroundColor: '#e06a6a', offset: 0.33}),
-                style({backgroundColor: '#e06a6a', offset: 0.66}),
-                style({backgroundColor: '#e06a6a', offset: 1})
+                style({offset: 1})
             ]))),
         ])
     ]
@@ -46,7 +44,12 @@ export class BlockchainComponent
     goToBlock: number
     setBlock: number
     maxViewedBlockHeight: number
-    // maxViewedPoolTimestamp: number
+    maxViewedBlockHeights: Array<number> = []
+
+
+    maxViewedPoolTimestamp: number
+    maxViewedPoolTimestamps: Array<number> = []
+
     poolsOn: boolean
     poolLimit: number
     setBlockValid: boolean
@@ -97,8 +100,7 @@ export class BlockchainComponent
 
     getInfoPrepare(data) {
         this.info = data
-        if (data)
-         this.onChange()
+        this.onChange()
     }
 
     ngOnInit() {
@@ -127,11 +129,22 @@ export class BlockchainComponent
         
         this._track(
             this.getInfo$.subscribe((data) => {
-                this.maxViewedBlockHeight = this.info ? this.info.lastBlock : data[0].lastBlock
                 this.getInfoPrepare(data[0])
             }),
-            this.getLimitedTransactionPoolInfo$.subscribe(transactions => this.transactionCount = transactions.length),
+            this.getLimitedTransactionPoolInfo$.subscribe(transactions => {
+                if (this.maxViewedPoolTimestamps.length === 0) {
+                    this.maxViewedPoolTimestamps = [0] //start somewhere
+                }
+                this.maxViewedPoolTimestamp = Math.max(...this.maxViewedPoolTimestamps)
+                this.maxViewedPoolTimestamps = transactions.map(transaction => transaction.timestamp)
+                this.transactionCount = transactions.length
+            }),
             this.selectRangeOfBlockDetails$.subscribe(blocks => {
+                if (this.maxViewedBlockHeights.length === 0) {
+                    this.maxViewedBlockHeights = [this.info?.height - 1]  //start somewhere
+                }
+                this.maxViewedBlockHeight = Math.max(...this.maxViewedBlockHeights)
+                this.maxViewedBlockHeights = blocks.map(block => block.height)
                 this.blockCount = blocks.length
                 this.loader = false
             }),
@@ -158,47 +171,6 @@ export class BlockchainComponent
             expires: exp
         })
     }
-
-    // refreshPool() {
-    //     this.httpService
-    //         .getTxPoolDetails(environment.transactionPoolLimit)
-    //         .pipe(take(1))
-    //         .subscribe({
-    //             next: (data) => {
-    //                 this.TxPoolDetails = data
-    //                 if (this.TxPoolDetails.length) {
-    //                     const self = this
-    //                     if (this.maxViewedPoolTimestamp) {
-    //                         for (const item of this.TxPoolDetails) {
-    //                             item.isNew =
-    //                                 +item.timestamp >
-    //                                 +this.maxViewedPoolTimestamp
-    //                         }
-    //                         this.ngZone.runOutsideAngular(() => {
-    //                             setTimeout(() => {
-    //                                 this.ngZone.run(() => {
-    //                                     for (const item of self.TxPoolDetails) {
-    //                                         item.isNew = false
-    //                                     }
-    //                                 })
-    //                             }, 2000)
-    //                         })
-    //                         if (
-    //                             +this.maxViewedPoolTimestamp <
-    //                             +this.TxPoolDetails[0].timestamp
-    //                         ) {
-    //                             this.maxViewedPoolTimestamp =
-    //                                 this.TxPoolDetails[0].timestamp
-    //                         }
-    //                     } else {
-    //                         this.maxViewedPoolTimestamp =
-    //                             this.TxPoolDetails[0].timestamp
-    //                     }
-    //                 }
-    //             },
-    //             error: (err) => console.error(err)
-    //         })
-    // }
 
     prevPage() {
         if (this.currentPage - 1 > 0) {
@@ -262,22 +234,22 @@ export class BlockchainComponent
     }
 
     onChange() {
-        if (this.setLimit > this.maxCountBlock) {
-            this.setLimit = this.maxCountBlock
-        }
-        if (!this.setLimit || this.setLimit < 0) {
-            this.setLimit = 10
-        }
-        this.listBlockStart =
-        this.info.lastBlock +
-            1 -
-            +this.setLimit -
-            (this.currentPage - 1) * +this.setLimit
-        this.limit = +this.setLimit
+        if (!!this.info) {
+            if (this.setLimit > this.maxCountBlock) {
+                this.setLimit = this.maxCountBlock
+            }
+            if (!this.setLimit || this.setLimit < 0) {
+                this.setLimit = 10
+            }
+            this.listBlockStart =
+            this.info.lastBlock +
+                1 -
+                +this.setLimit -
+                (this.currentPage - 1) * +this.setLimit
+            this.limit = +this.setLimit
 
-        this.cookieService.set('setLimitCookie', this.limit)
+            this.cookieService.set('setLimitCookie', this.limit)
 
-        if (this.info) {
             if (this.listBlockStart < 0 || this.listBlockStart === null) {
                 this.limit = this.limit + this.listBlockStart
                 if (this.limit < 0) {
@@ -292,72 +264,8 @@ export class BlockchainComponent
                 this.lastSendBlockDetail.start = this.listBlockStart
                 this.lastSendBlockDetail.limit = this.limit
                 this.loader = true
-  
-                this.store.dispatch(new BlockDetails.SetRange(this.listBlockStart, this.limit))
 
-                    // this.httpService
-                    //     .getBlockDetails(this.listBlockStart, this.limit)
-                    //     .subscribe({
-                    //         next: (data) => {
-                    //             this.BlockDetails = data
-                    //             if (this.BlockDetails.length) {
-                    //                 const self = this
-                    //                 if (this.maxViewedBlockHeight) {
-                    //                     for (const item of this.BlockDetails) {
-                    //                         item.isNew =
-                    //                             item.height >
-                    //                             this.maxViewedBlockHeight
-                    //                     }
-                    //                     this.ngZone.runOutsideAngular(() => {
-                    //                         setTimeout(() => {
-                    //                             this.ngZone.run(() => {
-                    //                                 for (const item of self.BlockDetails) {
-                    //                                     item.isNew = false
-                    //                                 }
-                    //                             })
-                    //                         }, 2000)
-                    //                     })
-                    //                     if (
-                    //                         this.maxViewedBlockHeight <
-                    //                         this.BlockDetails[
-                    //                             this.BlockDetails.length - 1
-                    //                         ].height
-                    //                     ) {
-                    //                         this.maxViewedBlockHeight =
-                    //                             this.BlockDetails[
-                    //                                 this.BlockDetails.length - 1
-                    //                             ].height
-                    //                     }
-                    //                 } else {
-                    //                     this.maxViewedBlockHeight =
-                    //                         this.BlockDetails[
-                    //                             this.BlockDetails.length - 1
-                    //                         ].height
-                    //                 }
-                    //                 if (
-                    //                     this.goToBlock &&
-                    //                     this.setBlockValid === true
-                    //                 ) {
-                    //                     for (const row of this.BlockDetails) {
-                    //                         row.select =
-                    //                             row.height === +this.goToBlock
-                    //                     }
-                    //                     this.ngZone.runOutsideAngular(() => {
-                    //                         setTimeout(() => {
-                    //                             this.ngZone.run(() => {
-                    //                                 for (const row of self.BlockDetails) {
-                    //                                     row.select = false
-                    //                                 }
-                    //                             })
-                    //                         }, 2000)
-                    //                     })
-                    //                 }
-                    //             }
-                    //         },
-                    //         error: (err) => (this.BlockDetails = []),
-                    //         complete: () => (this.loader = false)
-                    //     })
-                // )
+                this.store.dispatch(new BlockDetails.SetRange(this.listBlockStart, this.limit))
             }
         }
     }

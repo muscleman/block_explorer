@@ -86,9 +86,9 @@ CREATE INDEX IF NOT EXISTS index_altblocks_hash ON alt_blocks(hash);
 
 CREATE TABLE IF NOT EXISTS pool (
         blob_size text,
-        fee text,
+        fee numeric(100,0),
         id text,
-        timestamp text
+        timestamp bigint
 );
 
 CREATE INDEX IF NOT EXISTS index_pool_id ON pool(id);

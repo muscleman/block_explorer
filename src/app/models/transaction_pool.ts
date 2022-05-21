@@ -1,7 +1,7 @@
 export interface Transaction_Pool {
     blob_size: string,
-    fee: string,
+    fee: number,
     id: string,
-    timestamp: string,
+    timestamp: number,
     isNew: boolean
 }
