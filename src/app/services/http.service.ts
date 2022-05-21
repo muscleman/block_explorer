@@ -11,6 +11,10 @@ import { VisibilityInfo } from '../models/visibility-info'
 import { GetInfo } from 'app/models/get-info'
 import { Transaction_Pool } from 'app/models/transaction_pool'
 import { BlockDetail } from 'app/models/block_detail'
+import { MainBlockDetails } from 'app/models/main_block_details'
+import { TransactionDetail } from 'app/models/transaction_detail'
+import { AltBlockDetail } from 'app/models/alt-block-detail'
+import { Aliases } from 'app/models/alias'
 
 @Injectable()
 export class HttpService {
@@ -34,9 +38,9 @@ export class HttpService {
         return this.httpClient.get<BlockDetail[]>(URL)
     }
 
-    public getMainBlockDetails(id: any): Observable<any> {
+    public getMainBlockDetails(id: any): Observable<MainBlockDetails> {
         const URL = `${this.serverApi}/get_main_block_details/${id}`
-        return this.httpClient.get(URL)
+        return this.httpClient.get<MainBlockDetails>(URL)
     }
 
     public getTxPoolDetails(limit: number): Observable<Transaction_Pool[]> {
@@ -45,20 +49,20 @@ export class HttpService {
     }
 
     // Alt-blocks Page
-    public getAltBlocks(offset: number, count: number): Observable<any> {
+    public getAltBlocks(offset: number, count: number): Observable<AltBlockDetail[]> {
         const URL = `${this.serverApi}/get_alt_blocks_details/${offset}/${count}`
-        return this.httpClient.get(URL)
+        return this.httpClient.get<AltBlockDetail[]>(URL)
     }
 
-    public getAltDetailBlock(id: any): Observable<any> {
+    public getAltDetailBlock(id: any): Observable<AltBlockDetail> {
         const URL = `${this.serverApi}/get_alt_block_details/${id}`
-        return this.httpClient.get(URL)
+        return this.httpClient.get<AltBlockDetail>(URL)
     }
 
     // Transaction Page
-    public getTransaction(tx_hash: any): Observable<any> {
+    public getTransaction(tx_hash: any): Observable<TransactionDetail> {
         const URL = `${this.serverApi}/get_tx_details/${tx_hash}`
-        return this.httpClient.get(URL)
+        return this.httpClient.get<TransactionDetail>(URL)
     }
 
     public getConnectTransaction(amount, i): Observable<any> {
@@ -71,12 +75,12 @@ export class HttpService {
         offset: number,
         count: number,
         search: any
-    ): Observable<any> {
+    ): Observable<Aliases[]> {
         if (!search) {
             search = 'all'
         }
         const URL = `${this.serverApi}/get_aliases/${offset}/${count}/${search}`
-        return this.httpClient.get(URL)
+        return this.httpClient.get<Aliases[]>(URL)
     }
 
     public searchById(search: any): Observable<any> {
