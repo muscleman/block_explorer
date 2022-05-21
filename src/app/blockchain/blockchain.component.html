@@ -88,8 +88,7 @@
             </tr>
         </thead>
         <tbody>
-            <!-- *ngFor="let block of BlockDetails | Order: ['-height']"> -->
-            <tr
+            <tr [@highlightNewBlocks]="block.height > maxViewedBlockHeight ? 'new': 'old'"
                 [ngClass]="{
                     'new-block': block.isNew,
                     pos: block.type == '0',

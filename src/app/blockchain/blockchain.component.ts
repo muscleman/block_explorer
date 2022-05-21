@@ -14,12 +14,25 @@ import { TransactionPoolInfos } from 'app/actions/get-transaction-pool-info.acti
 import { BlockDetailsState } from 'app/states/block-details-state'
 import { BlockDetail } from 'app/models/block_detail'
 import { BlockDetails } from 'app/actions/get-block-details.actions'
+import { trigger, state, style, animate, transition, keyframes } from '@angular/animations'
 
 @Component({
     selector: 'app-blockchain',
     templateUrl: './blockchain.component.html',
     styleUrls: ['./blockchain.component.scss'],
-    providers: []
+    providers: [],
+    animations: [
+        trigger('highlightNewBlocks', [
+            state('new', style({backgroundColor: '#e06a6a'})),
+            state('old', style({})),
+            transition('new => old', animate('2000ms', keyframes([
+                style({backgroundColor: '#e06a6a', offset: 0}),
+                style({backgroundColor: '#e06a6a', offset: 0.33}),
+                style({backgroundColor: '#e06a6a', offset: 0.66}),
+                style({backgroundColor: '#e06a6a', offset: 1})
+            ]))),
+        ])
+    ]
 })
 export class BlockchainComponent
     extends SubscriptionTracker
@@ -32,7 +45,7 @@ export class BlockchainComponent
     currentPage: number
     goToBlock: number
     setBlock: number
-    // maxViewedBlockHeight: number
+    maxViewedBlockHeight: number
     // maxViewedPoolTimestamp: number
     poolsOn: boolean
     poolLimit: number
@@ -84,7 +97,8 @@ export class BlockchainComponent
 
     getInfoPrepare(data) {
         this.info = data
-        this.onChange()
+        if (data)
+         this.onChange()
     }
 
     ngOnInit() {
@@ -109,15 +123,16 @@ export class BlockchainComponent
         this.setBlock = null
 
         this.getInfoPrepare(this.route.snapshot.data['MainInfo'])
-
+        
+        
         this._track(
             this.getInfo$.subscribe((data) => {
+                this.maxViewedBlockHeight = this.info ? this.info.lastBlock : data[0].lastBlock
                 this.getInfoPrepare(data[0])
             }),
             this.getLimitedTransactionPoolInfo$.subscribe(transactions => this.transactionCount = transactions.length),
             this.selectRangeOfBlockDetails$.subscribe(blocks => {
                 this.blockCount = blocks.length
-                // this.maxViewedBlockHeight = blocks.length > 0 ? blocks[0].height : 0
                 this.loader = false
             }),
             this.mobileNavState.change.subscribe((navIsOpen) => {
@@ -277,6 +292,7 @@ export class BlockchainComponent
                 this.lastSendBlockDetail.start = this.listBlockStart
                 this.lastSendBlockDetail.limit = this.limit
                 this.loader = true
+  
                 this.store.dispatch(new BlockDetails.SetRange(this.listBlockStart, this.limit))
 
                     // this.httpService
