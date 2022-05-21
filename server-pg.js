@@ -1185,7 +1185,7 @@ const getVisibilityInfo = async () => {
         // console.log('totalSupply ', totalSupply.toNumber())
         // console.log('percentage', totalCoinsInvolvedInStaking.dividedBy(totalSupply).multipliedBy(100).toNumber())
 
-        result.percentage = totalCoinsInvolvedInStaking.dividedBy(totalSupply).multipliedBy(100).toFixed(4)
+        result.percentage = totalCoinsInvolvedInStaking.dividedBy(totalSupply).multipliedBy(100).toFixed(2)
     } catch (error) {
         log('getVisibilityInfo() ERROR', error)
     }
