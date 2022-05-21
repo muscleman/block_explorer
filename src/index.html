@@ -18,6 +18,13 @@
         <div class="container">
             <app-root></app-root>
         </div>
-        <div class="fixed_background"></div>
+        <div id="loader" class="loader"></div>
+        <!-- <div class="fixed_background"></div> -->
+        <script>
+            document.onreadystatechange = function() {
+                if (document.readyState === 'complete')
+                    document.querySelector("#loader").style.display = "none"
+            }
+        </script>
     </body>
 </html>
