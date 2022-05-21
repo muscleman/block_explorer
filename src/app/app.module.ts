@@ -58,7 +58,7 @@ import { VisibilityState } from './states/visibility-state'
 import { TransactionPoolState } from './states/transaction-pool-state'
 import { BlockDetailsState } from './states/block-details-state'
 
-const config: SocketIoConfig = { url: environment.backend, options: {} }
+const config: SocketIoConfig = { url: environment.backend, options: {transports: ['websocket', 'polling']} }
 
 @NgModule({
     declarations: [
