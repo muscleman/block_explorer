@@ -175,7 +175,10 @@ sudo nano /etc/nginx/sites-available/zano.smartcoinpool.net
 ```
 server {
     server_name zano.smartcoinpool.net;
-
+    gzip on;
+    gzip_types *;
+    gzip_min_length 500;
+    
     # Set files location
     root /var/www/block-explorer/dist/;
     index index.html;
