@@ -3,6 +3,9 @@ import { HttpService, MobileNavState } from '../../services/http.service'
 import { Chart } from 'angular-highcharts'
 import { SubscriptionTracker } from '../../subscription-tracker/subscription-tracker'
 import { take } from 'rxjs/operators'
+import { Select } from '@ngxs/store'
+import { Observable } from 'rxjs'
+import { ChartsState } from 'app/states/charts-state'
 
 @Component({
     selector: 'app-difficulty',
@@ -19,6 +22,8 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
     seriesData: any
     loader: boolean
     seriesType: string = 'other'
+
+    @Select(ChartsState.selectAllPOSDifficulty) allPOSDifficulty$: Observable<any[]>
 
     constructor(
         private httpService: HttpService,
@@ -311,38 +316,72 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
 
     initialChart() {
         this.loader = true
-        this.httpService
-            .getChart(this.activeChart, this.period)
-            .pipe(take(1))
-            .subscribe({
-                next: (data) => {
-                    this.posDifficulty = data
-                    const posDifficultyArray = []
-                    for (
-                        let i = 1;
-                        i < this.posDifficulty.aggregated.length;
-                        i++
-                    ) {
-                        posDifficultyArray.push([
-                            this.posDifficulty.aggregated[i].at * 1000,
-                            parseInt(this.posDifficulty.aggregated[i].d, 10)
-                        ])
+
+        this.allPOSDifficulty$.subscribe(data => {
+            if (data.length === 0)
+                return
+            this.posDifficulty = data
+            const posDifficultyArray = []
+            for (
+                let i = 1;
+                i < this.posDifficulty.aggregated.length;
+                i++
+            ) {
+                posDifficultyArray.push([
+                    this.posDifficulty.aggregated[i].at * 1000,
+                    parseInt(this.posDifficulty.aggregated[i].d, 10)
+                ])
+            }
+            this.difficultyChart = this.drawChart(
+                false,
+                'PoS Difficulty',
+                'PoS Difficulty',
+                (this.seriesData = [
+                    {
+                        type: 'area',
+                        name: 'PoS difficulty',
+                        data: posDifficultyArray
                     }
-                    this.difficultyChart = this.drawChart(
-                        false,
-                        'PoS Difficulty',
-                        'PoS Difficulty',
-                        (this.seriesData = [
-                            {
-                                type: 'area',
-                                name: 'PoS difficulty',
-                                data: posDifficultyArray
-                            }
-                        ])
-                    )
-                },
-                error: (err) => console.log(err),
-                complete: () => (this.loader = false)
-            })
+                ])
+            )
+            this.loader = false
+        })
+
+
+
+
+        // this.httpService
+        //     .getChart(this.activeChart, this.period)
+        //     .pipe(take(1))
+        //     .subscribe({
+        //         next: (data) => {
+        //             this.posDifficulty = data
+        //             const posDifficultyArray = []
+        //             for (
+        //                 let i = 1;
+        //                 i < this.posDifficulty.aggregated.length;
+        //                 i++
+        //             ) {
+        //                 posDifficultyArray.push([
+        //                     this.posDifficulty.aggregated[i].at * 1000,
+        //                     parseInt(this.posDifficulty.aggregated[i].d, 10)
+        //                 ])
+        //             }
+        //             this.difficultyChart = this.drawChart(
+        //                 false,
+        //                 'PoS Difficulty',
+        //                 'PoS Difficulty',
+        //                 (this.seriesData = [
+        //                     {
+        //                         type: 'area',
+        //                         name: 'PoS difficulty',
+        //                         data: posDifficultyArray
+        //                     }
+        //                 ])
+        //             )
+        //         },
+        //         error: (err) => console.log(err),
+        //         complete: () => (this.loader = false)
+        //     })
     }
 }

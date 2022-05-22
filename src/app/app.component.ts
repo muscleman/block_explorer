@@ -7,6 +7,7 @@ import { Store } from '@ngxs/store'
 import { DaemonInfos } from './actions/get-info.actions'
 import { VisibilityInfos } from './actions/get-visibility-info.actions'
 import { TransactionPoolInfos } from './actions/get-transaction-pool-info.actions'
+import { Charts } from './actions/get-chart-actions'
 
 @Component({
     selector: 'app-root',
@@ -30,6 +31,13 @@ export class AppComponent
         this.store.dispatch(new DaemonInfos.Get())
         this.store.dispatch(new VisibilityInfos.Get())
         this.store.dispatch(new TransactionPoolInfos.Get())
+        this.store.dispatch(new Charts.GetAll())
+        this.store.dispatch(new Charts.GetPOSDifficulty())
+        this.store.dispatch(new Charts.GetPOWDifficulty())
+        this.store.dispatch(new Charts.GetAverageBlockSize())
+        this.store.dispatch(new Charts.GetAverageTransactionsPerBlock())
+        this.store.dispatch(new Charts.GetConfirmedTransactionsPerDay())
+        this.store.dispatch(new Charts.GetHashRate())
         this.webSocketService.init()
         this.navIsOpen = true
         this.router.events.subscribe((event: Event) => {

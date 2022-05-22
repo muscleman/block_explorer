@@ -1,5 +1,3 @@
-//todo create a DaemonInfo model
-
 export namespace DaemonInfos {
     export class Add {
         static readonly type = '[DaemonInfo] Add'

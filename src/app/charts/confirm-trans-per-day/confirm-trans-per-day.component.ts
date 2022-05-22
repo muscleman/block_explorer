@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core'
-import { HttpService, MobileNavState } from '../../services/http.service'
+import { MobileNavState } from '../../services/http.service'
 import { Chart } from 'angular-highcharts'
 import { SubscriptionTracker } from '../../subscription-tracker/subscription-tracker'
 import { take } from 'rxjs/operators'
+import { Select } from '@ngxs/store'
+import { ChartsState } from 'app/states/charts-state'
+import { Observable } from 'rxjs'
 
 @Component({
     selector: 'app-confirm-trans-per-day',
@@ -23,8 +26,10 @@ export class ConfirmTransPerDayComponent
     seriesData: any
     loader: boolean
 
+    @Select(ChartsState.selectAllConfirmedTransactionsPerDay) allConfirmedTransactionsPerDay$: Observable<any[]>
+
     constructor(
-        private httpService: HttpService,
+        // private httpService: HttpService,
         private mobileNavState: MobileNavState
     ) {
         super()
@@ -253,12 +258,8 @@ export class ConfirmTransPerDayComponent
 
     initialChart() {
         this.loader = true
-        this.httpService
-            .getChart(this.activeChart, this.period)
-            .pipe(take(1))
-            .subscribe({
-                next: (data) => {
-                    this.InputArray = data
+        this.allConfirmedTransactionsPerDay$.subscribe(data => {
+            this.InputArray = data
                     const ConfirmTransactPerDay = []
                     for (let i = 1; i < this.InputArray.length; i++) {
                         ConfirmTransactPerDay.push([
@@ -279,9 +280,38 @@ export class ConfirmTransPerDayComponent
                                 }
                             ])
                         )
-                },
-                error: (err) => console.log(err),
-                complete: () => (this.loader = false)
-            })
+            this.loader = false
+        })
+
+        // this.httpService
+        //     .getChart(this.activeChart, this.period)
+        //     .pipe(take(1))
+        //     .subscribe({
+        //         next: (data) => {
+        //             this.InputArray = data
+        //             const ConfirmTransactPerDay = []
+        //             for (let i = 1; i < this.InputArray.length; i++) {
+        //                 ConfirmTransactPerDay.push([
+        //                     this.InputArray[i].at * 1000,
+        //                     this.InputArray[i].sum_trc
+        //                 ])
+        //             }
+        //             this.ConfirmTransactPerDayChart =
+        //                 ConfirmTransPerDayComponent.drawChart(
+        //                     false,
+        //                     'Confirmed Transactions Per Day',
+        //                     'Transactions',
+        //                     (this.seriesData = [
+        //                         {
+        //                             type: 'area',
+        //                             name: 'Transactions',
+        //                             data: ConfirmTransactPerDay
+        //                         }
+        //                     ])
+        //                 )
+        //         },
+        //         error: (err) => console.log(err),
+        //         complete: () => (this.loader = false)
+        //     })
     }
 }

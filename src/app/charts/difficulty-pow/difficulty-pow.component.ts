@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core'
 import { Chart } from 'angular-highcharts'
 import { SubscriptionTracker } from '../../subscription-tracker/subscription-tracker'
 import { take } from 'rxjs/operators'
-import { HttpService, MobileNavState } from '../../services/http.service'
+import { MobileNavState } from '../../services/http.service'
+import { Select } from '@ngxs/store'
+import { ChartsState } from 'app/states/charts-state'
+import { Observable } from 'rxjs'
 
 @Component({
     selector: 'app-difficulty-pow',
@@ -23,8 +26,10 @@ export class DifficultyPowComponent
     loader: boolean
     seriesType: string = 'other'
 
+    @Select(ChartsState.selectAllPOWDifficulty) allPOWDifficulty$: Observable<any[]>
+
     constructor(
-        private httpService: HttpService,
+        // private httpService: HttpService,
         private mobileNavState: MobileNavState
     ) {
         super()
@@ -314,12 +319,8 @@ export class DifficultyPowComponent
 
     initialChart() {
         this.loader = true
-        this.httpService
-            .getChart(this.activeChart, this.period)
-            .pipe(take(1))
-            .subscribe({
-                next: (data) => {
-                    this.powDifficulty = data
+        this.allPOWDifficulty$.subscribe(data => {
+            this.powDifficulty = data
                     const powDifficultyArray = []
                     for (
                         let i = 1;
@@ -343,9 +344,41 @@ export class DifficultyPowComponent
                             }
                         ])
                     )
-                },
-                error: (err) => console.log(err),
-                complete: () => (this.loader = false)
-            })
+            this.loader = false
+        })
+        
+        // this.httpService
+        //     .getChart(this.activeChart, this.period)
+        //     .pipe(take(1))
+        //     .subscribe({
+        //         next: (data) => {
+        //             this.powDifficulty = data
+        //             const powDifficultyArray = []
+        //             for (
+        //                 let i = 1;
+        //                 i < this.powDifficulty.aggregated.length;
+        //                 i++
+        //             ) {
+        //                 powDifficultyArray.push([
+        //                     this.powDifficulty.aggregated[i].at * 1000,
+        //                     parseInt(this.powDifficulty.aggregated[i].d, 10)
+        //                 ])
+        //             }
+        //             this.difficultyChart = this.drawChart(
+        //                 false,
+        //                 'PoW Difficulty',
+        //                 'PoW Difficulty',
+        //                 (this.seriesData = [
+        //                     {
+        //                         type: 'area',
+        //                         name: 'PoW difficulty',
+        //                         data: powDifficultyArray
+        //                     }
+        //                 ])
+        //             )
+        //         },
+        //         error: (err) => console.log(err),
+        //         complete: () => (this.loader = false)
+        //     })
     }
 }

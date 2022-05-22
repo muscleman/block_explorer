@@ -70,7 +70,7 @@ ng build --configuration production
 
 ```
 sudo apt update && sudo apt install postgresql postgresql-contrib \
-sudo system start postgresql-13
+sudo system start postgresql
 ```
 
 ## Add a New Role
@@ -120,7 +120,7 @@ sudo ufw allow 5432/tcp
 4. Restart Postgresql Service
 
 ```
-sudo system restart postgresql-13
+sudo system restart postgresql
 ```
 
 # Install pgAdmin4 postgresql tool on client machine

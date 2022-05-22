@@ -57,6 +57,7 @@ import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin'
 import { VisibilityState } from './states/visibility-state'
 import { TransactionPoolState } from './states/transaction-pool-state'
 import { BlockDetailsState } from './states/block-details-state'
+import { ChartsState } from './states/charts-state'
 
 const config: SocketIoConfig = { url: environment.backend, options: {transports: ['websocket', 'polling']} }
 
@@ -95,7 +96,7 @@ const config: SocketIoConfig = { url: environment.backend, options: {transports:
         AppRoutingModule,
         PipesModule,
         SocketIoModule.forRoot(config),
-        NgxsModule.forRoot([InfoState, VisibilityState, TransactionPoolState, BlockDetailsState], {
+        NgxsModule.forRoot([InfoState, VisibilityState, TransactionPoolState, BlockDetailsState, ChartsState], {
             developmentMode: !environment.production
         }),
         NgxsLoggerPluginModule.forRoot({ disabled: environment.production }),

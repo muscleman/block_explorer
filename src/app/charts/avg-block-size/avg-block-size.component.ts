@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core'
-import { HttpService, MobileNavState } from '../../services/http.service'
+import { MobileNavState } from '../../services/http.service'
 import { Chart } from 'angular-highcharts'
 import { SubscriptionTracker } from '../../subscription-tracker/subscription-tracker'
 import { take } from 'rxjs/operators'
+import { Select } from '@ngxs/store'
+import { ChartsState } from 'app/states/charts-state'
+import { Observable } from 'rxjs'
 
 @Component({
     selector: 'app-avg-block-size',
@@ -22,8 +25,10 @@ export class AvgBlockSizeComponent
     seriesData: any
     loader: boolean
 
+    @Select(ChartsState.selectAllAverageBlockSize) allAverageBlockSize$: Observable<any[]>
+
     constructor(
-        private httpService: HttpService,
+        // private httpService: HttpService,
         private mobileNavState: MobileNavState
     ) {
         super()
@@ -252,12 +257,8 @@ export class AvgBlockSizeComponent
 
     initialChart() {
         this.loader = true
-        this.httpService
-            .getChart(this.activeChart, this.period)
-            .pipe(take(1))
-            .subscribe({
-                next: (data) => {
-                    this.InputArray = data
+        this.allAverageBlockSize$.subscribe(data => {
+            this.InputArray = data
                     const AvgBlockSize = []
                     for (let i = 1; i < this.InputArray.length; i++) {
                         AvgBlockSize.push([
@@ -273,9 +274,32 @@ export class AvgBlockSizeComponent
                             { type: 'area', name: 'MB', data: AvgBlockSize }
                         ])
                     )
-                },
-                error: (err) => console.log(err),
-                complete: () => (this.loader = false)
-            })
+            this.loader = false
+        })
+        // this.httpService
+        //     .getChart(this.activeChart, this.period)
+        //     .pipe(take(1))
+        //     .subscribe({
+        //         next: (data) => {
+        //             this.InputArray = data
+        //             const AvgBlockSize = []
+        //             for (let i = 1; i < this.InputArray.length; i++) {
+        //                 AvgBlockSize.push([
+        //                     this.InputArray[i].at * 1000,
+        //                     this.InputArray[i].bcs
+        //                 ])
+        //             }
+        //             this.AvgBlockSizeChart = AvgBlockSizeComponent.drawChart(
+        //                 false,
+        //                 'Average Block Size',
+        //                 'MB',
+        //                 (this.seriesData = [
+        //                     { type: 'area', name: 'MB', data: AvgBlockSize }
+        //                 ])
+        //             )
+        //         },
+        //         error: (err) => console.log(err),
+        //         complete: () => (this.loader = false)
+        //     })
     }
 }
