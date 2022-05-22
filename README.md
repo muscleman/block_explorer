@@ -53,7 +53,7 @@ Edit `config.json`
 #### Run Backend Server
 
 ```
-node server.js
+node server-pg.js
 ```
 
 ## Build Frontend For Production
@@ -78,18 +78,22 @@ sudo system start postgresql
 1. Connect as postgres user and enter psql prompt
 
 ```
-sudo postgres psql
+sudo -u postgres psql
 ```
 
 2. Create a new role
 
 ```
-createuser --interactive
+sudo -u createuser --interactive --pwprompt
 ```
 
 `Output`
 
 `Enter name of role to add: zano`
+
+`Enter Password`
+
+`Enter Pass`
 
 `Shall the new role be a superuser? (y/n) y`
 
@@ -100,7 +104,7 @@ createuser --interactive
 ```
 sudo nano /etc/postgresql/13/main/postgresql.config
 
-change `list_address = 'localhost' to `listen_address = '*'
+change `list_address = 'localhost' to `listen_address = '*' and uncomment
 ```
 
 2. Edit pg_hba.conf and add a new line
@@ -111,7 +115,7 @@ change `list_address = 'localhost' to `listen_address = '*'
 host    all         all     0.0.0.0/0     md5
 ```
 
-3. Open firewall port
+3. Open firewall port if your ufw is active
 
 ```
 sudo ufw allow 5432/tcp
@@ -132,7 +136,7 @@ $ curl https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo apt-key ad
 $ sudo sh -c 'echo "deb https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$(lsb_release -cs) pgadmin4 main" > /etc/apt/sources.list.d/pgadmin4.list && apt update'
 ```
 
-## Install pgAdmin4
+## Install pgAdmin4 on remote machine you intend to administer the database from.
 
 ```
 sudo apt install pgadmin4
@@ -177,7 +181,7 @@ server {
     server_name zano.smartcoinpool.net;
     gzip on;
     gzip_types *;
-    gzip_min_length 500;
+    gzip_min_length 1000;
     
     # Set files location
     root /var/www/block-explorer/dist/;
