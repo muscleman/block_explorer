@@ -38,7 +38,7 @@ export class AvgBlockSizeComponent
         this.period = 'all'
     }
 
-    static drawChart(activeChart, titleText, yText, chartsData): Chart {
+    drawChart(activeChart, titleText, yText, chartsData): Chart {
         return new Chart({
             chart: {
                 type: 'line',
@@ -257,16 +257,24 @@ export class AvgBlockSizeComponent
 
     initialChart() {
         this.loader = true
-        this.allAverageBlockSize$.subscribe(data => {
-            this.InputArray = data
-                    const AvgBlockSize = []
-                    for (let i = 1; i < this.InputArray.length; i++) {
-                        AvgBlockSize.push([
-                            this.InputArray[i].at * 1000,
-                            this.InputArray[i].bcs
-                        ])
-                    }
-                    this.AvgBlockSizeChart = AvgBlockSizeComponent.drawChart(
+        this._track(
+            this.allAverageBlockSize$.subscribe(data => {
+                if (!!data || data.length === 0)
+                    return
+                this.InputArray = data
+                const AvgBlockSize = []
+                for (let i = 1; i < this.InputArray.length; i++) {
+                    AvgBlockSize.push([
+                        this.InputArray[i].at * 1000,
+                        this.InputArray[i].bcs
+                    ])
+                }
+                if (this.AvgBlockSizeChart) {
+                    this.AvgBlockSizeChart.removeSeries[0]
+                    this.AvgBlockSizeChart.addSeries[0].seriesData({ type: 'area', name: 'MB', data: AvgBlockSize })
+                }
+                else {
+                    this.AvgBlockSizeChart = this.drawChart(
                         false,
                         'Average Block Size',
                         'MB',
@@ -274,8 +282,10 @@ export class AvgBlockSizeComponent
                             { type: 'area', name: 'MB', data: AvgBlockSize }
                         ])
                     )
-            this.loader = false
-        })
+                }
+                this.loader = false
+            })
+        )
         // this.httpService
         //     .getChart(this.activeChart, this.period)
         //     .pipe(take(1))

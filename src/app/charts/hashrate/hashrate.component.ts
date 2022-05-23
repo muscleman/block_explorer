@@ -35,7 +35,7 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
         this.period = 'all'
     }
 
-    static drawChart(activeChart, titleText, yText, chartsData): Chart {
+    drawChart(activeChart, titleText, yText, chartsData): Chart {
         return new Chart({
             chart: {
                 type: 'line',
@@ -243,7 +243,7 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
     }
 
     ngOnInit() {
-        this.mobileNavState.change.subscribe((navIsOpen) => {
+        this.mobileNavState.change.pipe(take(1)).subscribe((navIsOpen) => {
             this.navIsOpen = navIsOpen
         })
         this.initialChart()
@@ -255,52 +255,81 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
 
     initialChart() {
         this.loader = true
-        this.allHashRate$.subscribe(data => {
-            this.InputArray = data
-            const difficultyArray = []
-            const hashRate100 = []
-            const hashRate400 = []
-            for (let i = 1; i < this.InputArray.length; i++) {
-                hashRate100.push([
-                    this.InputArray[i].at * 1000,
-                    parseInt(this.InputArray[i].h100, 10)
-                ])
-                hashRate400.push([
-                    this.InputArray[i].at * 1000,
-                    parseInt(this.InputArray[i].h400, 10)
-                ])
-                difficultyArray.push([
-                    this.InputArray[i].at * 1000,
-                    parseInt(this.InputArray[i].d120, 10)
-                ])
-            }
-            this.hashRateChart = HashrateComponent.drawChart(
-                false,
-                'Hash Rate',
-                'Hash Rate H/s',
-                (this.seriesData = [
-                    {
+        this._track(
+            this.allHashRate$.subscribe(data => {
+                if (!!data || data.length === 0) 
+                    return
+                this.InputArray = data
+                const difficultyArray = []
+                const hashRate100 = []
+                const hashRate400 = []
+                for (let i = 1; i < this.InputArray.length; i++) {
+                    hashRate100.push([
+                        this.InputArray[i].at * 1000,
+                        parseInt(this.InputArray[i].h100, 10)
+                    ])
+                    hashRate400.push([
+                        this.InputArray[i].at * 1000,
+                        parseInt(this.InputArray[i].h400, 10)
+                    ])
+                    difficultyArray.push([
+                        this.InputArray[i].at * 1000,
+                        parseInt(this.InputArray[i].d120, 10)
+                    ])
+                }
+                if (this.hashRateChart) {
+                    this.hashRateChart.removeSeries[0]
+                    this.hashRateChart.removeSeries[1]
+                    this.hashRateChart.removeSeries[2]
+                    this.hashRateChart.addSeries[0].seriesData({
                         type: 'area',
                         name: 'Hash Rate 100',
                         data: hashRate100,
                         color: '#28B463'
-                    },
-                    {
+                    })
+                    this.hashRateChart.addSeries[1].seriesData({
                         type: 'area',
                         name: 'Hash Rate 400',
                         data: hashRate400,
                         color: '#3498DB'
-                    },
-                    {
+                    })
+                    this.hashRateChart.addSeries[2].seriesData({
                         type: 'area',
                         name: 'Difficulty',
                         data: difficultyArray,
                         color: '#d2fe46'
-                    }
-                ])
-            )
-            this.loader = false
-        })
+                    })
+                }
+                else {
+                    this.hashRateChart = this.drawChart(
+                        false,
+                        'Hash Rate',
+                        'Hash Rate H/s',
+                        (this.seriesData = [
+                            {
+                                type: 'area',
+                                name: 'Hash Rate 100',
+                                data: hashRate100,
+                                color: '#28B463'
+                            },
+                            {
+                                type: 'area',
+                                name: 'Hash Rate 400',
+                                data: hashRate400,
+                                color: '#3498DB'
+                            },
+                            {
+                                type: 'area',
+                                name: 'Difficulty',
+                                data: difficultyArray,
+                                color: '#d2fe46'
+                            }
+                        ])
+                    )
+                }
+                this.loader = false
+            })
+        )
 
         // this.httpService
         //     .getChart(this.activeChart, this.period)

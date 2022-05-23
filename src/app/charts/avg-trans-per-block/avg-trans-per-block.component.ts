@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core'
 import { MobileNavState } from '../../services/http.service'
 import { Chart } from 'angular-highcharts'
 import { SubscriptionTracker } from '../../subscription-tracker/subscription-tracker'
-// import { take } from 'rxjs/operators'
-import { Observable } from 'rxjs'
+import { Observable, take } from 'rxjs'
 import { Select } from '@ngxs/store'
 import { ChartsState } from 'app/states/charts-state'
 
@@ -28,7 +27,7 @@ export class AvgTransPerBlockComponent
 
     @Select(ChartsState.selectAllAverageTransactionsPerBlock) allAverageTransactionsPerBlock$: Observable<any[]>
 
-    static drawChart(activeChart, titleText, yText, chartsData): Chart {
+    drawChart(activeChart, titleText, yText, chartsData): Chart {
         return new Chart({
             chart: {
                 type: 'line',
@@ -246,7 +245,7 @@ export class AvgTransPerBlockComponent
     }
 
     ngOnInit() {
-        this.mobileNavState.change.subscribe((navIsOpen) => {
+        this.mobileNavState.change.pipe(take(1)).subscribe((navIsOpen) => {
             this.navIsOpen = navIsOpen
         })
         this.initialChart()
@@ -258,31 +257,45 @@ export class AvgTransPerBlockComponent
 
     initialChart() {
         this.loader = true
-        this.allAverageTransactionsPerBlock$.subscribe(data => {
-            this.InputArray = data
-            const AvgTransPerBlock = []
-            for (let i = 1; i < this.InputArray.length; i++) {
-                AvgTransPerBlock.push([
-                    this.InputArray[i].at * 1000,
-                    this.InputArray[i].trc
-                ])
-            }
-            this.AvgTransPerBlockChart =
-                AvgTransPerBlockComponent.drawChart(
-                    false,
-                    'Average Number Of Transactions Per Block',
-                    'Transaction Per Block',
-                    (this.seriesData = [
-                        {
-                            type: 'area',
-                            name: 'Transaction Per Block',
-                            data: AvgTransPerBlock
-                        }
+        this._track(
+            this.allAverageTransactionsPerBlock$.subscribe(data => {
+                if (!!data || data.length === 0)
+                    return
+                this.InputArray = data
+                const AvgTransPerBlock = []
+                for (let i = 1; i < this.InputArray.length; i++) {
+                    AvgTransPerBlock.push([
+                        this.InputArray[i].at * 1000,
+                        this.InputArray[i].trc
                     ])
-                )
-            this.loader = false
-        })
-
+                }
+                if (this.AvgTransPerBlockChart) {
+                    this.AvgTransPerBlockChart.removeSeries[0]
+                    this.AvgTransPerBlockChart.addSeries[0].seriesData( {
+                        type: 'area',
+                        name: 'Transaction Per Block',
+                        data: AvgTransPerBlock
+                    })
+                }
+                else 
+                {
+                    this.AvgTransPerBlockChart =
+                    this.drawChart(
+                        false,
+                        'Average Number Of Transactions Per Block',
+                        'Transaction Per Block',
+                        (this.seriesData = [
+                            {
+                                type: 'area',
+                                name: 'Transaction Per Block',
+                                data: AvgTransPerBlock
+                            }
+                        ])
+                    )
+                }
+                this.loader = false
+            })
+        )
 
 
         // this.httpService

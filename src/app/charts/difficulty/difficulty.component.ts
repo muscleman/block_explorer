@@ -304,7 +304,7 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
     }
 
     ngOnInit() {
-        this.mobileNavState.change.subscribe((navIsOpen) => {
+        this.mobileNavState.change.pipe(take(1)).subscribe((navIsOpen) => {
             this.navIsOpen = navIsOpen
         })
         this.initialChart()
@@ -316,37 +316,48 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
 
     initialChart() {
         this.loader = true
-
-        this.allPOSDifficulty$.subscribe(data => {
-            if (data.length === 0)
-                return
-            this.posDifficulty = data
-            const posDifficultyArray = []
-            for (
-                let i = 1;
-                i < this.posDifficulty.aggregated.length;
-                i++
-            ) {
-                posDifficultyArray.push([
-                    this.posDifficulty.aggregated[i].at * 1000,
-                    parseInt(this.posDifficulty.aggregated[i].d, 10)
-                ])
-            }
-            this.difficultyChart = this.drawChart(
-                false,
-                'PoS Difficulty',
-                'PoS Difficulty',
-                (this.seriesData = [
-                    {
+        this._track(
+            this.allPOSDifficulty$.subscribe(data => {
+                if (!!data || data.length === 0)
+                    return
+                this.posDifficulty = data
+                const posDifficultyArray = []
+                for (
+                    let i = 1;
+                    i < this.posDifficulty.aggregated.length;
+                    i++
+                ) {
+                    posDifficultyArray.push([
+                        this.posDifficulty.aggregated[i].at * 1000,
+                        parseInt(this.posDifficulty.aggregated[i].d, 10)
+                    ])
+                }
+                if (this.difficultyChart) {
+                    this.difficultyChart.removeSeries[0]
+                    this.difficultyChart.addSeries[0].seriesData(                            {
                         type: 'area',
                         name: 'PoS difficulty',
                         data: posDifficultyArray
-                    }
-                ])
-            )
-            this.loader = false
-        })
-
+                    })
+                }
+                else
+                {
+                    this.difficultyChart = this.drawChart(
+                        false,
+                        'PoS Difficulty',
+                        'PoS Difficulty',
+                        (this.seriesData = [
+                            {
+                                type: 'area',
+                                name: 'PoS difficulty',
+                                data: posDifficultyArray
+                            }
+                        ])
+                    )
+                }
+                this.loader = false
+            })
+        )
 
 
 

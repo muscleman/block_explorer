@@ -307,7 +307,7 @@ export class DifficultyPowComponent
     }
 
     ngOnInit() {
-        this.mobileNavState.change.subscribe((navIsOpen) => {
+        this.mobileNavState.change.pipe(take(1)).subscribe((navIsOpen) => {
             this.navIsOpen = navIsOpen
         })
         this.initialChart()
@@ -319,33 +319,52 @@ export class DifficultyPowComponent
 
     initialChart() {
         this.loader = true
-        this.allPOWDifficulty$.subscribe(data => {
-            this.powDifficulty = data
-                    const powDifficultyArray = []
-                    for (
-                        let i = 1;
-                        i < this.powDifficulty.aggregated.length;
-                        i++
-                    ) {
-                        powDifficultyArray.push([
-                            this.powDifficulty.aggregated[i].at * 1000,
-                            parseInt(this.powDifficulty.aggregated[i].d, 10)
-                        ])
-                    }
-                    this.difficultyChart = this.drawChart(
-                        false,
-                        'PoW Difficulty',
-                        'PoW Difficulty',
-                        (this.seriesData = [
+        this._track(
+            this.allPOWDifficulty$.subscribe(data => {
+                if (!!data || data.length === 0)
+                    return
+                this.powDifficulty = data
+                        const powDifficultyArray = []
+                        for (
+                            let i = 1;
+                            i < this.powDifficulty.aggregated.length;
+                            i++
+                        ) {
+                            powDifficultyArray.push([
+                                this.powDifficulty.aggregated[i].at * 1000,
+                                parseInt(this.powDifficulty.aggregated[i].d, 10)
+                            ])
+                        }
+
+                        this.seriesData = [
                             {
                                 type: 'area',
                                 name: 'PoW difficulty',
                                 data: powDifficultyArray
                             }
-                        ])
-                    )
-            this.loader = false
-        })
+                        ]
+
+                        if (this.difficultyChart) {
+                            this.difficultyChart.removeSeries(0)
+                            this.difficultyChart.addSeries[0].seriesData(this.seriesData)
+                        }
+                        else {
+                            this.difficultyChart = this.drawChart(
+                                false,
+                                'PoW Difficulty',
+                                'PoW Difficulty',
+                                (this.seriesData = [
+                                    {
+                                        type: 'area',
+                                        name: 'PoW difficulty',
+                                        data: powDifficultyArray
+                                    }
+                                ])
+                            )
+                        }
+                this.loader = false
+            })
+        )
         
         // this.httpService
         //     .getChart(this.activeChart, this.period)

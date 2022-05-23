@@ -39,7 +39,7 @@ export class ConfirmTransPerDayComponent
         this.period = 'all'
     }
 
-    static drawChart(activeChart, titleText, yText, chartsData): Chart {
+    drawChart(activeChart, titleText, yText, chartsData): Chart {
         return new Chart({
             chart: {
                 type: 'line',
@@ -246,7 +246,7 @@ export class ConfirmTransPerDayComponent
     }
 
     ngOnInit() {
-        this.mobileNavState.change.subscribe((navIsOpen) => {
+        this.mobileNavState.change.pipe(take(1)).subscribe((navIsOpen) => {
             this.navIsOpen = navIsOpen
         })
         this.initialChart()
@@ -258,17 +258,30 @@ export class ConfirmTransPerDayComponent
 
     initialChart() {
         this.loader = true
-        this.allConfirmedTransactionsPerDay$.subscribe(data => {
-            this.InputArray = data
-                    const ConfirmTransactPerDay = []
-                    for (let i = 1; i < this.InputArray.length; i++) {
-                        ConfirmTransactPerDay.push([
-                            this.InputArray[i].at * 1000,
-                            this.InputArray[i].sum_trc
-                        ])
-                    }
+        this._track(
+            this.allConfirmedTransactionsPerDay$.subscribe(data => {
+                if (!!data || data.length === 0)
+                    return 
+                this.InputArray = data
+                const ConfirmTransactPerDay = []
+                for (let i = 1; i < this.InputArray.length; i++) {
+                    ConfirmTransactPerDay.push([
+                        this.InputArray[i].at * 1000,
+                        this.InputArray[i].sum_trc
+                    ])
+                }
+                if (this.ConfirmTransactPerDayChart) {
+                    this.ConfirmTransactPerDayChart.removeSeries[0]
+                    this.ConfirmTransactPerDayChart.addSeries[0].seriesData({
+                        type: 'area',
+                        name: 'Transactions',
+                        data: ConfirmTransactPerDay
+                    })
+                }
+                else
+                {
                     this.ConfirmTransactPerDayChart =
-                        ConfirmTransPerDayComponent.drawChart(
+                        this.drawChart(
                             false,
                             'Confirmed Transactions Per Day',
                             'Transactions',
@@ -280,8 +293,10 @@ export class ConfirmTransPerDayComponent
                                 }
                             ])
                         )
-            this.loader = false
-        })
+                }
+                this.loader = false
+            })
+        )
 
         // this.httpService
         //     .getChart(this.activeChart, this.period)

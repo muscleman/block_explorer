@@ -99,8 +99,8 @@ const config: SocketIoConfig = { url: environment.backend, options: {transports:
         NgxsModule.forRoot([InfoState, VisibilityState, TransactionPoolState, BlockDetailsState, ChartsState], {
             developmentMode: !environment.production
         }),
-        NgxsLoggerPluginModule.forRoot({ disabled: environment.production }),
-        NgxsReduxDevtoolsPluginModule.forRoot()
+        // NgxsLoggerPluginModule.forRoot({ disabled: environment.production }),
+        // NgxsReduxDevtoolsPluginModule.forRoot()
     ],
     providers: [
         HttpService,

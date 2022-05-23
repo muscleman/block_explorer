@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core'
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core'
 import { Router, Event, NavigationEnd } from '@angular/router'
 import { MobileNavState } from './services/http.service'
 import { WebSocketService } from './services/web-socket.service'
@@ -8,6 +8,8 @@ import { DaemonInfos } from './actions/get-info.actions'
 import { VisibilityInfos } from './actions/get-visibility-info.actions'
 import { TransactionPoolInfos } from './actions/get-transaction-pool-info.actions'
 import { Charts } from './actions/get-chart-actions'
+import { forkJoin, Observable, of, switchMap, tap, timer } from 'rxjs'
+import { environment } from 'environments/environment'
 
 @Component({
     selector: 'app-root',
@@ -25,19 +27,13 @@ export class AppComponent
         private router: Router,
         private mobileNavState: MobileNavState,
         private webSocketService: WebSocketService,
-        private store: Store
+        public store: Store
     ) {
         super()
         this.store.dispatch(new DaemonInfos.Get())
         this.store.dispatch(new VisibilityInfos.Get())
         this.store.dispatch(new TransactionPoolInfos.Get())
-        this.store.dispatch(new Charts.GetAll())
-        this.store.dispatch(new Charts.GetPOSDifficulty())
-        this.store.dispatch(new Charts.GetPOWDifficulty())
-        this.store.dispatch(new Charts.GetAverageBlockSize())
-        this.store.dispatch(new Charts.GetAverageTransactionsPerBlock())
-        this.store.dispatch(new Charts.GetConfirmedTransactionsPerDay())
-        this.store.dispatch(new Charts.GetHashRate())
+        
         this.webSocketService.init()
         this.navIsOpen = true
         this.router.events.subscribe((event: Event) => {
@@ -47,6 +43,21 @@ export class AppComponent
                 }
             }
         })
+        this._track(
+        timer(environment.initialChartLoadDelayMs, environment.frequencyOfChartRefreshingMs).pipe(
+            switchMap((_) => {
+    console.log('loading....')
+                    this.store.dispatch(new Charts.GetAll()),
+                    this.store.dispatch(new Charts.GetPOSDifficulty()),
+                    this.store.dispatch(new Charts.GetPOWDifficulty()),
+                    this.store.dispatch(new Charts.GetAverageBlockSize()),
+                    this.store.dispatch(new Charts.GetAverageTransactionsPerBlock()),
+                    this.store.dispatch(new Charts.GetConfirmedTransactionsPerDay()),
+                    this.store.dispatch(new Charts.GetHashRate())
+                    return of(true)
+            })
+        ).subscribe()
+        )
     }
 
     ngOnInit() {
@@ -54,6 +65,7 @@ export class AppComponent
             this.navIsOpen = navIsOpen
         })
     }
+
     btnToggleMenu() {
         this.mobileNavState.toggleMenu()
     }
