@@ -318,7 +318,7 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
         this.loader = true
         this._track(
             this.allPOSDifficulty$.subscribe(data => {
-                if (!!data || data.length === 0)
+                if (data.length === 0)
                     return
                 this.posDifficulty = data
                 const posDifficultyArray = []

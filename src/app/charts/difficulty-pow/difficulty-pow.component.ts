@@ -321,47 +321,41 @@ export class DifficultyPowComponent
         this.loader = true
         this._track(
             this.allPOWDifficulty$.subscribe(data => {
-                if (!!data || data.length === 0)
-                    return
+                if (data.length === 0)
+                return
                 this.powDifficulty = data
-                        const powDifficultyArray = []
-                        for (
-                            let i = 1;
-                            i < this.powDifficulty.aggregated.length;
-                            i++
-                        ) {
-                            powDifficultyArray.push([
-                                this.powDifficulty.aggregated[i].at * 1000,
-                                parseInt(this.powDifficulty.aggregated[i].d, 10)
-                            ])
-                        }
+                const powDifficultyArray = []
+                for (
+                    let i = 1;
+                    i < this.powDifficulty.aggregated.length;
+                    i++
+                ) {
+                    powDifficultyArray.push([
+                        this.powDifficulty.aggregated[i].at * 1000,
+                        parseInt(this.powDifficulty.aggregated[i].d, 10)
+                    ])
+                }
 
-                        this.seriesData = [
-                            {
-                                type: 'area',
-                                name: 'PoW difficulty',
-                                data: powDifficultyArray
-                            }
-                        ]
+                this.seriesData = [
+                    {
+                        type: 'area',
+                        name: 'PoW difficulty',
+                        data: powDifficultyArray
+                    }
+                ]
 
-                        if (this.difficultyChart) {
-                            this.difficultyChart.removeSeries(0)
-                            this.difficultyChart.addSeries[0].seriesData(this.seriesData)
-                        }
-                        else {
-                            this.difficultyChart = this.drawChart(
-                                false,
-                                'PoW Difficulty',
-                                'PoW Difficulty',
-                                (this.seriesData = [
-                                    {
-                                        type: 'area',
-                                        name: 'PoW difficulty',
-                                        data: powDifficultyArray
-                                    }
-                                ])
-                            )
-                        }
+                // if (this.difficultyChart) {
+                //     this.difficultyChart.removeSeries(0)
+                //     this.difficultyChart.addSeries[0].seriesData(this.seriesData)
+                // }
+                // else {
+                    this.difficultyChart = this.drawChart(
+                        false,
+                        'PoW Difficulty',
+                        'PoW Difficulty',
+                        (this.seriesData)
+                    )
+                // }
                 this.loader = false
             })
         )

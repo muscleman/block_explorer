@@ -259,7 +259,7 @@ export class AvgTransPerBlockComponent
         this.loader = true
         this._track(
             this.allAverageTransactionsPerBlock$.subscribe(data => {
-                if (!!data || data.length === 0)
+                if (data.length === 0)
                     return
                 this.InputArray = data
                 const AvgTransPerBlock = []

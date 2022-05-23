@@ -257,7 +257,7 @@ export class HashrateComponent extends SubscriptionTracker implements OnInit {
         this.loader = true
         this._track(
             this.allHashRate$.subscribe(data => {
-                if (!!data || data.length === 0) 
+                if (data.length === 0) 
                     return
                 this.InputArray = data
                 const difficultyArray = []

@@ -162,7 +162,7 @@ export class ChartsComponent
         this._track(
             this.allCharts$.subscribe(data => {
 
-                if (!!data || data.length === 0)
+                if (data.length === 0)
                     return
                 
                 this.InputArray = data
