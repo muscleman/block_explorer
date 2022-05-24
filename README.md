@@ -9,13 +9,17 @@ export const environment = {
   production: false,
   backend: 'http://10.0.0.13:8008',
   documentionApi: 'https://docs.zano.org',
-  decimalPlaces: 2
+  decimalPlaces: 2,
+  initialChartLoadDelayMs: 5000,
+  frequencyOfChartRefreshingMs: 3600000 //hourly
 };
 ```
 
 1. `backend` FQDN of your backend with the `frontEnd_api`
 2. `documentationApi` Address used to build documentation explanations
 3. `decimalPlaces` how many decimal places to use when displaying currency
+4. `initialChartLoadDelayMs` how many milliseconds to wait after the app loads before attempting to fill the chart cache
+5. `frequencyOfChartRefreshingMs` how often the chart cache should be refresh, currently 1 hour
 
 #### Run Frontend development Server
 
