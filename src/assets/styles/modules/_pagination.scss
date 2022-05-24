@@ -33,7 +33,7 @@
         > input {
             border: none;
             font-size: 14px;
-            max-width: 65px;
+            max-width: 100px;
             color: #9eaacc;
             background-color: rgba(#7694fe, 0.1);
             padding: 8px 15px;
@@ -69,7 +69,7 @@
             }
         }
         > input {
-            max-width: 65px;
+            max-width: 100px;
             margin-right: 7px;
             &.input_go_to_block {
                 max-width: 90px;
@@ -85,6 +85,7 @@
             }
         }
         input {
+            max-width: 100px;
             transition: 0.25s;
             &:active,
             &:focus {

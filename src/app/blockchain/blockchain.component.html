@@ -88,7 +88,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr [@highlightNewItems]="block?.height > maxViewedBlockHeight ? 'new': 'old'"
+            <tr [@highlightNewItems]="(block?.height > maxViewedBlockHeight) || (block?.height == goToBlock) ? 'new': 'old'"
                 [ngClass]="{
                     pos: block.type == '0',
                     pow: block.type == '1',
