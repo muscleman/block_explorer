@@ -222,7 +222,7 @@ app.get(
 
         if (start && count) {
             const query = {
-                text: 'SELECT height, actual_timestamp, base_reward, blob, block_cumulative_size, block_tself_size, cumulative_diff_adjusted, cumulative_diff_precise, difficulty, effective_fee_median, id, is_orphan, penalty, prev_id, summary_reward, this_block_fee_median, timestamp, total_fee, total_txs_size, tr_count, type, miner_text_info, pow_seed FROM blocks WHERE blocks.height >= $1 ORDER BY blocks.height ASC LIMIT $2;',
+                text: "SELECT height, CASE WHEN type = 0 THEN actual_timestamp ELSE timestamp END as timestamp, base_reward, blob, block_cumulative_size, block_tself_size, cumulative_diff_adjusted, cumulative_diff_precise, difficulty, effective_fee_median, id, is_orphan, penalty, prev_id, summary_reward, this_block_fee_median, actual_timestamp , total_fee, total_txs_size, tr_count, type, miner_text_info, pow_seed FROM blocks WHERE blocks.height >= $1 ORDER BY blocks.height ASC LIMIT $2;",
                 values: [start, count]
             }
             let result = await db.query(query)
