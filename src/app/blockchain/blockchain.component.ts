@@ -46,6 +46,7 @@ export class BlockchainComponent
     maxViewedBlockHeight: number
     maxViewedBlockHeights: Array<number> = []
 
+    enableVisibilityInfo = environment.enableVisibilityInfo
 
     maxViewedPoolTimestamp: number
     maxViewedPoolTimestamps: Array<number> = []
@@ -230,6 +231,7 @@ export class BlockchainComponent
                 (this.info.lastBlock - +this.setLimit - (this.listBlockStart + 1)) /
                     +this.setLimit
             ) + 2
+        this.maxViewedBlockHeights = [this.listBlockStart + 10]
         this.onChange()
     }
 

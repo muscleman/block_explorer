@@ -10,5 +10,6 @@ export const environment = {
     decimalPlaces: 2,
     transactionPoolLimit: 5,
     initialChartLoadDelayMs: 5000,
-    frequencyOfChartRefreshingMs: 3600000 //hourly
+    frequencyOfChartRefreshingMs: 3600000,
+    enableVisibilityInfo: true
 }

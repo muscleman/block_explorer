@@ -34,7 +34,7 @@
     <app-search (isVisible)="onIsVisible($event)"></app-search>
 </div>
 
-<div class="visibility_info">
+<div *ngIf="enableVisibilityInfo" class="visibility_info">
     <app-staked-coins></app-staked-coins>
     <app-dev-fund></app-dev-fund>
 </div>

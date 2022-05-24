@@ -17,6 +17,7 @@ const wallet = `${config.auditable_wallet.api}/json_rpc`
 const server_port = config.server_port
 const frontEnd_api = config.frontEnd_api
 let enabled_during_sync = config.websocket.enabled_during_sync
+let enable_Visibility_Info = config.enableVisibilityInfo
 let maxCount = 1000
 let lastBlock = {
     height: -1,
@@ -1148,44 +1149,36 @@ const getVisibilityInfo = async () => {
         unlocked_balance: 0
     }
     try {
-        const [res1, res2, res3] = await axios.all([
-            getbalance(),
-            get_mining_history(),
-            get_info()
-        ])
-        result.balance = res1.data.result.balance
-        result.unlocked_balance = res1.data.result.unlocked_balance
+        if (enable_Visibility_Info) {
+            const [res1, res2, res3] = await axios.all([
+                getbalance(),
+                get_mining_history(),
+                get_info()
+            ])
+            result.balance = res1.data.result.balance
+            result.unlocked_balance = res1.data.result.unlocked_balance
 
-        let totalStakedCoins7Days = new BigNumber(720 * 7 * 1000000000000)
-        let stakedCoinsLast7Days = new BigNumber(0)
-        if ('mined_entries' in res2.data.result) {
-            for (const item of res2.data.result.mined_entries) {
-                stakedCoinsLast7Days = stakedCoinsLast7Days.plus(item.a)
+            let totalStakedCoins7Days = new BigNumber(720 * 7 * 1000000000000)
+            let stakedCoinsLast7Days = new BigNumber(0)
+            if ('mined_entries' in res2.data.result) {
+                for (const item of res2.data.result.mined_entries) {
+                    stakedCoinsLast7Days = stakedCoinsLast7Days.plus(item.a)
+                }
             }
+
+            result.amount = stakedCoinsLast7Days.toNumber()
+            
+            let totalCoinsInvolvedInStaking =
+            stakedCoinsLast7Days.isEqualTo(0)
+            ? new BigNumber(0)
+            : new BigNumber(result.balance)
+            .multipliedBy(
+                totalStakedCoins7Days.dividedBy(stakedCoinsLast7Days)
+                )
+                        
+            let totalSupply = new BigNumber(res3.data.result.total_coins)
+            result.percentage = totalCoinsInvolvedInStaking.dividedBy(totalSupply).multipliedBy(100).toFixed(2)
         }
-
-        result.amount = stakedCoinsLast7Days.toNumber()
-        
-        let totalCoinsInvolvedInStaking =
-        stakedCoinsLast7Days.isEqualTo(0)
-        ? new BigNumber(0)
-        : new BigNumber(result.balance)
-        .multipliedBy(
-            totalStakedCoins7Days.dividedBy(stakedCoinsLast7Days)
-            )
-                    
-        let totalSupply = new BigNumber(res3.data.result.total_coins)
-        
-        // console.log('wallet balance ', result.balance)
-        // console.log('staked coins 7 days ', stakedCoinsLast7Days.toNumber())
-        // console.log('totalCoinsInvolvedInStaking ', new BigNumber(result.balance)
-        //         .multipliedBy(
-        //         totalStakedCoins7Days.dividedBy(stakedCoinsLast7Days)
-        //         ).toNumber())
-        // console.log('totalSupply ', totalSupply.toNumber())
-        // console.log('percentage', totalCoinsInvolvedInStaking.dividedBy(totalSupply).multipliedBy(100).toNumber())
-
-        result.percentage = totalCoinsInvolvedInStaking.dividedBy(totalSupply).multipliedBy(100).toFixed(2)
     } catch (error) {
         log('getVisibilityInfo() ERROR', error)
     }
@@ -1196,8 +1189,7 @@ const emitSocketInfo = async () => {
     if (enabled_during_sync) {
         blockInfo.lastBlock = lastBlock.height
         io.emit('get_info', JSON.stringify(blockInfo))
-        io.emit('get_visibility_info', await getVisibilityInfo())
-        
+        io.emit('get_visibility_info', await getVisibilityInfo())        
     }
 }
 

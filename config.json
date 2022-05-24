@@ -8,6 +8,7 @@
     "websocket": {
         "enabled_during_sync": false
     },
+    "enableVisibilityInfo": true,
     "database": {
         "user": "zano",
         "host": "10.0.0.13",
