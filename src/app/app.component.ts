@@ -46,7 +46,6 @@ export class AppComponent
         this._track(
         timer(environment.initialChartLoadDelayMs, environment.frequencyOfChartRefreshingMs).pipe(
             switchMap((_) => {
-    console.log('loading....')
                     this.store.dispatch(new Charts.GetAll()),
                     this.store.dispatch(new Charts.GetPOSDifficulty()),
                     this.store.dispatch(new Charts.GetPOWDifficulty()),
