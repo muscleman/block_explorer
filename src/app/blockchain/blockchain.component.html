@@ -105,13 +105,12 @@
                 <td class="timestamp">
                     {{
                         block.timestamp * 1000
-                            | amUtc
-                            | amDateFormat: 'YYYY.MM.DD HH:mm:ss'
+                            | date: 'YYYY.MM.dd HH:mm:ss':'+0000'
                     }}
                 </td>
                 <!--Timestamp-->
                 <td class="age">
-                    {{ block.actual_timestamp * 1000 | amUtc | amTimeAgo }}
+                    {{ block.actual_timestamp * 1000 | amTimeAgo }}
                 </td>
                 <!-- age-->
                 <td class="size">{{ block.block_cumulative_size }} bytes</td>
@@ -211,13 +210,11 @@
                 *ngFor="let pools of getLimitedTransactionPoolInfo$ | async">
                 <td class="timestamp">
                     <span *ngIf="pools.timestamp > 0">{{
-                        pools.timestamp * 1000
-                            | amUtc
-                            | amDateFormat: 'YYYY.MM.DD HH:mm:ss'
+                        pools.timestamp * 1000 | date: 'YYYY.MM.dd HH:mm:ss':'+0000'
                     }}</span>
                     <span *ngIf="pools.timestamp === 0">0</span>
                 </td>
-                <td class="age">{{ pools.timestamp * 1000 | TimeAgo }}</td>
+                <td class="age">{{ pools.timestamp * 1000 | amTimeAgo }}</td>
                 <td class="size">{{ pools.blob_size }} bytes</td>
                 <td class="fee">{{ pools.fee | moneyParse }}</td>
                 <td class="hash">

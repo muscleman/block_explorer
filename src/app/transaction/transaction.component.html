@@ -180,9 +180,7 @@
                     <td class="_height">{{ keeperBlock | bitNumber }}</td>
                     <td class="_timestamp">
                         {{
-                            blockTimestamp * 1000
-                                | amUtc
-                                | amDateFormat: 'YYYY.MM.DD HH:mm:ss'
+                            blockTimestamp * 1000 | date: 'YYYY.MM.dd HH:mm:ss':'+0000'
                         }}
                     </td>
                 </tr>

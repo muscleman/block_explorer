@@ -38,9 +38,7 @@
                 <td>Timestamp (UTC):</td>
                 <td>
                     <span *ngIf="altBlocksDetails.timestamp > 0">{{
-                        altBlocksDetails.timestamp * 1000
-                            | amUtc
-                            | amDateFormat: 'YYYY.MM.DD HH:mm:ss'
+                        altBlocksDetails.timestamp * 1000 | date: 'YYYY.MM.dd HH:mm:ss':'+0000'
                     }}</span>
                     <span *ngIf="altBlocksDetails.timestamp == 0">0</span>
                 </td>
@@ -49,9 +47,7 @@
                 <td>Actual Timestamp (UTC):</td>
                 <td>
                     <span *ngIf="altBlocksDetails.actual_timestamp > 0">{{
-                        altBlocksDetails.actual_timestamp * 1000
-                            | amUtc
-                            | amDateFormat: 'YYYY.MM.DD HH:mm:ss'
+                        altBlocksDetails.actual_timestamp * 1000 | date: 'YYYY.MM.dd HH:mm:ss':'+0000'
                     }}</span>
                     <span *ngIf="altBlocksDetails.actual_timestamp == 0"
                         >0</span
