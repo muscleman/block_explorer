@@ -91,7 +91,7 @@
                     <td>Timestamp (UTC):</td>
                     <td>
                         <span *ngIf="Block.timestamp > 0">{{
-                            Block.timestamp * 1000 | date: 'YYYY.MM.dd HH:mm:ss':'+0000'
+                            Block.timestamp * 1000 | date: 'YYYY-MM-dd HH:mm:ss':'+0000'
                         }}</span>
                         <span *ngIf="Block.timestamp === 0">0</span>
                     </td>
@@ -100,7 +100,7 @@
                     <td>Actual Timestamp (UTC):</td>
                     <td>
                         <span *ngIf="Block.actual_timestamp > 0">{{
-                            Block.actual_timestamp * 1000 | date: 'YYYY.MM.dd HH:mm:ss':'+0000'
+                            Block.actual_timestamp * 1000 | date: 'YYYY-MM-dd HH:mm:ss':'+0000'
                         }}</span>
                         <span *ngIf="Block.actual_timestamp === 0">0</span>
                     </td>

@@ -105,7 +105,7 @@
                 <td class="timestamp">
                     {{
                         block.timestamp * 1000
-                            | date: 'YYYY.MM.dd HH:mm:ss':'+0000'
+                            | date: 'YYYY-MM-dd HH:mm:ss':'+0000'
                     }}
                 </td>
                 <!--Timestamp-->
@@ -210,7 +210,7 @@
                 *ngFor="let pools of getLimitedTransactionPoolInfo$ | async">
                 <td class="timestamp">
                     <span *ngIf="pools.timestamp > 0">{{
-                        pools.timestamp * 1000 | date: 'YYYY.MM.dd HH:mm:ss':'+0000'
+                        pools.timestamp * 1000 | date: 'YYYY-MM-dd HH:mm:ss':'+0000'
                     }}</span>
                     <span *ngIf="pools.timestamp === 0">0</span>
                 </td>

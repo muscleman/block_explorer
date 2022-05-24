@@ -36,12 +36,12 @@
                 </td>
                 <td class="timestamp">
                     {{
-                        item.timestamp * 1000 | date: 'YYYY.MM.dd HH:mm:ss':'+0000'
+                        item.timestamp * 1000 | date: 'YYYY-MM-dd HH:mm:ss':'+0000'
                     }}
                 </td>
                 <td class="actual_timestamp">
                     {{
-                        item.actual_timestamp * 1000 | date: 'YYYY.MM.dd HH:mm:ss':'+0000'
+                        item.actual_timestamp * 1000 | date: 'YYYY-MM-dd HH:mm:ss':'+0000'
                     }}
                 </td>
                 <td class="size">{{ item.block_cumulative_size }} bytes</td>
