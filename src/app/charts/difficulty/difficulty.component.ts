@@ -6,6 +6,7 @@ import { take } from 'rxjs/operators'
 import { Select } from '@ngxs/store'
 import { Observable } from 'rxjs'
 import { ChartsState } from 'app/states/charts-state'
+import { SeriesOptionsType } from 'highcharts'
 
 @Component({
     selector: 'app-difficulty',
@@ -19,16 +20,12 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
     period: string
     posDifficulty: any
     difficultyChart: Chart
-    seriesData: any
     loader: boolean
     seriesType: string = 'other'
 
     @Select(ChartsState.selectAllPOSDifficulty) allPOSDifficulty$: Observable<any[]>
 
-    constructor(
-        private httpService: HttpService,
-        private mobileNavState: MobileNavState
-    ) {
+    constructor(private mobileNavState: MobileNavState) {
         super()
         this.navIsOpen = false
         this.searchIsOpen = false
@@ -37,7 +34,7 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
     }
 
     // PoS Difficulty
-    drawChart(activeChart, titleText, yText, chartsData): Chart {
+    drawChart(titleText, yText, chartsData: SeriesOptionsType[]): Chart {
         const that = this
         return new Chart({
             chart: {
@@ -46,6 +43,9 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
                 height: 700,
                 width: null,
                 zoomType: 'x'
+            },
+            accessibility: {
+                enabled: false
             },
             title: {
                 text: titleText,
@@ -312,6 +312,8 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
 
     ngOnDestroy(): void {
         super.ngOnDestroy()
+        if (this.difficultyChart)
+            this.difficultyChart.destroy()
     }
 
     initialChart() {
@@ -332,67 +334,30 @@ export class DifficultyComponent extends SubscriptionTracker implements OnInit {
                         parseInt(this.posDifficulty.aggregated[i].d, 10)
                     ])
                 }
-                if (this.difficultyChart) {
-                    this.difficultyChart.removeSeries[0]
-                    this.difficultyChart.addSeries[0].seriesData(                            {
+                let seriesData: SeriesOptionsType[] = [
+                    {
                         type: 'area',
                         name: 'PoS difficulty',
                         data: posDifficultyArray
-                    })
+                    }
+                ]
+                if (this.difficultyChart) {
+                    while (this.difficultyChart.ref.series.length > 0)
+                        this.difficultyChart.ref.series[0].remove(false)
+                    this.difficultyChart.addSeries(seriesData[0], 
+                    true, 
+                    true)
                 }
                 else
                 {
                     this.difficultyChart = this.drawChart(
-                        false,
                         'PoS Difficulty',
                         'PoS Difficulty',
-                        (this.seriesData = [
-                            {
-                                type: 'area',
-                                name: 'PoS difficulty',
-                                data: posDifficultyArray
-                            }
-                        ])
+                        seriesData
                     )
                 }
                 this.loader = false
             })
         )
-
-
-
-        // this.httpService
-        //     .getChart(this.activeChart, this.period)
-        //     .pipe(take(1))
-        //     .subscribe({
-        //         next: (data) => {
-        //             this.posDifficulty = data
-        //             const posDifficultyArray = []
-        //             for (
-        //                 let i = 1;
-        //                 i < this.posDifficulty.aggregated.length;
-        //                 i++
-        //             ) {
-        //                 posDifficultyArray.push([
-        //                     this.posDifficulty.aggregated[i].at * 1000,
-        //                     parseInt(this.posDifficulty.aggregated[i].d, 10)
-        //                 ])
-        //             }
-        //             this.difficultyChart = this.drawChart(
-        //                 false,
-        //                 'PoS Difficulty',
-        //                 'PoS Difficulty',
-        //                 (this.seriesData = [
-        //                     {
-        //                         type: 'area',
-        //                         name: 'PoS difficulty',
-        //                         data: posDifficultyArray
-        //                     }
-        //                 ])
-        //             )
-        //         },
-        //         error: (err) => console.log(err),
-        //         complete: () => (this.loader = false)
-        //     })
     }
 }

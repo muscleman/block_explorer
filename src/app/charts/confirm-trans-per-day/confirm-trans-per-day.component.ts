@@ -6,6 +6,7 @@ import { take } from 'rxjs/operators'
 import { Select } from '@ngxs/store'
 import { ChartsState } from 'app/states/charts-state'
 import { Observable } from 'rxjs'
+import { SeriesOptionsType } from 'highcharts'
 
 @Component({
     selector: 'app-confirm-trans-per-day',
@@ -23,14 +24,11 @@ export class ConfirmTransPerDayComponent
     period: string
     InputArray: any
     ConfirmTransactPerDayChart: Chart
-    seriesData: any
     loader: boolean
 
     @Select(ChartsState.selectAllConfirmedTransactionsPerDay) allConfirmedTransactionsPerDay$: Observable<any[]>
 
-    constructor(
-        // private httpService: HttpService,
-        private mobileNavState: MobileNavState
+    constructor(private mobileNavState: MobileNavState
     ) {
         super()
         this.navIsOpen = false
@@ -39,7 +37,7 @@ export class ConfirmTransPerDayComponent
         this.period = 'all'
     }
 
-    drawChart(activeChart, titleText, yText, chartsData): Chart {
+    drawChart(titleText, yText, chartsData: SeriesOptionsType[]): Chart {
         return new Chart({
             chart: {
                 type: 'line',
@@ -47,6 +45,9 @@ export class ConfirmTransPerDayComponent
                 height: 700,
                 width: null,
                 zoomType: 'x'
+            },
+            accessibility: {
+                enabled: false
             },
             title: {
                 text: titleText,
@@ -254,6 +255,8 @@ export class ConfirmTransPerDayComponent
 
     ngOnDestroy(): void {
         super.ngOnDestroy()
+        if (this.ConfirmTransactPerDayChart)
+            this.ConfirmTransactPerDayChart.destroy()
     }
 
     initialChart() {
@@ -270,63 +273,31 @@ export class ConfirmTransPerDayComponent
                         this.InputArray[i].sum_trc
                     ])
                 }
-                if (this.ConfirmTransactPerDayChart) {
-                    this.ConfirmTransactPerDayChart.removeSeries[0]
-                    this.ConfirmTransactPerDayChart.addSeries[0].seriesData({
+                let seriesData: SeriesOptionsType[] = [
+                    {
                         type: 'area',
                         name: 'Transactions',
                         data: ConfirmTransactPerDay
-                    })
+                    }
+                ]
+                if (this.ConfirmTransactPerDayChart) {
+                    while (this.ConfirmTransactPerDayChart.ref.series.length > 0)
+                        this.ConfirmTransactPerDayChart.ref.series[0].remove(false)
+                    this.ConfirmTransactPerDayChart.addSeries(seriesData[0],
+                    true, 
+                    true)
                 }
                 else
                 {
                     this.ConfirmTransactPerDayChart =
                         this.drawChart(
-                            false,
                             'Confirmed Transactions Per Day',
                             'Transactions',
-                            (this.seriesData = [
-                                {
-                                    type: 'area',
-                                    name: 'Transactions',
-                                    data: ConfirmTransactPerDay
-                                }
-                            ])
+                            seriesData
                         )
                 }
                 this.loader = false
             })
         )
-
-        // this.httpService
-        //     .getChart(this.activeChart, this.period)
-        //     .pipe(take(1))
-        //     .subscribe({
-        //         next: (data) => {
-        //             this.InputArray = data
-        //             const ConfirmTransactPerDay = []
-        //             for (let i = 1; i < this.InputArray.length; i++) {
-        //                 ConfirmTransactPerDay.push([
-        //                     this.InputArray[i].at * 1000,
-        //                     this.InputArray[i].sum_trc
-        //                 ])
-        //             }
-        //             this.ConfirmTransactPerDayChart =
-        //                 ConfirmTransPerDayComponent.drawChart(
-        //                     false,
-        //                     'Confirmed Transactions Per Day',
-        //                     'Transactions',
-        //                     (this.seriesData = [
-        //                         {
-        //                             type: 'area',
-        //                             name: 'Transactions',
-        //                             data: ConfirmTransactPerDay
-        //                         }
-        //                     ])
-        //                 )
-        //         },
-        //         error: (err) => console.log(err),
-        //         complete: () => (this.loader = false)
-        //     })
     }
 }

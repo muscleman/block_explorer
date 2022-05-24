@@ -4,6 +4,6 @@ export const environment = {
     documentionApi: 'https://docs.zano.org',
     decimalPlaces: 2,
     transactionPoolLimit: 5,
-    initialChartLoadDelayMs: 10000,
-    frequencyOfChartRefreshingMs: 3600000
+    initialChartLoadDelayMs: 5000,
+    frequencyOfChartRefreshingMs: 3600000 //hourly
 }

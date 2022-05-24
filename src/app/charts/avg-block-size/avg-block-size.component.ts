@@ -6,6 +6,7 @@ import { take } from 'rxjs/operators'
 import { Select } from '@ngxs/store'
 import { ChartsState } from 'app/states/charts-state'
 import { Observable } from 'rxjs'
+import { SeriesOptionsType } from 'highcharts'
 
 @Component({
     selector: 'app-avg-block-size',
@@ -22,14 +23,11 @@ export class AvgBlockSizeComponent
     period: string
     InputArray: any
     AvgBlockSizeChart: Chart
-    seriesData: any
     loader: boolean
 
     @Select(ChartsState.selectAllAverageBlockSize) allAverageBlockSize$: Observable<any[]>
 
-    constructor(
-        // private httpService: HttpService,
-        private mobileNavState: MobileNavState
+    constructor(private mobileNavState: MobileNavState
     ) {
         super()
         this.navIsOpen = false
@@ -38,7 +36,7 @@ export class AvgBlockSizeComponent
         this.period = 'all'
     }
 
-    drawChart(activeChart, titleText, yText, chartsData): Chart {
+    drawChart(titleText, yText, chartsData: SeriesOptionsType[]): Chart {
         return new Chart({
             chart: {
                 type: 'line',
@@ -46,6 +44,9 @@ export class AvgBlockSizeComponent
                 height: 700,
                 width: null,
                 zoomType: 'x'
+            },
+            accessibility: {
+                enabled: false
             },
             title: {
                 text: titleText,
@@ -78,9 +79,9 @@ export class AvgBlockSizeComponent
                         '<b style="color:' +
                         point.color +
                         '">\u25CF</b> ' +
-                        point.series.name +
-                        ': <b>' +
                         point.y +
+                        ': <b>' +
+                        point.series.name +
                         '</b><br/>'
                     )
                 }
@@ -253,6 +254,8 @@ export class AvgBlockSizeComponent
 
     ngOnDestroy(): void {
         super.ngOnDestroy()
+        if (this.AvgBlockSizeChart)
+            this.AvgBlockSizeChart.destroy()
     }
 
     initialChart() {
@@ -269,47 +272,23 @@ export class AvgBlockSizeComponent
                         this.InputArray[i].bcs
                     ])
                 }
+                let seriesData: SeriesOptionsType[] = [
+                    { type: 'area', name: 'MB', data: AvgBlockSize }
+                ]
                 if (this.AvgBlockSizeChart) {
-                    this.AvgBlockSizeChart.removeSeries[0]
-                    this.AvgBlockSizeChart.addSeries[0].seriesData({ type: 'area', name: 'MB', data: AvgBlockSize })
+                    while (this.AvgBlockSizeChart.ref.series.length > 0)
+                        this.AvgBlockSizeChart.ref.series[0].remove(false)
+                    this.AvgBlockSizeChart.addSeries(seriesData[0], true, true)
                 }
                 else {
                     this.AvgBlockSizeChart = this.drawChart(
-                        false,
                         'Average Block Size',
                         'MB',
-                        (this.seriesData = [
-                            { type: 'area', name: 'MB', data: AvgBlockSize }
-                        ])
+                        seriesData
                     )
                 }
                 this.loader = false
             })
         )
-        // this.httpService
-        //     .getChart(this.activeChart, this.period)
-        //     .pipe(take(1))
-        //     .subscribe({
-        //         next: (data) => {
-        //             this.InputArray = data
-        //             const AvgBlockSize = []
-        //             for (let i = 1; i < this.InputArray.length; i++) {
-        //                 AvgBlockSize.push([
-        //                     this.InputArray[i].at * 1000,
-        //                     this.InputArray[i].bcs
-        //                 ])
-        //             }
-        //             this.AvgBlockSizeChart = AvgBlockSizeComponent.drawChart(
-        //                 false,
-        //                 'Average Block Size',
-        //                 'MB',
-        //                 (this.seriesData = [
-        //                     { type: 'area', name: 'MB', data: AvgBlockSize }
-        //                 ])
-        //             )
-        //         },
-        //         error: (err) => console.log(err),
-        //         complete: () => (this.loader = false)
-        //     })
     }
 }
