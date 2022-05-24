@@ -222,7 +222,7 @@ app.get(
 
         if (start && count) {
             const query = {
-                text: 'SELECT height, actual_timestamp::real, base_reward, blob, block_cumulative_size, block_tself_size, cumulative_diff_adjusted, cumulative_diff_precise, difficulty, effective_fee_median, id, is_orphan, penalty, prev_id, summary_reward, this_block_fee_median, timestamp::real, total_fee, total_txs_size, tr_count, type, miner_text_info, pow_seed FROM blocks WHERE blocks.height >= $1 ORDER BY blocks.height ASC LIMIT $2;',
+                text: 'SELECT height, actual_timestamp, base_reward, blob, block_cumulative_size, block_tself_size, cumulative_diff_adjusted, cumulative_diff_precise, difficulty, effective_fee_median, id, is_orphan, penalty, prev_id, summary_reward, this_block_fee_median, timestamp, total_fee, total_txs_size, tr_count, type, miner_text_info, pow_seed FROM blocks WHERE blocks.height >= $1 ORDER BY blocks.height ASC LIMIT $2;',
                 values: [start, count]
             }
             let result = await db.query(query)
@@ -1117,7 +1117,7 @@ const syncAltBlocks = async () => {
 
 const getTxPoolDetails = async (count) => {
     if (count === 0) {
-        let result = await db.query('SELECT blob_size, fee, id, timestamp::real FROM pool ORDER BY timestamp DESC;')
+        let result = await db.query('SELECT blob_size, fee, id, timestamp FROM pool ORDER BY timestamp DESC;')
         return result && result.rowCount > 0 ? result.rows : []  
     }
 
