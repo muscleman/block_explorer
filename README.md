@@ -11,7 +11,8 @@ export const environment = {
   documentionApi: 'https://docs.zano.org',
   decimalPlaces: 2,
   initialChartLoadDelayMs: 5000,
-  frequencyOfChartRefreshingMs: 3600000 //hourly
+  frequencyOfChartRefreshingMs: 3600000,
+  enableVisibilityInfo: true
 };
 ```
 
@@ -20,6 +21,7 @@ export const environment = {
 3. `decimalPlaces` how many decimal places to use when displaying currency
 4. `initialChartLoadDelayMs` how many milliseconds to wait after the app loads before attempting to fill the chart cache
 5. `frequencyOfChartRefreshingMs` how often the chart cache should be refresh, currently 1 hour
+6. `enableVisibilityInfo` show the dev fund wallet information
 
 #### Run Frontend development Server
 
@@ -39,6 +41,7 @@ Edit `config.json`
     "auditable_wallet": {
         "api": "http://10.0.0.13:12233"
     },
+    "enableVisibilityInfo": true,
     "database": {
         "user": "zano",
         "host": "10.0.0.13",
@@ -53,6 +56,7 @@ Edit `config.json`
 3. `"server_port"` Port of backend API used by angular to obtain data.
 4. `"auditable_wallet"` FDQN of your auditable wallet running as a service.
 5. `"database"` credentials and location of a postgresql database
+6. `enableVisibilityInfo` stop/start websocket emitting dev fund wallet information
 
 #### Run Backend Server
 
