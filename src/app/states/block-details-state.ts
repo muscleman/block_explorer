@@ -1,11 +1,7 @@
 import { Injectable } from '@angular/core'
 import { State, Selector, Action, StateContext } from '@ngxs/store'
-import { patch } from '@ngxs/store/operators'
 import { HttpService } from '../services/http.service'
 import { tap } from 'rxjs'
-import { Transaction_Pool } from 'app/models/transaction_pool'
-import { TransactionPoolInfos } from 'app/actions/get-transaction-pool-info.actions'
-import { environment } from 'environments/environment'
 import { BlockDetail } from 'app/models/block_detail'
 import { BlockDetails } from 'app/actions/get-block-details.actions'
 
