@@ -1,12 +1,10 @@
-# Remaining Todos
+# New Todos
 
-1. ~~config.json option to turn off websockets during sync~~
-2. ~~double check no old sqllite stuff in server-pg-v1.js or server-ps.js~~
-3. practical way - we calculate how much coins dev fun staked in a last day(or week), let's call it "D"
-   also we know how much total coins been staked during this day - 720 coins being staked in a day (or in 7 days), let's call it "T"
-   also we know total coins in dev fund, let's call it "C" so the staking coins "S" = C \* (T/D)
-4. also, as self validation you can use statistics method: coins_staking = PoS_difficulty / 286 (those one without decimal point of course)
-5. ~~Angular mixins not playing well on transaction and block details~~
-6. ~~http.service is also a store. refactor out, maybe ngxs store~~
-7. ~~visibility info panel not initialized until next backend push after leaving main page and returning, probably fix with a store.~~
-8. BUGFIX~~`Average Block Size` and `Average Number Of Transactions Per Block` not working on charts page, but works on drill down.~~
+1. to reduce dataset sizes for the charts, change the onchange methods to send requests through the appropriate state store, determine if a new api call is necessary and pass /chartname/[day, week, month, quarter, year, all]/period/period2
+
+2. edit `'/get_chart/:chart/:period'` to include second period2 so `'/get_chart/:chart/:interval/:period/:period2'`
+
+3. edit each sql query to incorporate the interval and period => period2 information
+   eg) `'/get_chart/AvgBlockSize/week/5-22-2022/5-29-2022'` would change the sql 
+   `SELECT extract(epoch from date_trunc('hour', to_timestamp(actual_timestamp))) as at` to
+   `SELECT extract(epoch from date_trunc('week', to_timestamp(actual_timestamp))) as at where at >= period and at <= period2`
