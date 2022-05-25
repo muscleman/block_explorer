@@ -1,3 +1,6 @@
+-- DROP DATABASE IF EXISTS db;
+-- CREATE DATABASE db;
+
 CREATE TABLE IF NOT EXISTS  blocks (
         height  integer primary key,
         actual_timestamp bigint,
