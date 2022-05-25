@@ -129,10 +129,10 @@
     <div class="pagination" *ngIf="blockCount">
         <div class="left_position">
             <span>Pages:</span>
+            <!-- [disabled]="currentPage <= 1" -->
             <button
                 type="button"
                 class="prev_btn"
-                [disabled]="currentPage <= 1"
                 (click)="prevPage()">
                 <svg x="0px" y="0px" viewBox="0 0 477.175 477.175">
                     <g>
@@ -142,10 +142,10 @@
                     </g>
                 </svg>
             </button>
+            <!-- [disabled]="blockCount < setLimit" -->
             <button
                 type="button"
                 class="next_btn"
-                [disabled]="blockCount < setLimit"
                 (click)="nextPage()">
                 <svg x="0px" y="0px" viewBox="0 0 477.175 477.175">
                     <g>

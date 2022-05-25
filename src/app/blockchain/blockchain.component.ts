@@ -38,8 +38,8 @@ export class BlockchainComponent
 {
     info: GetInfo
     daemon_network_state: any
-    setLimit: any
-    limit: any
+    setLimit: number = 10
+    limit: number = 10
     currentPage: number
     goToBlock: number
     setBlock: number
@@ -148,6 +148,7 @@ export class BlockchainComponent
                 this.maxViewedBlockHeights = blocks.map(block => block.height)
                 this.blockCount = blocks.length
                 this.loader = false
+                console.log('maxViewedBlockHeight ', this.maxViewedBlockHeight)
             }),
             this.mobileNavState.change.subscribe((navIsOpen) => {
                 this.navIsOpen = navIsOpen
@@ -174,101 +175,129 @@ export class BlockchainComponent
     }
 
     prevPage() {
-        if (this.currentPage - 1 > 0) {
-            this.currentPage--
-            this.onChange()
-        }
+        // if (this.currentPage - 1 > 0) {
+        //     this.currentPage--
+        //     this.onChange()
+        // }
+
+        let t = Math.min(this.maxViewedBlockHeight, this.info.lastBlock - this.setLimit)
+        this.maxViewedBlockHeights = [t + this.setLimit]
+        console.log('prevPage ', t + 1, this.setLimit)
+        this.store.dispatch(new BlockDetails.SetRange(t + 1, this.setLimit))
+
+
     }
 
     nextPage() {
-        if (this.currentPage !== Math.ceil(this.info.lastBlock / this.limit)) {
-            this.currentPage++
-            this.onChange()
-        } else {
-            return false
-        }
+        // if (this.currentPage !== Math.ceil(this.info.lastBlock / this.limit)) {
+        //     this.currentPage++
+        //     this.onChange()
+        // } else {
+        //     return false
+        // }
+        let t = Math.max(0, this.maxViewedBlockHeight - (2 * this.setLimit))
+        console.log('nextPage ', t, this.setLimit)
+        this.maxViewedBlockHeights = [t + this.setLimit]
+        this.store.dispatch(new BlockDetails.SetRange(t + 1, this.setLimit))
     }
 
     onChangeLimit() {
-        if (
-            isNaN(+this.goToBlock) === false &&
-            this.goToBlock !== undefined &&
-            +this.goToBlock >= 0 &&
-            +this.goToBlock < this.info.lastBlock
-        ) {
-            this.listBlockStart =
-                +this.goToBlock -
-                +this.setLimit +
-                1 +
-                ((this.info.lastBlock - 1 - +this.goToBlock) % +this.setLimit)
-            this.currentPage =
-                Math.floor(
-                    (this.info.lastBlock - +this.setLimit - (this.listBlockStart + 1)) /
-                        +this.setLimit
-                ) + 2
-        }
+        // if (
+        //     isNaN(+this.goToBlock) === false &&
+        //     this.goToBlock !== undefined &&
+        //     +this.goToBlock >= 0 &&
+        //     +this.goToBlock < this.info.lastBlock
+        // ) {
+        //     this.listBlockStart =
+        //         +this.goToBlock -
+        //         +this.setLimit +
+        //         1 +
+        //         ((this.info.lastBlock - 1 - +this.goToBlock) % +this.setLimit)
+        //     this.currentPage =
+        //         Math.floor(
+        //             (this.info.lastBlock - +this.setLimit - (this.listBlockStart + 1)) /
+        //                 +this.setLimit
+        //         ) + 2
+        // }
+        console.log('onChangeLimit ', this.setLimit)
+        this.cookieService.set('setLimitCookie', this.setLimit.toString())
         this.onChange()
     }
 
     searchBlock() {
-        this.goToBlock = this.setBlock
-        if (
-            isNaN(+this.goToBlock) ||
-            +this.goToBlock < 0 ||
-            +this.goToBlock >= this.info.lastBlock
-        ) {
-            this.setBlockValid = false
-            return
+
+
+
+        // this.goToBlock = this.setBlock
+        // if (
+        //     isNaN(+this.goToBlock) ||
+        //     +this.goToBlock < 0 ||
+        //     +this.goToBlock >= this.info.lastBlock
+        // ) {
+        //     this.setBlockValid = false
+        //     return
+        // }
+        // this.setBlockValid = true
+        // this.listBlockStart =
+        //     +this.goToBlock -
+        //     +this.setLimit +
+        //     1 +
+        //     ((this.info.lastBlock - 1 - +this.goToBlock) % +this.setLimit)
+        // this.currentPage =
+        //     Math.floor(
+            //         (this.info.lastBlock - +this.setLimit - (this.listBlockStart + 1)) /
+            //             +this.setLimit
+            //     ) + 2
+
+            console.log('searchBlock ', this.setBlock)
+            this.maxViewedBlockHeights = [this.listBlockStart + 10]
+            this.onChange()
         }
-        this.setBlockValid = true
-        this.listBlockStart =
-            +this.goToBlock -
-            +this.setLimit +
-            1 +
-            ((this.info.lastBlock - 1 - +this.goToBlock) % +this.setLimit)
-        this.currentPage =
-            Math.floor(
-                (this.info.lastBlock - +this.setLimit - (this.listBlockStart + 1)) /
-                    +this.setLimit
-            ) + 2
-        this.maxViewedBlockHeights = [this.listBlockStart + 10]
-        this.onChange()
-    }
+        
+        onChange() {
+            if (!!this.info) {
 
-    onChange() {
-        if (!!this.info) {
-            if (this.setLimit > this.maxCountBlock) {
-                this.setLimit = this.maxCountBlock
-            }
-            if (!this.setLimit || this.setLimit < 0) {
-                this.setLimit = 10
-            }
-            this.listBlockStart =
-            this.info.lastBlock +
-                1 -
-                +this.setLimit -
-                (this.currentPage - 1) * +this.setLimit
-            this.limit = +this.setLimit
 
-            this.cookieService.set('setLimitCookie', this.limit)
 
-            if (this.listBlockStart < 0 || this.listBlockStart === null) {
-                this.limit = this.limit + this.listBlockStart
-                if (this.limit < 0) {
-                    return
-                }
-                this.listBlockStart = 0
-            }
-            if (
-                this.lastSendBlockDetail.start !== this.listBlockStart ||
-                this.lastSendBlockDetail.limit !== this.limit
-            ) {
-                this.lastSendBlockDetail.start = this.listBlockStart
-                this.lastSendBlockDetail.limit = this.limit
+
+
+            // if (this.setLimit > this.maxCountBlock) {
+            //     this.setLimit = this.maxCountBlock
+            // }
+            // if (!this.setLimit || this.setLimit < 0) {
+            //     this.setLimit = 10
+            // }
+            // if (!this.goToBlock) {
+            //     this.listBlockStart =
+            //     this.info.lastBlock +
+            //         1 -
+            //         +this.setLimit -
+            //         (this.currentPage - 1) * +this.setLimit
+            //     this.limit = +this.setLimit
+            // }
+
+            
+            this.listBlockStart = this.setBlock ? this.setBlock : this.info.height - 10
+
+            console.log(this.setBlock, ' ', this.listBlockStart, ' ', this.setLimit)
+
+            // if (this.listBlockStart < 0 || this.listBlockStart === null) {
+            //     this.limit = this.limit + this.listBlockStart
+            //     if (this.limit < 0) {
+            //         return
+            //     }
+            //     this.listBlockStart = 0
+            // }
+            // if (
+            //     this.lastSendBlockDetail.start !== this.listBlockStart ||
+            //     this.lastSendBlockDetail.limit !== this.limit
+            // ) {
+            //     this.lastSendBlockDetail.start = this.listBlockStart
+            //     this.lastSendBlockDetail.limit = this.limit
                 this.loader = true
 
-                this.store.dispatch(new BlockDetails.SetRange(this.listBlockStart, this.limit))
-            }
+                this.store.dispatch(new BlockDetails.SetRange(this.listBlockStart, this.setLimit))
+            // }
         }
     }
 }
