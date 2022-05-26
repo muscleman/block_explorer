@@ -1162,11 +1162,9 @@ const getVisibilityInfo = async () => {
             let stakedCoinsLast7Days = new BigNumber(0)
             if ('mined_entries' in res2.data.result) {
                 for (const item of res2.data.result.mined_entries) {
-                    stakedCoinsLast7Days = stakedCoinsLast7Days.plus(item.a)
+                    stakedCoinsLast7Days.plus(item.a)
                 }
             }
-
-            result.amount = stakedCoinsLast7Days.toNumber()
             
             let totalCoinsInvolvedInStaking =
             stakedCoinsLast7Days.isEqualTo(0)
@@ -1176,6 +1174,7 @@ const getVisibilityInfo = async () => {
                 totalStakedCoins7Days.dividedBy(stakedCoinsLast7Days)
                 )
                         
+            result.amount = totalCoinsInvolvedInStaking.toNumber()
             let totalSupply = new BigNumber(res3.data.result.total_coins)
             result.percentage = totalCoinsInvolvedInStaking.dividedBy(totalSupply).multipliedBy(100).toFixed(2)
         }
