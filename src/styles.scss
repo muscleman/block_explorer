@@ -132,8 +132,9 @@ app-search {
         height: 700px;
     }
     > div {
-    @include max991 {
-        overflow: auto !important;
+        @include max991 {
+            overflow: auto !important;
+        }
     }
 }
 
